@@ -1,0 +1,22 @@
+<%- include('main', { body: `
+  <div class="w-full max-w-md p-8 space-y-6 bg-white rounded shadow-md">
+    <h2 class="text-2xl font-bold text-center mb-6">Sign in to your account</h2>
+    <form action="/auth/login" method="POST" class="space-y-4">
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+        <input type="text" name="username" id="username" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" name="password" id="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <button type="submit" class="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700">Sign in</button>
+    </form>
+    <div class="flex flex-col space-y-3 mt-6">
+      <a href="/auth/google" class="w-full flex items-center justify-center py-2 px-4 bg-red-500 text-white rounded hover:bg-red-600">
+        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.18v2.98h5.26c-.23 1.24-1.39 3.64-5.26 3.64-3.16 0-5.74-2.62-5.74-5.85s2.58-5.85 5.74-5.85c1.8 0 3.01.77 3.7 1.43l2.53-2.46C16.18 3.99 14.29 3 12 3 6.48 3 2 7.48 2 13s4.48 10 10 10c5.52 0 10-4.48 10-10 0-.68-.07-1.34-.2-1.9z"/></svg>
+        Sign in with Google
+      </a>
+    </div>
+  </div>
+` }) %>

@@ -1,0 +1,137 @@
+erDiagram
+    %% --- SYSTEM TABLES (Supabase Auth) ---
+    AUTH_USER {
+        uuid id PK
+        string email
+    }
+
+    %% --- PUBLIC TABLES ---
+
+    USER_PROFILES {
+        uuid user_id PK "FK -> auth.users.id"
+        timestamptz created_at
+        text user_full_name
+        text user_email
+        text user_avatar_url
+        text social_login_provider
+        text user_phone
+        text user_payment_channel
+        text user_payment_bank
+        text user_payment_id
+        text user_consent_record_id
+    }
+
+    CUSTOMERS {
+        uuid customer_id PK
+        text customer_citizen_id "UNIQUE"
+        text customer_fname_th
+        text customer_lname_th
+        text customer_fname_en
+        text customer_lname_en
+        text customer_gender
+        text customer_nationality
+        text customer_tax_id
+        text customer_phone
+        date customer_birthdate
+        date customer_registerdate
+        text customer_address1
+        text customer_address2
+        text customer_zipcode
+        text customer_position
+        boolean customer_consent_status
+        uuid customer_recommender_id "FK -> customers.customer_id"
+        uuid customer_record_by_user_id "FK -> auth.users.id"
+        timestamptz customer_created_at
+    }
+
+    PRODUCTS {
+        text product_code PK
+        bigint product_id
+        text product_name_th
+        text product_name_en
+        text color_th
+        text color_en
+        text Size
+        bigint price_per_unit
+        bigint Under_bust
+        bigint Top_bust
+        bigint Waist_min
+        bigint Waist_max
+        bigint Hip_min
+        bigint Hip_max
+        bigint Bust_min
+        bigint Bust_max
+        bigint Hight_min
+        bigint Hight_max
+    }
+
+    ORDERS {
+        uuid order_id PK
+        date order_date
+        uuid order_customer_id "FK -> customers.customer_id"
+        text position
+        uuid order_recommender_id "FK -> customers.customer_id"
+        uuid order_assistant_id "FK -> customers.customer_id"
+        integer order_total_amount
+        integer order_discount
+        integer order_price_before_tax
+        integer order_tax
+        integer order_final_price
+        uuid order_record_by_user_id "FK -> auth.users.id"
+        timestamptz order_created_at
+    }
+
+    ORDER_ITEMS {
+        uuid id PK
+        uuid order_id "FK -> orders.order_id"
+        text product_code "FK -> products.product_code"
+        text product_name
+        text product_size
+        text product_color
+        integer product_price
+        integer quantity
+        timestamptz created_at
+    }
+
+    CONSENT_DOCS {
+        uuid consent_doc_id PK
+        text consent_type
+        text consent_version
+        text consent_content
+        date consent_effective_date
+        boolean is_active
+        timestamptz created_at
+    }
+
+    CONSENT_RECORDS {
+        uuid consent_record_id PK
+        uuid consent_doc_id "FK -> consent_docs.consent_doc_id"
+        uuid sign_by_id "FK -> customers.customer_id"
+        boolean consent_status
+        uuid record_by_user_id "FK -> auth.users.id"
+        timestamptz created_at
+    }
+
+    %% --- RELATIONSHIPS ---
+
+    %% User Profiles Link
+    AUTH_USER ||--|| USER_PROFILES : "has profile"
+
+    %% Customer Relationships
+    AUTH_USER ||--o{ CUSTOMERS : "records (admin)"
+    CUSTOMERS ||--o{ CUSTOMERS : "recommends (self-ref)"
+
+    %% Order Relationships
+    CUSTOMERS ||--o{ ORDERS : "places order"
+    CUSTOMERS ||--o{ ORDERS : "recommends order"
+    CUSTOMERS ||--o{ ORDERS : "assists order"
+    AUTH_USER ||--o{ ORDERS : "records order"
+
+    %% Order Items Relationships
+    ORDERS ||--|{ ORDER_ITEMS : "contains"
+    PRODUCTS ||--o{ ORDER_ITEMS : "is referenced by (code)"
+
+    %% Consent Relationships
+    CONSENT_DOCS ||--o{ CONSENT_RECORDS : "has records"
+    CUSTOMERS ||--o{ CONSENT_RECORDS : "signs"
+    AUTH_USER ||--o{ CONSENT_RECORDS : "records"

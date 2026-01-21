@@ -1,0 +1,19 @@
+<%- include('main', { body: `
+  <div class=\"bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center\">
+    <h2 class=\"text-2xl font-bold mb-6 text-gray-800\">Register</h2>
+    <div class=\"flex flex-col gap-4\">
+      <a href=\"/auth/google\">
+        <button class=\"w-full py-2 px-4 bg-red-600 text-white rounded hover:bg-red-700 transition flex items-center justify-center gap-2\">
+          <img src=\"https://www.svgrepo.com/show/475656/google-color.svg\" alt=\"Google\" class=\"w-5 h-5\"> Sign in with Google
+        </button>
+      </a>
+      <a href=\"/auth/line\">
+        <button class=\"w-full py-2 px-4 bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center justify-center gap-2\">
+          <img src=\"https://www.svgrepo.com/show/303150/line-messenger.svg\" alt=\"Line\" class=\"w-5 h-5\"> Line Login
+        </button>
+      </a>
+    </div>
+  </div>
+` }) %>
+</body>
+</html>
