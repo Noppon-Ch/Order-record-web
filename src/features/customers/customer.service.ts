@@ -1,13 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { CreateCustomerDTO } from './customer.types.js';
 
+
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+
 
 export class CustomerService {
-    async findByCitizenId(customer_citizen_id: string) {
+    async findByCitizenId(customer_citizen_id: string, accessToken?: string) {
         if (!customer_citizen_id) return null;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
         const { data, error } = await supabase
             .from('customers')
             .select('customer_id')
@@ -19,11 +23,15 @@ export class CustomerService {
         return data;
     }
 
-    async createCustomer(data: CreateCustomerDTO) {
+    async createCustomer(data: CreateCustomerDTO, accessToken?: string) {
         // Sanitize empty strings to null for optional fields (Postgres handles nulls better for non-constraints)
         const sanitizedData = Object.fromEntries(
             Object.entries(data).map(([key, value]) => [key, value === '' ? null : value])
         );
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
 
         const { data: customer, error } = await supabase
             .from('customers')

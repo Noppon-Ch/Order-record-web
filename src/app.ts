@@ -19,6 +19,8 @@ const app = express();
 
 
 // --- Passport & Session Setup ---
+// Middleware to parse application/x-www-form-urlencoded (for form POST)
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default_secret',
   resave: false,
