@@ -35,7 +35,7 @@ CREATE TABLE public.customers (
   customer_tax_id text,
   customer_phone text,
   customer_birthdate date,
-  customer_registerdate date DEFAULT CURRENT_DATE,
+  customer_registerdate date,
   customer_address1 text,
   customer_address2 text,
   customer_zipcode text,

@@ -37,6 +37,7 @@ app.set('views', [
   path.resolve(process.cwd(), 'src', 'features', 'auth', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'homepage', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'users', 'views'),
+  path.resolve(process.cwd(), 'src', 'features', 'customers', 'views'),
   path.resolve(process.cwd(), 'src', 'shared', 'views')
 ]);
 
@@ -64,6 +65,10 @@ app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 
 // Mount homepage routes
+// Mount homepage routes
 app.use('/homepage', homepageRoutes);
+
+import customerRoutes from './features/customers/customer.routes.js';
+app.use('/customer', customerRoutes);
 
 export default app;
