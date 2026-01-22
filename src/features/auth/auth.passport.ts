@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as LineStrategy } from 'passport-line';
 import type { Request } from 'express';
+import { getUserProfile, upsertUserProfileAfterOAuth } from './auth.service.js';
 
 
 export function setupPassport(session: any) {
@@ -41,16 +42,30 @@ export function setupPassport(session: any) {
         token: idToken,
       });
       if (error) return done(error, false);
-      return done(null, data.user);
+
+      // Upsert user profile after OAuth
+      await upsertUserProfileAfterOAuth(data.user, 'google');
+
+      // Attach access_token for RLS
+      const userWithToken = { ...data.user, access_token: data.session?.access_token };
+      return done(null, userWithToken);
     }
   ));
 
 
   // Serialize/deserialize user for session
-  passport.serializeUser((user, done) => {
-    done(null, user);
+  passport.serializeUser((user: any, done) => {
+    // Store both id and access_token in session
+    done(null, { id: user.id, access_token: user.access_token });
   });
-  passport.deserializeUser((obj: any, done) => {
-    done(null, obj);
+  passport.deserializeUser(async (obj: { id: string, access_token?: string }, done) => {
+    try {
+      const userProfile = await getUserProfile(obj.id);
+      const user = userProfile ? { ...userProfile, id: obj.id, access_token: obj.access_token } : { id: obj.id, access_token: obj.access_token };
+      done(null, user);
+    } catch (error) {
+      console.error('Error deserializing user:', error);
+      done(error, null);
+    }
   });
 }

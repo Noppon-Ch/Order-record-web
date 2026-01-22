@@ -19,6 +19,8 @@ export interface UserProfile {
   user_payment_channel: string | null;
   user_payment_bank: string | null;
   user_payment_id: string | null;
+
+  user_role: 'user'
 }
 
 // DTO for creating a user profile (all fields except created_at, which is usually set by DB)

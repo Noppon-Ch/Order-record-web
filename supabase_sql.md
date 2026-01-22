@@ -116,6 +116,7 @@ CREATE TABLE public.user_profiles (
   user_payment_id text,
   user_consent_record_id text,
   social_provider_user_id text,
+  user_role text,
   CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id),
   CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );

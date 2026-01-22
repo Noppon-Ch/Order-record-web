@@ -1,15 +1,94 @@
-<%- include('main', { body: `
-  <div class=\"bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center\">
-    <h1 class=\"text-3xl font-bold mb-6 text-gray-800\">Order Record Web</h1>
-    <div class=\"flex flex-col gap-4\">
-      <a href=\"/login\" class=\"w-full\">
-        <button class=\"w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition\">Login</button>
-      </a>
-      <a href=\"/register\" class=\"w-full\">
-        <button class=\"w-full py-2 px-4 bg-green-600 text-white rounded hover:bg-green-700 transition\">Register</button>
+<%- include('main', { body: ` <div
+  class="relative w-full h-full min-h-[80vh] flex flex-col items-center justify-center text-center overflow-hidden">
+  <!-- Background Decoration -->
+  <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 -z-10"></div>
+  <div
+    class="absolute -top-24 -right-24 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob">
+  </div>
+  <div
+    class="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000">
+  </div>
+
+  <div class="relative z-10 px-6 max-w-4xl mx-auto">
+    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 drop-shadow-sm">
+      <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Order Record</span>
+      <span class="block text-4xl md:text-5xl mt-2 text-gray-700 font-bold">Simplify Your Business</span>
+    </h1>
+
+    <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+      Manage customers, orders, and consents effortlessly with our premium all-in-one solution. Designed for speed,
+      security, and elegance.
+    </p>
+
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a href="/login"
+        class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transform transition duration-200 ease-in-out w-full sm:w-auto">
+        Get Started
       </a>
     </div>
+
+    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+      <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Customer Management</h3>
+        <p class="text-gray-600 text-sm">Keep track of all your customer details and history in one secure place.</p>
+      </div>
+      <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
+        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4 text-indigo-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Order Tracking</h3>
+        <p class="text-gray-600 text-sm">Create and manage orders efficiently with automated status updates.</p>
+      </div>
+      <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
+        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 text-purple-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Secure & Reliable</h3>
+        <p class="text-gray-600 text-sm">Enterprise-grade security on Supabase with seamless Google Auth.</p>
+      </div>
+    </div>
   </div>
-` }) %>
-</body>
-</html>
+  </div>
+
+  <style>
+    @keyframes blob {
+      0% {
+        transform: translate(0px, 0px) scale(1);
+      }
+
+      33% {
+        transform: translate(30px, -50px) scale(1.1);
+      }
+
+      66% {
+        transform: translate(-20px, 20px) scale(0.9);
+      }
+
+      100% {
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+
+    .animate-blob {
+      animation: blob 7s infinite;
+    }
+
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+  </style>
+  ` }) %>

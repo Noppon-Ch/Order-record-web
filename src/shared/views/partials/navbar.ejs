@@ -1,22 +1,71 @@
-<nav class="bg-white shadow">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-        <a href="/homepage" class="text-xl font-bold text-gray-800">Order Record</a>
-        <ul class="flex space-x-6">
-            <li>
-                <a href="/customers" class="text-gray-700 hover:text-blue-600 transition">รายชื่อลูกค้า</a>
-            </li>
-            <li>
-                <a href="/customers/add" class="text-gray-700 hover:text-blue-600 transition">เพิ่มลูกค้า</a>
-            </li>
-            <li>
-                <a href="/products/search" class="text-gray-700 hover:text-blue-600 transition">ค้นหาสินค้า</a>
-            </li>
-            <li>
-                <a href="/orders/history" class="text-gray-700 hover:text-blue-600 transition">ประวัติสั่งซื้อ</a>
-            </li>
-            <li>
-                <a href="/user/setting" class="text-gray-700 hover:text-blue-600 transition">ตั้งค่าผู้ใช้</a>
-            </li>
-        </ul>
+<nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+
+        <!-- Logo -->
+        <a href="/homepage" class="flex items-center gap-2 group">
+            <div
+                class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                    </path>
+                </svg>
+            </div>
+            <span
+                class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">Order
+                Record</span>
+        </a>
+
+        <!-- Menu items - Only visible if logged in (user exists) -->
+        <% if (typeof user !=='undefined' && user) { %>
+            <ul class="hidden md:flex space-x-8 items-center font-medium text-gray-600">
+                <li><a href="/customers" class="hover:text-blue-600 transition-colors duration-200">รายชื่อลูกค้า</a>
+                </li>
+                <li><a href="/customers/add" class="hover:text-blue-600 transition-colors duration-200">เพิ่มลูกค้า</a>
+                </li>
+                <li><a href="/products/search"
+                        class="hover:text-blue-600 transition-colors duration-200">ค้นหาสินค้า</a></li>
+                <li><a href="/orders/history"
+                        class="hover:text-blue-600 transition-colors duration-200">ประวัติสั่งซื้อ</a></li>
+            </ul>
+
+            <!-- Profile / Setting / Logout -->
+            <div class="flex items-center gap-4">
+                <!-- Debug: show user object and avatar url -->
+                <!-- <pre style="display:none"><%= JSON.stringify(user, null, 2) %></pre> -->
+                <!-- <div style="display:none">user_avatar_url: <%= user.user_avatar_url %></div> -->
+                <a href="/user/setting"
+                    class="hidden sm:flex items-center gap-3 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                    <% if (user && typeof user.user_avatar_url !== 'undefined' && user.user_avatar_url) { %>
+                        <img src="<%= user.user_avatar_url %>" alt="Profile"
+                            class="w-8 h-8 rounded-full border border-gray-200 object-cover shadow-sm">
+                    <% } else { %>
+                        <div
+                            class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                            <%= user && user.user_full_name ? user.user_full_name.charAt(0).toUpperCase() : 'U' %>
+                        </div>
+                    <% } %>
+                    <span class="text-sm font-semibold text-gray-700 max-w-[100px] truncate">
+                        <%= user && user.user_full_name || 'User' %>
+                    </span>
+                </a>
+
+                <a href="/auth/logout"
+                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                    title="Logout">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                </a>
+            </div>
+            <% } else { %>
+                <!-- If not logged in -->
+                <a href="/login"
+                    class="px-5 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition shadow-sm">Sign
+                    In</a>
+                <% } %>
+
     </div>
 </nav>

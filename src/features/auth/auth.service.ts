@@ -71,10 +71,35 @@ export async function upsertUserProfileAfterOAuth(
     user_payment_channel: null,   // or provide appropriate value
     user_payment_bank: null,      // or provide appropriate value
     user_payment_id: null,        // or provide appropriate value
+    user_role: "user",            // default to 'user'; change if other roles are supported
   };
 
   // Log the profile data before sending to Supabase
   console.log('[Supabase] Upserting user_profiles:', JSON.stringify(profile, null, 2));
 
 
+  // Upsert the profile into the user_profiles table
+  const { error: upsertError } = await getSupabaseClient()
+    .from('user_profiles')
+    .upsert(profile as any, { onConflict: 'user_id' });
+
+  if (upsertError) {
+    console.error('[Supabase] Error upserting user profile:', upsertError);
+    throw upsertError;
+  }
+}
+
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  const { data, error } = await getSupabaseClient()
+    .from('user_profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) {
+    console.error('[Supabase] Error fetching user profile:', error);
+    return null;
+  }
+
+  return data;
 }

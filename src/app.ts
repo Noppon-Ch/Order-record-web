@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Load env vars before other imports
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,9 +11,6 @@ import userRoutes from './features/users/user.routes.js';
 import homepageRoutes from './features/homepage/homepage.routes.js';
 import { setupPassport } from './features/auth/auth.passport.js';
 import { renderLoginPage } from './features/auth/auth.controller.js';
-
-import dotenv from 'dotenv';
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +36,7 @@ app.set('views', [
   path.resolve(process.cwd(), 'src', 'features', 'public', 'view'),
   path.resolve(process.cwd(), 'src', 'features', 'auth', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'homepage', 'views'),
+  path.resolve(process.cwd(), 'src', 'features', 'users', 'views'),
   path.resolve(process.cwd(), 'src', 'shared', 'views')
 ]);
 
