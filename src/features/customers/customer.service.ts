@@ -23,6 +23,25 @@ export class CustomerService {
         return data;
     }
 
+    async findById(customerId: string, accessToken?: string) {
+        if (!customerId) return null;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data, error } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('customer_id', customerId)
+            .single();
+
+        if (error) {
+            console.error('Error finding customer by ID:', error);
+            throw new Error('Database error finding customer.');
+        }
+        return data;
+    }
+
     async createCustomer(data: CreateCustomerDTO, accessToken?: string) {
         // Sanitize empty strings to null for optional fields (Postgres handles nulls better for non-constraints)
         const sanitizedData = Object.fromEntries(

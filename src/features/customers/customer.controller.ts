@@ -39,13 +39,55 @@ export class CustomerController {
 		console.log('AddCustomer values:', values);
 		try {
 			// Minimal: ไม่เช็คซ้ำ citizen id, แค่ insert
-			await customerService.createCustomer(values, req.user?.access_token);
-			return res.redirect('/customers');
+			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
+
+			if (!createdCustomer) {
+				throw new Error('Failed to create customer (no data returned).');
+			}
+
+			return res.redirect(`/customer/add/finish/${createdCustomer.customer_id}`);
 		} catch (err: any) {
 			return res.status(400).render('add', {
 				error: err.message || 'Failed to add customer.',
 				values
 			});
+		}
+	}
+
+	async showFinishPage(req: Request, res: Response) {
+		try {
+			const customerId = req.params.customerId as string;
+			const customer = await customerService.findById(customerId, req.user?.access_token);
+
+			if (!customer) {
+				return res.redirect('/homepage'); // Or show error
+			}
+
+			// Simple sanitization helper
+			const escape = (str: any) => {
+				if (!str) return '';
+				return String(str)
+					.replace(/&/g, "&amp;")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
+					.replace(/"/g, "&quot;")
+					.replace(/'/g, "&#039;");
+			};
+
+			const safeCustomer = {
+				...customer,
+				customer_fname_th: escape(customer.customer_fname_th),
+				customer_lname_th: escape(customer.customer_lname_th),
+				customer_citizen_id: escape(customer.customer_citizen_id)
+			};
+
+			res.render('finish', {
+				user: req.user,
+				customer: safeCustomer, // key is still 'customer' for view compatibility
+			});
+		} catch (err) {
+			console.error('Error showing finish page:', err);
+			res.redirect('/homepage');
 		}
 	}
 }
