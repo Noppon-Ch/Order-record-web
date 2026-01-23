@@ -1,0 +1,236 @@
+<%- include('layout-header') %>
+
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+        <!-- Page Header -->
+        <div class="mb-8 border-b border-gray-200 pb-4">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">New Order</h1>
+            <p class="mt-2 text-sm text-gray-500">Create a new order for customer.</p>
+        </div>
+
+        <form id="orderForm" class="space-y-8">
+
+            <!-- 1. General Info & 2. Buyer Info -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Customer & Order Info</h2>
+                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <!-- 1.1 Date -->
+                    <div class="sm:col-span-2">
+                        <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date</label>
+                        <input type="date" name="order_date" id="order_date"
+                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 p-2 border"
+                            value="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+
+                    <!-- 2.1 Buyer ID -->
+                    <div class="sm:col-span-2">
+                        <label for="buyer_id" class="block text-sm font-medium text-gray-700">Buyer Citizen ID</label>
+                        <input type="text" name="buyer_id" id="buyer_id" readonly
+                            class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
+                            value="<%= customer ? customer.customer_citizen_id : '' %>">
+                    </div>
+
+                    <!-- 2.2 Buyer Name -->
+                    <div class="sm:col-span-2">
+                        <label for="buyer_name" class="block text-sm font-medium text-gray-700">Buyer Name</label>
+                        <input type="text" id="buyer_name" readonly
+                            class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
+                            value="<%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th) : '' %>">
+                    </div>
+
+                    <!-- 2.3 Buyer Position -->
+                    <div class="sm:col-span-2">
+                        <label for="buyer_position" class="block text-sm font-medium text-gray-700">Position</label>
+                        <input type="text" id="buyer_position" readonly
+                            class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
+                            value="<%= customer ? customer.customer_position : '' %>">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Referrer & 4. Assistant -->
+            <div
+                class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 grid grid-cols-1 gap-8 md:grid-cols-2">
+                <!-- Referrer -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Referrer Info</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="referrer_id" class="block text-sm font-medium text-gray-700">Citizen ID</label>
+                            <input type="text" name="referrer_id" id="referrer_id" maxlength="13" readonly
+                                class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
+                                placeholder="13 Digits"
+                                value="<%= recommender ? recommender.customer_citizen_id : '' %>">
+                        </div>
+                        <div>
+                            <label for="referrer_name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" name="referrer_name" id="referrer_name" readonly
+                                class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
+                                value="<%= recommender ? (recommender.customer_fname_th + ' ' + recommender.customer_lname_th) : '' %>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assistant -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Assistant Info</h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                            <div class="flex-grow">
+                                <label for="assistant_id" class="block text-sm font-medium text-gray-700">Citizen
+                                    ID</label>
+                                <input type="text" name="assistant_id" id="assistant_id" maxlength="13"
+                                    class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
+                                    placeholder="13 Digits">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" onclick="openPersonSearch('assistant')"
+                                    class="inline-flex items-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="assistant_name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" name="assistant_name" id="assistant_name"
+                                class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Product List -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Items</h2>
+                    <button type="button" onclick="addProductRow()"
+                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none shadow-sm">
+                        + Add Item
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col"
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                    Code</th>
+                                <th scope="col"
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                                    Qty</th>
+                                <th scope="col"
+                                    class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Product Name (Color/Size)</th>
+                                <th scope="col"
+                                    class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                                    Unit Price</th>
+                                <th scope="col"
+                                    class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                                    Total</th>
+                                <th scope="col" class="relative px-3 py-3 w-10">
+                                    <span class="sr-only">Delete</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Rows generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. Summary & 7. Shipping -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Shipping -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-full">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Shipping Address</h2>
+                    <textarea id="shipping_address" name="shipping_address" rows="5" readonly
+                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-gray-50 border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + '\n' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal (Before Tax)</span>
+                            <span class="font-medium text-gray-900" id="summary_subtotal">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Discount</span>
+                            <span class="font-medium text-green-600" id="summary_discount">0.00</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3 flex justify-between">
+                            <span class="text-gray-600">Price After Discount</span>
+                            <span class="font-medium text-gray-900" id="summary_after_discount">0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">VAT (7%)</span>
+                            <span class="font-medium text-gray-900" id="summary_tax">0.00</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3 flex justify-between items-center">
+                            <span class="text-base font-bold text-gray-900">Grand Total</span>
+                            <span class="text-xl font-bold text-blue-600" id="summary_grand_total">0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. Save Button -->
+            <div class="flex justify-end pt-5">
+                <button type="submit"
+                    class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Save Order (Mockup)
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Search Person Modal -->
+    <div id="personSearchModal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                onclick="closePersonSearch()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Search Person</h3>
+                        <div class="mt-2">
+                            <input type="text" id="personSearchInput"
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                                placeholder="Enter Name or Citizen ID...">
+                            <button type="button" onclick="performPersonSearch()"
+                                class="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:text-sm">
+                                Search
+                            </button>
+                        </div>
+                        <div class="mt-4 text-left max-h-60 overflow-y-auto" id="personSearchResults"></div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6">
+                    <button type="button"
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:text-sm"
+                        onclick="closePersonSearch()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Product Search Dropdown -->
+    <div id="globalProductSuggestions"
+        class="hidden absolute z-50 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+    </div>
+
+    <script src="/js/order-form.js"></script>
+    <%- include('layout-footer') %>

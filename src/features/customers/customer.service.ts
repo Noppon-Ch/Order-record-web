@@ -14,7 +14,7 @@ export class CustomerService {
         } : undefined);
         const { data, error } = await supabase
             .from('customers')
-            .select('customer_id')
+            .select('*')
             .eq('customer_citizen_id', customer_citizen_id)
             .maybeSingle();
         if (error) {

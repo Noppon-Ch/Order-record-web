@@ -7,7 +7,7 @@ export interface Product {
   product_name_en: string | null;
   color_th: string | null;
   color_en: string | null;
-  Size: string | null; // Note: Upper CamelCase as per SQL
+  product_size: string | null; // แก้ไขชื่อจาก Size เป็น product_size
   
   // Price
   price_per_unit: number | null; // bigint -> number
