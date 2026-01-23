@@ -19,7 +19,8 @@
         <!-- Menu items - Only visible if logged in (user exists) -->
         <% if (typeof user !=='undefined' && user) { %>
             <ul class="hidden md:flex space-x-8 items-center font-medium text-gray-600">
-                <li><a href="/customers" class="hover:text-blue-600 transition-colors duration-200">รายชื่อลูกค้า</a>
+                <li><a href="/customer/list"
+                        class="hover:text-blue-600 transition-colors duration-200">รายชื่อลูกค้า</a>
                 </li>
                 <li><a href="/customer/add" class="hover:text-blue-600 transition-colors duration-200">เพิ่มลูกค้า</a>
                 </li>
@@ -36,18 +37,18 @@
                 <!-- <div style="display:none">user_avatar_url: <%= user.user_avatar_url %></div> -->
                 <a href="/user/setting"
                     class="hidden sm:flex items-center gap-3 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                    <% if (user && typeof user.user_avatar_url !== 'undefined' && user.user_avatar_url) { %>
+                    <% if (user && typeof user.user_avatar_url !=='undefined' && user.user_avatar_url) { %>
                         <img src="<%= user.user_avatar_url %>" alt="Profile"
                             class="w-8 h-8 rounded-full border border-gray-200 object-cover shadow-sm">
-                    <% } else { %>
-                        <div
-                            class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                            <%= user && user.user_full_name ? user.user_full_name.charAt(0).toUpperCase() : 'U' %>
-                        </div>
-                    <% } %>
-                    <span class="text-sm font-semibold text-gray-700 max-w-[100px] truncate">
-                        <%= user && user.user_full_name || 'User' %>
-                    </span>
+                        <% } else { %>
+                            <div
+                                class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                                <%= user && user.user_full_name ? user.user_full_name.charAt(0).toUpperCase() : 'U' %>
+                            </div>
+                            <% } %>
+                                <span class="text-sm font-semibold text-gray-700 max-w-[100px] truncate">
+                                    <%= user && user.user_full_name || 'User' %>
+                                </span>
                 </a>
 
                 <a href="/auth/logout"

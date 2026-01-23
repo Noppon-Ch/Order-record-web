@@ -108,6 +108,111 @@ export class CustomerService {
 
         return data;
     }
+
+    async updateCustomer(customerId: string, data: Partial<CreateCustomerDTO>, accessToken?: string) {
+        // Sanitize empty strings to null for optional fields
+        const sanitizedData = Object.fromEntries(
+            Object.entries(data).map(([key, value]) => [key, value === '' ? null : value])
+        );
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data: customer, error } = await supabase
+            .from('customers')
+            .update(sanitizedData)
+            .eq('customer_id', customerId)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Error updating customer:', error);
+            throw new Error(error.message);
+        }
+
+        return customer;
+        return customer;
+    }
+
+    async findAll(limit: number = 20, offset: number = 0, search?: string, accessToken?: string) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        let query = supabase
+            .from('customers')
+            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id')
+            .range(offset, offset + limit - 1);
+
+        if (search) {
+            query = query.or(`customer_citizen_id.ilike.%${search}%,customer_fname_th.ilike.%${search}%,customer_lname_th.ilike.%${search}%`);
+        }
+
+        // Order by created_at desc to show newest first
+        query = query.order('customer_created_at', { ascending: false });
+
+        const { data: customers, error } = await query;
+
+        if (error) {
+            console.error('Error fetching customers:', error);
+            throw new Error('Database error fetching customers.');
+        }
+
+        if (!customers || customers.length === 0) {
+            return [];
+        }
+
+        // Fetch recommender names
+        const recommenderIds = customers
+            .map((c: any) => c.customer_recommender_id)
+            .filter((id: string) => id && id.length > 0);
+
+        const uniqueRecommenderIds = [...new Set(recommenderIds)];
+
+        if (uniqueRecommenderIds.length > 0) {
+            const { data: recommenders, error: recError } = await supabase
+                .from('customers')
+                .select('customer_citizen_id, customer_fname_th, customer_lname_th')
+                .in('customer_citizen_id', uniqueRecommenderIds);
+
+            if (!recError && recommenders) {
+                const recommenderMap = new Map();
+                recommenders.forEach((rec: any) => {
+                    recommenderMap.set(rec.customer_citizen_id, `${rec.customer_fname_th} ${rec.customer_lname_th}`);
+                });
+
+                // Attach names
+                return customers.map((c: any) => ({
+                    ...c,
+                    recommender_name: recommenderMap.get(c.customer_recommender_id) || '-'
+                }));
+            }
+        }
+
+        return customers.map((c: any) => ({
+            ...c,
+            recommender_name: '-'
+        }));
+    }
+
+    async deleteCustomer(customerId: string, accessToken?: string) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { error } = await supabase
+            .from('customers')
+            .delete()
+            .eq('customer_id', customerId);
+
+        if (error) {
+            console.error('Error deleting customer:', error);
+            throw new Error('Database error deleting customer.');
+        }
+
+        return true;
+    }
 }
 
 export const customerService = new CustomerService();

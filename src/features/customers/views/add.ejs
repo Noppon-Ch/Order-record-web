@@ -1,197 +1,201 @@
-<%- include('main', { body: ` <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+<%- include('layout-header') %>
+    <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
 
-    <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Add New Customer</h1>
-        <p class="mt-2 text-sm text-gray-500">Register a new customer into the system.</p>
-    </div>
-
-    <form action="/customer" method="POST"
-        class="space-y-8 divide-y divide-gray-200 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-
-        <!-- General Info -->
-        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลทั่วไป</h2>
-            </div>
-
-            <div class="sm:col-span-3">
-                <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร *</label>
-                <div class="mt-1">
-                    <input type="date" name="customer_reg_date" id="customer_reg_date" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
-
-            <div class="sm:col-span-3">
-                <label for="customer_position" class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
-                <select id="customer_position" name="customer_position" required
-                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    <option value="BM" selected>BM</option>
-                    <option value="AG">AG</option>
-                    <option value="SFAG">SFAG</option>
-                    <option value="SAG">SAG</option>
-                </select>
-            </div>
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Add New Customer</h1>
+            <p class="mt-2 text-sm text-gray-500">Register a new customer into the system.</p>
         </div>
 
-        <!-- Personal Info & Address -->
-        <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลส่วนตัวและที่อยู่</h2>
-            </div>
+        <form action="/customer" method="POST"
+            class="space-y-8 divide-y divide-gray-200 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
 
-            <div class="sm:col-span-3">
-                <label for="customer_fname_th" class="block text-sm font-medium text-gray-700">ชื่อภาษาไทย *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_fname_th" id="customer_fname_th" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+            <!-- General Info -->
+            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                <div class="sm:col-span-6">
+                    <h2 class="text-xl font-semibold text-gray-900">ข้อมูลทั่วไป</h2>
                 </div>
-            </div>
-            <div class="sm:col-span-3">
-                <label for="customer_lname_th" class="block text-sm font-medium text-gray-700">นามสกุลภาษาไทย *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_lname_th" id="customer_lname_th" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
 
-            <div class="sm:col-span-3">
-                <label for="customer_fname_en" class="block text-sm font-medium text-gray-700">First Name
-                    (English)</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_fname_en" id="customer_fname_en"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                <div class="sm:col-span-3">
+                    <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร *</label>
+                    <div class="mt-1">
+                        <input type="date" name="customer_reg_date" id="customer_reg_date" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
                 </div>
-            </div>
-            <div class="sm:col-span-3">
-                <label for="customer_lname_en" class="block text-sm font-medium text-gray-700">Last Name
-                    (English)</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_lname_en" id="customer_lname_en"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+
+                <div class="sm:col-span-3">
+                    <label for="customer_position" class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+                    <select id="customer_position" name="customer_position" required
+                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="BM" selected>BM</option>
+                        <option value="AG">AG</option>
+                        <option value="SFAG">SFAG</option>
+                        <option value="SAG">SAG</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="sm:col-span-2">
-                <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ *</label>
-                <select id="customer_gender" name="customer_gender" required
-                    class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    <option value="">เลือก...</option>
-                    <option value="ชาย">ชาย</option>
-                    <option value="หญิง">หญิง</option>
-                </select>
-            </div>
-            <div class="sm:col-span-2">
-                <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_nationality" id="customer_nationality" required value="ไทย"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+            <!-- Personal Info & Address -->
+            <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                <div class="sm:col-span-6">
+                    <h2 class="text-xl font-semibold text-gray-900">ข้อมูลส่วนตัวและที่อยู่</h2>
                 </div>
-            </div>
-            <div class="sm:col-span-2">
-                <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด *</label>
-                <div class="mt-1">
-                    <input type="date" name="customer_birthdate" id="customer_birthdate" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+
+                <div class="sm:col-span-3">
+                    <label for="customer_fname_th" class="block text-sm font-medium text-gray-700">ชื่อภาษาไทย *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_fname_th" id="customer_fname_th" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="customer_lname_th" class="block text-sm font-medium text-gray-700">นามสกุลภาษาไทย
+                        *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_lname_th" id="customer_lname_th" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label for="customer_fname_en" class="block text-sm font-medium text-gray-700">First Name
+                        (English)</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_fname_en" id="customer_fname_en"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="customer_lname_en" class="block text-sm font-medium text-gray-700">Last Name
+                        (English)</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_lname_en" id="customer_lname_en"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ *</label>
+                    <select id="customer_gender" name="customer_gender" required
+                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="">เลือก...</option>
+                        <option value="ชาย">ชาย</option>
+                        <option value="หญิง">หญิง</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_nationality" id="customer_nationality" required value="ไทย"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด
+                        *</label>
+                    <div class="mt-1">
+                        <input type="date" name="customer_birthdate" id="customer_birthdate" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label for="customer_citizen_id" class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชน
+                        *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_citizen_id" id="customer_citizen_id" required
+                            pattern="\\d{13}" maxlength="13" inputmode="numeric"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                            placeholder="13 หลัก">
+                    </div>
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="customer_tax_id"
+                        class="block text-sm font-medium text-gray-700">เลขประจำตัวผู้เสียภาษี</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_tax_id" id="customer_tax_id" pattern="\\d{13}" maxlength="13"
+                            inputmode="numeric"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                            placeholder="13 หลัก">
+                    </div>
+                </div>
+
+                <div class="sm:col-span-6">
+                    <label for="customer_address1" class="block text-sm font-medium text-gray-700">ที่อยู่ (บ้านเลขที่
+                        หมู่
+                        ซอย ถนน) *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_address1" id="customer_address1" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+                <div class="sm:col-span-6">
+                    <label for="customer_address2" class="block text-sm font-medium text-gray-700">แขวง/ตำบล เขต/อำเภอ
+                        จังหวัด *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_address2" id="customer_address2" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                            placeholder="แขวง/ตำบล เขต/อำเภอ จังหวัด">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์ *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_zipcode" id="customer_zipcode" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ *</label>
+                    <div class="mt-1">
+                        <input type="text" name="customer_phone" id="customer_phone" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
                 </div>
             </div>
 
-            <div class="sm:col-span-3">
-                <label for="customer_citizen_id" class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชน
-                    *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_citizen_id" id="customer_citizen_id" required pattern="\\d{13}"
-                        maxlength="13" inputmode="numeric"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="13 หลัก">
+            <!-- Referrer Info -->
+            <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                <div class="sm:col-span-6">
+                    <h2 class="text-xl font-semibold text-gray-900">ข้อมูลผู้แนะนำ</h2>
                 </div>
-            </div>
-            <div class="sm:col-span-3">
-                <label for="customer_tax_id"
-                    class="block text-sm font-medium text-gray-700">เลขประจำตัวผู้เสียภาษี</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_tax_id" id="customer_tax_id" pattern="\\d{13}" maxlength="13"
-                        inputmode="numeric"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="13 หลัก">
+                <div class="sm:col-span-3">
+                    <label for="referrer_citizen_id"
+                        class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชนผู้แนะนำ *</label>
+                    <div class="mt-1 flex gap-2">
+                        <input type="text" name="referrer_citizen_id" id="referrer_citizen_id" pattern="\\d{13}"
+                            required maxlength="13" inputmode="numeric"
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                            placeholder="13 หลัก">
+                        <button type="button" onclick="openSearchModal()"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Search
+                        </button>
+                    </div>
+                </div>
+                <div class="sm:col-span-3">
+                    <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ
+                        *</label>
+                    <div class="mt-1">
+                        <input type="text" name="referrer_name" id="referrer_name" required
+                            class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    </div>
                 </div>
             </div>
 
-            <div class="sm:col-span-6">
-                <label for="customer_address1" class="block text-sm font-medium text-gray-700">ที่อยู่ (บ้านเลขที่ หมู่
-                    ซอย ถนน) *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_address1" id="customer_address1" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
-            <div class="sm:col-span-6">
-                <label for="customer_address2" class="block text-sm font-medium text-gray-700">แขวง/ตำบล เขต/อำเภอ
-                    จังหวัด *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_address2" id="customer_address2" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="แขวง/ตำบล เขต/อำเภอ จังหวัด">
-                </div>
-            </div>
-            <div class="sm:col-span-2">
-                <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์ *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_zipcode" id="customer_zipcode" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
-            <div class="sm:col-span-2">
-                <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ *</label>
-                <div class="mt-1">
-                    <input type="text" name="customer_phone" id="customer_phone" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
-        </div>
-
-        <!-- Referrer Info -->
-        <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-            <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลผู้แนะนำ</h2>
-            </div>
-            <div class="sm:col-span-3">
-                <label for="referrer_citizen_id"
-                    class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชนผู้แนะนำ *</label>
-                <div class="mt-1 flex gap-2">
-                    <input type="text" name="referrer_citizen_id" id="referrer_citizen_id" pattern="\\d{13}" required
-                        maxlength="13" inputmode="numeric"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                        placeholder="13 หลัก">
-                    <button type="button" onclick="openSearchModal()"
-                        class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Search
+            <div class="pt-5">
+                <div class="flex justify-end">
+                    <a href="/homepage"
+                        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save Customer
                     </button>
                 </div>
             </div>
-            <div class="sm:col-span-3">
-                <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ
-                    *</label>
-                <div class="mt-1">
-                    <input type="text" name="referrer_name" id="referrer_name" required
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                </div>
-            </div>
-        </div>
-
-        <div class="pt-5">
-            <div class="flex justify-end">
-                <a href="/homepage"
-                    class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Cancel
-                </a>
-                <button type="submit"
-                    class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Save Customer
-                </button>
-            </div>
-        </div>
-    </form>
+        </form>
     </div>
 
     <!-- Search Modal -->
@@ -233,4 +237,4 @@
 
     <script src="/js/referrer-search.js"></script>
     <script src="/js/address-autocomplete.js"></script>
-    ` }) %>
+    <%- include('layout-footer') %>

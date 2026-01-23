@@ -118,6 +118,89 @@ export class CustomerController {
 			res.status(500).json({ error: 'Address search failed' });
 		}
 	}
+
+	async showEditForm(req: Request, res: Response) {
+		try {
+			const customerId = req.params.customerId as string;
+			const customer = await customerService.findById(customerId, req.user?.access_token);
+			if (!customer) {
+				return res.redirect('/homepage');
+			}
+			res.render('edit', { user: req.user, customer, error: null });
+		} catch (err) {
+			console.error('Error showing edit form:', err);
+			res.redirect('/homepage');
+		}
+	}
+
+	async updateCustomer(req: Request, res: Response) {
+		const customerId = req.params.customerId as string;
+		const body = req.body;
+		const values: Partial<CreateCustomerDTO> = {
+			customer_citizen_id: body.customer_citizen_id,
+			customer_fname_th: body.customer_fname_th,
+			customer_lname_th: body.customer_lname_th,
+			customer_fname_en: body.customer_fname_en || undefined,
+			customer_lname_en: body.customer_lname_en || undefined,
+			customer_gender: body.customer_gender,
+			customer_nationality: body.customer_nationality,
+			customer_tax_id: body.customer_tax_id || undefined,
+			customer_phone: body.customer_phone,
+			customer_birthdate: body.customer_birthdate,
+			customer_registerdate: body.customer_reg_date,
+			customer_address1: body.customer_address1,
+			customer_address2: body.customer_address2,
+			customer_zipcode: body.customer_zipcode || undefined,
+			customer_position: body.customer_position,
+			customer_recommender_id: body.referrer_citizen_id || '',
+			// update record_by? maybe track last_modified_by
+		};
+
+		try {
+			await customerService.updateCustomer(customerId, values, req.user?.access_token);
+			return res.redirect(`/customer/add/finish/${customerId}`);
+		} catch (err: any) {
+			// Re-render form with error and existing data
+			const customer = { ...values, customer_id: customerId }; // Mock object for re-render
+			return res.status(400).render('edit', {
+				user: req.user,
+				customer,
+				error: err.message || 'Failed to update customer.'
+			});
+		}
+	}
+
+	async listCustomers(req: Request, res: Response) {
+		try {
+			const limit = 20;
+			const page = parseInt(req.query.page as string) || 1;
+			const offset = (page - 1) * limit;
+			const search = req.query.search as string;
+
+			const customers = await customerService.findAll(limit, offset, search, req.user?.access_token);
+
+			res.render('list', {
+				user: req.user,
+				customers,
+				currentPage: page,
+				searchQuery: search || ''
+			});
+		} catch (err) {
+			console.error('Error listing customers:', err);
+			res.redirect('/homepage');
+		}
+	}
+
+	async deleteCustomer(req: Request, res: Response) {
+		try {
+			const customerId = req.params.customerId as string;
+			await customerService.deleteCustomer(customerId, req.user?.access_token);
+			res.json({ success: true });
+		} catch (err) {
+			console.error('Error deleting customer:', err);
+			res.status(500).json({ error: 'Failed to delete customer' });
+		}
+	}
 }
 
 export const customerController = new CustomerController();

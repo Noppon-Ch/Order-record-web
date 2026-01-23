@@ -1,42 +1,44 @@
-<%- include('main', { body: ` <div class="max-w-xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-10 text-center">
+<%- include('layout-header') %>
+    <div class="max-w-xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-10 text-center">
 
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-            <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-        </div>
-
-        <h2 class="text-3xl font-extrabold text-gray-900 mb-2">ลงทะเบียนเรียบร้อย</h2>
-        <p class="text-gray-500 mb-8">บันทึกข้อมูลลูกค้าเข้าสู่ระบบแล้ว</p>
-
-        <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-100">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">ข้อมูลลูกค้า</h3>
-            <div class="text-2xl font-bold text-gray-900">
-                ${customer.customer_fname_th} ${customer.customer_lname_th}
-            </div>
-            ${customer.customer_id ? `
-            <div class="mt-2 text-sm text-gray-500">
-                ID: ${customer.customer_citizen_id}
-            </div>
-            ` : ''}
-        </div>
-
-        <div class="space-y-4">
-            <button type="button" disabled
-                class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all">
-                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                Download PDF (Coming Soon)
-            </button>
+            </div>
 
-            <a href="/homepage"
-                class="w-full inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all">
-                กลับหน้า Home
-            </a>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">ลงทะเบียนเรียบร้อย</h2>
+            <p class="text-gray-500 mb-8">บันทึกข้อมูลลูกค้าเข้าสู่ระบบแล้ว</p>
+
+            <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-100">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">ข้อมูลลูกค้า</h3>
+                <div class="text-2xl font-bold text-gray-900">
+                    <%= customer.customer_fname_th %>
+                        <%= customer.customer_lname_th %>
+                </div>
+                <% if (customer.customer_id) { %>
+                    <div class="mt-2 text-sm text-gray-500">
+                        ID: <%= customer.customer_citizen_id %>
+                    </div>
+                    <% } %>
+            </div>
+
+            <div class="space-y-4">
+                <button type="button" disabled
+                    class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all">
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF (Coming Soon)
+                </button>
+
+                <a href="/homepage"
+                    class="w-full inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all">
+                    กลับหน้า Home
+                </a>
+            </div>
         </div>
     </div>
-    </div>
-    ` }) %>
+    <%- include('layout-footer') %>
