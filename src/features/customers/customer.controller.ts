@@ -104,6 +104,20 @@ export class CustomerController {
 			res.status(500).json({ error: 'Search failed' });
 		}
 	}
+
+	async searchAddress(req: Request, res: Response) {
+		try {
+			const query = req.query.q as string;
+			if (!query) {
+				return res.json([]);
+			}
+			const results = await customerService.searchAddress(query, req.user?.access_token);
+			res.json(results);
+		} catch (err) {
+			console.error('Address search error:', err);
+			res.status(500).json({ error: 'Address search failed' });
+		}
+	}
 }
 
 export const customerController = new CustomerController();

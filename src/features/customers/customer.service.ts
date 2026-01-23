@@ -88,6 +88,26 @@ export class CustomerService {
 
         return data;
     }
+
+    async searchAddress(query: string, accessToken?: string) {
+        if (!query) return [];
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data, error } = await supabase
+            .from('zipcode_th')
+            .select('full_locate, zipcode')
+            .ilike('full_locate', `%${query}%`)
+            .limit(10);
+
+        if (error) {
+            console.error('Error searching address:', error);
+            throw new Error('Database error searching address.');
+        }
+
+        return data;
+    }
 }
 
 export const customerService = new CustomerService();

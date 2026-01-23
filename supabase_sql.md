@@ -41,11 +41,10 @@ CREATE TABLE public.customers (
   customer_zipcode text,
   customer_position text,
   customer_consent_status boolean DEFAULT false,
-  customer_recommender_id uuid,
+  customer_recommender_id text,
   customer_record_by_user_id uuid,
   customer_created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT customers_pkey PRIMARY KEY (customer_id),
-  CONSTRAINT customers_customer_recommender_id_fkey FOREIGN KEY (customer_recommender_id) REFERENCES public.customers(customer_id),
   CONSTRAINT customers_customer_record_by_user_id_fkey FOREIGN KEY (customer_record_by_user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.order_items (
@@ -119,4 +118,12 @@ CREATE TABLE public.user_profiles (
   user_role text,
   CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id),
   CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.zipcode_th (
+  province text,
+  district text,
+  subdistrict text,
+  zipcode bigint NOT NULL,
+  full_locate text NOT NULL,
+  CONSTRAINT zipcode_th_pkey PRIMARY KEY (full_locate)
 );
