@@ -68,6 +68,26 @@ export class CustomerService {
 
         return customer;
     }
+
+    async searchCustomers(query: string, accessToken?: string) {
+        if (!query) return [];
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data, error } = await supabase
+            .from('customers')
+            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th')
+            .or(`customer_citizen_id.ilike.%${query}%,customer_fname_th.ilike.%${query}%,customer_lname_th.ilike.%${query}%`)
+            .limit(10);
+
+        if (error) {
+            console.error('Error searching customers:', error);
+            throw new Error('Database error searching customers.');
+        }
+
+        return data;
+    }
 }
 
 export const customerService = new CustomerService();
