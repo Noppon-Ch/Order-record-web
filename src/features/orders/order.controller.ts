@@ -41,6 +41,39 @@ export class OrderController {
             });
         }
     }
+
+    // Show Continue Order Page (Type C)
+    async showContinueOrderPage(req: Request, res: Response) {
+        try {
+            const customerId = req.query.customerId as string;
+            let customer = null;
+            let recommender = null;
+            const accessToken = (req.user as any)?.access_token;
+
+            if (customerId) {
+                if (customerId.length === 13 && /^\d+$/.test(customerId)) {
+                    customer = await customerService.findByCitizenId(customerId, accessToken);
+                } else {
+                    customer = await customerService.findById(customerId, accessToken);
+                }
+
+                if (customer && customer.customer_recommender_id) {
+                    recommender = await customerService.findByCitizenId(customer.customer_recommender_id, accessToken);
+                }
+            }
+
+            res.render('continue', {
+                customer,
+                recommender,
+                user: req.user
+            });
+        } catch (error) {
+            console.error('Error showing continue order page:', error);
+            res.status(500).render('error', {
+                message: error instanceof Error ? error.message : 'Unknown error loading continue order page'
+            });
+        }
+    }
     // Create New Order
     async createOrder(req: Request, res: Response) {
         try {

@@ -60,8 +60,43 @@ async function performPersonSearch() {
     }
 }
 
-function selectPerson(person) {
-    if (currentSearchType === 'referrer') {
+async function selectPerson(person) {
+    if (currentSearchType === 'buyer') {
+        try {
+            // Fetch full details
+            const response = await fetch(`/customer/api/${person.customer_id}`);
+            if (!response.ok) throw new Error('Failed to fetch details');
+            const data = await response.json();
+            const customer = data.customer;
+            const recommender = data.recommender;
+
+            if (customer) {
+                document.getElementById('buyer_id').value = customer.customer_citizen_id;
+                document.getElementById('buyer_name').value = `${customer.customer_fname_th} ${customer.customer_lname_th}`;
+                document.getElementById('buyer_position').value = customer.customer_position || '';
+                document.getElementById('customer_uuid').value = customer.customer_id;
+
+                // Update shipping address
+                const address = `${customer.customer_fname_th} ${customer.customer_lname_th}\n${customer.customer_phone || ''}\n${customer.customer_address1 || ''} ${customer.customer_address2 || ''} ${customer.customer_zipcode || ''}`;
+                document.getElementById('shipping_address').value = address;
+
+                // Update Referrer
+                if (recommender) {
+                    document.getElementById('referrer_id').value = recommender.customer_citizen_id;
+                    document.getElementById('referrer_name').value = `${recommender.customer_fname_th} ${recommender.customer_lname_th}`;
+                    document.getElementById('referrer_uuid').value = recommender.customer_id;
+                } else {
+                    document.getElementById('referrer_id').value = '';
+                    document.getElementById('referrer_name').value = '';
+                    document.getElementById('referrer_uuid').value = '';
+                }
+            }
+        } catch (error) {
+            console.error('Error selecting buyer:', error);
+            alert('Failed to load customer details.');
+        }
+
+    } else if (currentSearchType === 'referrer') {
         document.getElementById('referrer_id').value = person.customer_citizen_id;
         document.getElementById('referrer_name').value = `${person.customer_fname_th} ${person.customer_lname_th}`;
         document.getElementById('referrer_uuid').value = person.customer_id;
@@ -270,8 +305,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Optional Relations
             order_recommender_id: document.getElementById('referrer_uuid').value || null,
-            order_assistant_id: document.getElementById('assistant_uuid').value || null,
-            position: document.getElementById('buyer_position').value || null
+            order_assistant_id: document.getElementById('assistant_uuid') ? document.getElementById('assistant_uuid').value : null,
+            position: document.getElementById('buyer_position').value || null,
+            order_type: document.getElementById('order_type') ? document.getElementById('order_type').value : 'f_order'
         };
 
         // Collect Items

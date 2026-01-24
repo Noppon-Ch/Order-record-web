@@ -131,8 +131,7 @@
                                                                     </span>
                                                                     New Order
                                                                 </a>
-                                                                <a href="#"
-                                                                    onclick="mockAction('Order 2', '<%= customer.customer_fname_th %>')"
+                                                                <a href="/orders/continue?customerId=<%= customer.customer_id %>"
                                                                     class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                                                     role="menuitem">
                                                                     <span class="mr-3 text-indigo-500">
@@ -247,15 +246,43 @@
 
         <script src="/js/customer-actions.js"></script>
         <script>
-            // Simple script to handle dropdown toggling
+            // Script to handle dropdown toggling with fixed positioning to avoid overflow clipping
             function toggleDropdown(id) {
                 const dropdown = document.getElementById('dropdown-' + id);
-                // Close others
+                const button = document.getElementById('options-menu-' + id);
+                const isHidden = dropdown.classList.contains('hidden');
+
+                // Close all open dropdowns first
                 document.querySelectorAll('[id^=dropdown-]').forEach(el => {
-                    if (el.id !== 'dropdown-' + id) el.classList.add('hidden');
+                    el.classList.add('hidden');
+                    // Reset inline styles
+                    el.style.position = '';
+                    el.style.top = '';
+                    el.style.left = '';
+                    el.style.right = '';
+                    el.style.zIndex = '';
                 });
 
-                dropdown.classList.toggle('hidden');
+                // If it was hidden before we closed everything, now open it
+                if (isHidden) {
+                    dropdown.classList.remove('hidden');
+
+                    const rect = button.getBoundingClientRect();
+
+                    // Apply fixed positioning
+                    dropdown.style.position = 'fixed';
+                    dropdown.style.zIndex = '50'; // Ensure it's on top
+                    dropdown.style.right = 'auto'; // Override the right-0 class
+
+                    // Calculate position
+                    // Top: button bottom
+                    dropdown.style.top = (rect.bottom + 5) + 'px'; // +5 for a small gap
+
+                    // Left: button right - dropdown width
+                    // We need to measure dropdown width. It is visible now so offsetWidth works.
+                    const dropdownWidth = dropdown.offsetWidth;
+                    dropdown.style.left = (rect.right - dropdownWidth) + 'px';
+                }
             }
 
             // Close dropdowns when clicking outside
@@ -266,8 +293,19 @@
                 if (!isButton && !isDropdown) {
                     document.querySelectorAll('[id^=dropdown-]').forEach(el => {
                         el.classList.add('hidden');
+                        el.style.position = '';
                     });
                 }
             });
+
+            // Close dropdowns on scroll to prevent detachment
+            window.addEventListener('scroll', function () {
+                document.querySelectorAll('[id^=dropdown-]').forEach(el => {
+                    if (!el.classList.contains('hidden')) {
+                        el.classList.add('hidden');
+                        el.style.position = '';
+                    }
+                });
+            }, true);
         </script>
         <%- include('layout-footer') %>

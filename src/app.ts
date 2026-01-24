@@ -80,5 +80,6 @@ app.use('/products', productRoutes);
 
 import orderRoutes from './features/orders/order.routes.js';
 app.use('/orders', orderRoutes);
+app.use('/order', orderRoutes);
 
 export default app;

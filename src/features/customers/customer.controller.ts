@@ -201,6 +201,30 @@ export class CustomerController {
 			res.status(500).json({ error: 'Failed to delete customer' });
 		}
 	}
+	async getCustomerDetails(req: Request, res: Response) {
+		try {
+			const customerId = req.params.customerId as string;
+			const customer = await customerService.findById(customerId, req.user?.access_token);
+
+			if (!customer) {
+				return res.status(404).json({ error: 'Customer not found' });
+			}
+
+			let recommender = null;
+			if (customer.customer_recommender_id) {
+				// Assuming recommender_id is citizen_id based on previous usage
+				recommender = await customerService.findByCitizenId(customer.customer_recommender_id, req.user?.access_token);
+			}
+
+			res.json({
+				customer,
+				recommender
+			});
+		} catch (err) {
+			console.error('Error fetching customer details:', err);
+			res.status(500).json({ error: 'Failed to fetch customer details' });
+		}
+	}
 }
 
 export const customerController = new CustomerController();

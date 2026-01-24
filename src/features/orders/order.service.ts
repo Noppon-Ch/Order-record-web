@@ -30,7 +30,7 @@ export class OrderService {
             order_price_before_tax: Math.round((order.order_price_before_tax || 0) * 100),
             order_tax: Math.round((order.order_tax || 0) * 100),
             order_final_price: Math.round((order.order_final_price || 0) * 100),
-            order_type: 'f_order',
+            order_type: order.order_type || 'f_order',
             order_created_at: new Date().toISOString()
         };
 

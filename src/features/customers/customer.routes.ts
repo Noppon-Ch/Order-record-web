@@ -13,6 +13,7 @@ router.get('/add/finish/:customerId', isAuthenticated, customerController.showFi
 // Handle add customer POST
 router.get('/search', isAuthenticated, customerController.search.bind(customerController));
 router.get('/search-address', isAuthenticated, customerController.searchAddress.bind(customerController));
+router.get('/api/:customerId', isAuthenticated, customerController.getCustomerDetails.bind(customerController));
 router.post('/', isAuthenticated, customerController.addCustomer.bind(customerController));
 
 // Edit customer
