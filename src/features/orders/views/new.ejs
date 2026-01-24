@@ -19,6 +19,7 @@
                         <input type="date" name="order_date" id="order_date"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 p-2 border"
                             value="<%= new Date().toISOString().split('T')[0] %>">
+                        <input type="hidden" id="customer_uuid" value="<%= customer ? customer.customer_id : '' %>">
                     </div>
 
                     <!-- 2.1 Buyer ID -->
@@ -60,6 +61,8 @@
                                 class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                                 placeholder="13 Digits"
                                 value="<%= recommender ? recommender.customer_citizen_id : '' %>">
+                            <input type="hidden" id="referrer_uuid"
+                                value="<%= recommender ? recommender.customer_id : '' %>">
                         </div>
                         <div>
                             <label for="referrer_name" class="block text-sm font-medium text-gray-700">Name</label>
@@ -81,6 +84,7 @@
                                 <input type="text" name="assistant_id" id="assistant_id" maxlength="13"
                                     class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 border"
                                     placeholder="13 Digits">
+                                <input type="hidden" id="assistant_uuid">
                             </div>
                             <div class="flex items-end">
                                 <button type="button" onclick="openPersonSearch('assistant')"
@@ -185,7 +189,7 @@
             <div class="flex justify-end pt-5">
                 <button type="submit"
                     class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Save Order (Mockup)
+                    Save Order
                 </button>
             </div>
 

@@ -75,6 +75,7 @@ CREATE TABLE public.orders (
   order_final_price integer DEFAULT 0,
   order_record_by_user_id uuid,
   order_created_at timestamp with time zone DEFAULT now(),
+  order_type text,
   CONSTRAINT orders_pkey PRIMARY KEY (order_id),
   CONSTRAINT orders_order_record_by_user_id_fkey FOREIGN KEY (order_record_by_user_id) REFERENCES auth.users(id),
   CONSTRAINT orders_order_customer_id_fkey FOREIGN KEY (order_customer_id) REFERENCES public.customers(customer_id),

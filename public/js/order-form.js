@@ -64,9 +64,11 @@ function selectPerson(person) {
     if (currentSearchType === 'referrer') {
         document.getElementById('referrer_id').value = person.customer_citizen_id;
         document.getElementById('referrer_name').value = `${person.customer_fname_th} ${person.customer_lname_th}`;
+        document.getElementById('referrer_uuid').value = person.customer_id;
     } else if (currentSearchType === 'assistant') {
         document.getElementById('assistant_id').value = person.customer_citizen_id;
         document.getElementById('assistant_name').value = `${person.customer_fname_th} ${person.customer_lname_th}`;
+        document.getElementById('assistant_uuid').value = person.customer_id;
     }
     closePersonSearch();
 }
@@ -97,6 +99,9 @@ function addProductRow() {
         </td>
         <td class="px-3 py-4 whitespace-nowrap">
             <input type="text" name="product_name[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-gray-500">
+            <input type="hidden" name="product_real_name[]">
+            <input type="hidden" name="product_color[]">
+            <input type="hidden" name="product_size[]">
         </td>
         <td class="px-3 py-4 whitespace-nowrap">
             <input type="number" name="price[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-right text-gray-500">
@@ -187,6 +192,9 @@ function selectProduct(product) {
     input.value = product.product_code;
 
     row.querySelector('input[name="product_name[]"]').value = `${product.product_name_th} (${product.color_th}/${product.product_size})`;
+    row.querySelector('input[name="product_real_name[]"]').value = product.product_name_th;
+    row.querySelector('input[name="product_color[]"]').value = product.color_th;
+    row.querySelector('input[name="product_size[]"]').value = product.product_size;
     row.querySelector('input[name="price[]"]').value = product.price_per_unit;
 
     document.getElementById('globalProductSuggestions').classList.add('hidden');
@@ -246,8 +254,72 @@ document.addEventListener('DOMContentLoaded', () => {
     addProductRow();
 
     // Form Submit Mockup
-    document.getElementById('orderForm').addEventListener('submit', (e) => {
+    // Form Submit
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert('This is a mockup. Order valid for saving!');
+
+        // Collect Data
+        const orderData = {
+            order_customer_id: document.getElementById('customer_uuid').value,
+            order_date: document.getElementById('order_date').value,
+            order_total_amount: parseFloat(document.getElementById('summary_subtotal').innerText.replace(/,/g, '')),
+            order_discount: parseFloat(document.getElementById('summary_discount').innerText.replace(/,/g, '')),
+            order_price_before_tax: parseFloat(document.getElementById('summary_after_discount').innerText.replace(/,/g, '')),
+            order_tax: parseFloat(document.getElementById('summary_tax').innerText.replace(/,/g, '')),
+            order_final_price: parseFloat(document.getElementById('summary_grand_total').innerText.replace(/,/g, '')),
+
+            // Optional Relations
+            order_recommender_id: document.getElementById('referrer_uuid').value || null,
+            order_assistant_id: document.getElementById('assistant_uuid').value || null,
+            position: document.getElementById('buyer_position').value || null
+        };
+
+        // Collect Items
+        const items = [];
+        const rows = document.querySelectorAll('#productTableBody tr');
+        rows.forEach(row => {
+            const code = row.querySelector('input[name="product_code[]"]').value;
+            if (code) {
+                const realName = row.querySelector('input[name="product_real_name[]"]').value;
+                const color = row.querySelector('input[name="product_color[]"]').value;
+                const size = row.querySelector('input[name="product_size[]"]').value;
+
+                items.push({
+                    product_code: code,
+                    product_name: realName,
+                    product_color: color,
+                    product_size: size,
+                    quantity: parseInt(row.querySelector('input[name="quantity[]"]').value),
+                    product_price: parseFloat(row.querySelector('input[name="price[]"]').value),
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            alert('Please add at least one product.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/orders/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ order: orderData, items })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Order saved successfully!');
+                window.location.href = '/orders/history'; // Redirect to history or detail
+            } else {
+                alert('Error saving order: ' + (result.details || result.error));
+            }
+        } catch (error) {
+            console.error('Error submitting order:', error);
+            alert('An unexpected error occurred.');
+        }
     });
 });

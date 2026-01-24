@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { customerService } from '../customers/customer.service.js';
+import { orderService } from './order.service.js';
 
 export class OrderController {
 
@@ -37,6 +38,79 @@ export class OrderController {
             // Show detailed error message
             res.status(500).render('error', {
                 message: error instanceof Error ? error.message : 'Unknown error loading new order page'
+            });
+        }
+    }
+    // Create New Order
+    async createOrder(req: Request, res: Response) {
+        try {
+            const { order, items } = req.body;
+            const accessToken = (req.user as any)?.access_token;
+            const userId = (req.user as any)?.id;
+
+            console.log('[OrderController] Creating order for user:', userId);
+
+            // Add recorder info
+            const orderData = {
+                ...order,
+                order_record_by_user_id: userId
+            };
+
+            const newOrder = await orderService.createOrder({ order: orderData, items }, accessToken);
+
+            res.status(201).json({ message: 'Order created successfully', orderId: newOrder.order_id });
+        } catch (error) {
+            console.error('[OrderController] Error creating order:', error);
+            res.status(500).json({
+                error: 'Failed to create order',
+                details: error instanceof Error ? error.message : 'Unknown error'
+            });
+        }
+    }
+
+    // Show Order History Page
+    async showHistoryPage(req: Request, res: Response) {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const query = req.query.q as string || '';
+            const accessToken = (req.user as any)?.access_token;
+
+            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken);
+
+            res.render('history', {
+                orders: orders || [],
+                currentPage: page,
+                totalPages: Math.ceil((count || 0) / 10),
+                query,
+                user: req.user
+            });
+        } catch (error) {
+            console.error('[OrderController] Error showing history page:', error);
+            res.status(500).render('error', {
+                message: error instanceof Error ? error.message : 'Unknown error loading history page'
+            });
+        }
+    }
+
+    // Delete Order
+    async deleteOrder(req: Request, res: Response) {
+        try {
+            const orderId = req.params.id;
+            const accessToken = (req.user as any)?.access_token;
+
+            if (typeof orderId !== 'string') {
+                res.status(400).json({ success: false, message: 'Invalid order ID' });
+                return;
+            }
+
+            await orderService.deleteOrder(orderId, accessToken);
+
+            res.json({ success: true, message: 'Order deleted successfully' });
+        } catch (error) {
+            console.error('[OrderController] Error deleting order:', error);
+            res.status(500).json({
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error deleting order'
             });
         }
     }
