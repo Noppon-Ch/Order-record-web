@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { customerController } from './customer.controller.js';
+import { customerPdfController } from './customer-pdf.controller.js';
 import { isAuthenticated } from '../../shared/middlewares/auth.middleware.js';
 
 const router = Router();
@@ -23,5 +24,8 @@ router.post('/edit/:customerId', isAuthenticated, customerController.updateCusto
 // List customers
 router.get('/list', isAuthenticated, customerController.listCustomers.bind(customerController));
 router.post('/delete/:customerId', isAuthenticated, customerController.deleteCustomer.bind(customerController));
+
+// PDF Download
+router.get('/:customerId/pdf', isAuthenticated, customerPdfController.download.bind(customerPdfController));
 
 export default router;

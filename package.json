@@ -14,6 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@supabase/supabase-js": "^2.90.1",
     "dotenv": "^17.2.3",
     "ejs": "^4.0.1",
@@ -22,7 +23,8 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-line": "^0.0.4",
-    "passport-line-auth": "^0.2.9"
+    "passport-line-auth": "^0.2.9",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
