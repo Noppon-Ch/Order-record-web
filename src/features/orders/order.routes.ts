@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { orderController } from './order.controller.js';
+import { orderPdfController } from './order-pdf.controller.js';
 import { isAuthenticated } from '../../shared/middlewares/auth.middleware.js';
 
 const router = Router();
@@ -8,6 +9,9 @@ router.get('/first', isAuthenticated, orderController.showNewOrderPage.bind(orde
 router.get('/continue', isAuthenticated, orderController.showContinueOrderPage.bind(orderController));
 router.post('/create', isAuthenticated, orderController.createOrder.bind(orderController));
 router.get('/finish', isAuthenticated, orderController.showFinishPage.bind(orderController));
+// Mount PDF generation route
+router.get('/:orderId/pdf', isAuthenticated, orderPdfController.download.bind(orderPdfController));
+
 router.get('/history', isAuthenticated, orderController.showHistoryPage.bind(orderController));
 router.delete('/:id', isAuthenticated, orderController.deleteOrder.bind(orderController));
 

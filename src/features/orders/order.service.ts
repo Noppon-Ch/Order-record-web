@@ -148,19 +148,14 @@ export class OrderService {
         return { data, count };
     }
 
+
     async deleteOrder(orderId: string, accessToken?: string) {
         console.log('[OrderService] Deleting order:', orderId);
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
 
-        // Delete order items first (cascade usually handles this but good to be explicit or if cascade not set)
-        // Checking schema, if constraints valid, maybe cascade.
-        // Safer to try delete order directly if cascade is on, or items first.
-        // Constraint: orders_pkey PRIMARY KEY (order_id)
-        // Order items FK: order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id)
-        // If NO CASCADE, we must delete items first.
-
+        // Delete order items first
         await supabase.from('order_items').delete().eq('order_id', orderId);
 
         const { error } = await supabase
@@ -172,6 +167,23 @@ export class OrderService {
             console.error('[OrderService] Error deleting order:', error);
             throw new Error(`Failed to delete order: ${error.message}`);
         }
+    }
+
+    async getOrderItems(orderId: string, accessToken?: string) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data, error } = await supabase
+            .from('order_items')
+            .select('*')
+            .eq('order_id', orderId);
+
+        if (error) {
+            console.error('[OrderService] Error fetching order items:', error);
+            return [];
+        }
+        return data;
     }
 }
 
