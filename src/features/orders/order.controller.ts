@@ -28,7 +28,7 @@ export class OrderController {
             }
 
             // Pass customer data to view if found
-            res.render('new', {
+            res.render('first', {
                 customer,
                 recommender,
                 user: req.user // Pass logged in user info if needed

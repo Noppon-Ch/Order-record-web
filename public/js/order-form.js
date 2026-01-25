@@ -126,7 +126,7 @@ function addProductRow() {
     tr.innerHTML = `
         <td class="px-3 py-4 whitespace-nowrap relative">
             <input type="text" name="product_code[]" class="product-code-input shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-1 border uppercase" 
-                placeholder="Code" oninput="handleProductCodeInput(this)" onblur="hideProductSuggestionsDelayed()" autocomplete="off">
+                placeholder="Code" oninput="handleProductCodeInput(this)" onblur="hideProductSuggestionsDelayed(); handleProductCodeBlur(this)" autocomplete="off">
         </td>
         <td class="px-3 py-4 whitespace-nowrap">
             <input type="number" name="quantity[]" value="1" min="1" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-center"
@@ -288,15 +288,30 @@ window.addEventListener('resize', () => {
 document.addEventListener('DOMContentLoaded', () => {
     addProductRow();
 
-    // Form Submit Mockup
     // Form Submit
     document.getElementById('orderForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // 1. Validate General Info
+        const orderDate = document.getElementById('order_date').value;
+        const customerUuid = document.getElementById('customer_uuid').value;
+
+        if (!orderDate) {
+            alert('Please select an Order Date.');
+            document.getElementById('order_date').focus();
+            return;
+        }
+        if (!customerUuid) {
+            alert('Please select a Buyer (Customer).');
+            document.getElementById('buyer_id').focus(); // Or open search
+            return;
+        }
+
+
         // Collect Data
         const orderData = {
-            order_customer_id: document.getElementById('customer_uuid').value,
-            order_date: document.getElementById('order_date').value,
+            order_customer_id: customerUuid,
+            order_date: orderDate,
             order_total_amount: parseFloat(document.getElementById('summary_subtotal').innerText.replace(/,/g, '')),
             order_discount: parseFloat(document.getElementById('summary_discount').innerText.replace(/,/g, '')),
             order_price_before_tax: parseFloat(document.getElementById('summary_after_discount').innerText.replace(/,/g, '')),
@@ -310,29 +325,53 @@ document.addEventListener('DOMContentLoaded', () => {
             order_type: document.getElementById('order_type') ? document.getElementById('order_type').value : 'f_order'
         };
 
-        // Collect Items
+        // Collect Items & Validate Rows
         const items = [];
         const rows = document.querySelectorAll('#productTableBody tr');
-        rows.forEach(row => {
-            const code = row.querySelector('input[name="product_code[]"]').value;
-            if (code) {
-                const realName = row.querySelector('input[name="product_real_name[]"]').value;
-                const color = row.querySelector('input[name="product_color[]"]').value;
-                const size = row.querySelector('input[name="product_size[]"]').value;
+        let hasError = false;
+        let firstErrorRow = null;
 
+        rows.forEach(row => {
+            const codeInput = row.querySelector('input[name="product_code[]"]');
+            const code = codeInput.value.trim();
+            const realName = row.querySelector('input[name="product_real_name[]"]').value;
+
+            // Check for invalid rows (filled code but no valid product data OR empty code but other data filled? No, simpler: check if code is invalid)
+            // If code is present but product name is missing, it means lookup failed or wasn't done.
+            if (code && !realName) {
+                hasError = true;
+                codeInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                if (!firstErrorRow) firstErrorRow = row;
+            } else if (!code && rows.length > 1) {
+                // Optimization: If user leaves a row empty, do we block or ignore?
+                // User said: "จำเป็นต้องให้ผู้ใช้ลบ row ที่ไม่มีค่าออกก่อนส่งข้อมูล" (User must delete empty rows)
+                // So we treat empty rows as ERROR if they exist.
+                // EXCEPTION: Does "empty row" mean just code is empty? Yes.
+                hasError = true;
+                codeInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                if (!firstErrorRow) firstErrorRow = row;
+            }
+
+            if (code && realName) {
                 items.push({
                     product_code: code,
                     product_name: realName,
-                    product_color: color,
-                    product_size: size,
+                    product_color: row.querySelector('input[name="product_color[]"]').value,
+                    product_size: row.querySelector('input[name="product_size[]"]').value,
                     quantity: parseInt(row.querySelector('input[name="quantity[]"]').value),
                     product_price: parseFloat(row.querySelector('input[name="price[]"]').value),
                 });
             }
         });
 
+        if (hasError) {
+            alert('Please check your items. Remove empty rows or fix invalid product codes.');
+            if (firstErrorRow) firstErrorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
         if (items.length === 0) {
-            alert('Please add at least one product.');
+            alert('Please add at least one valid product.');
             return;
         }
 
@@ -359,3 +398,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// --- Auto-Fetch Logic ---
+async function handleProductCodeBlur(input) {
+    const code = input.value.trim().toUpperCase();
+    input.value = code; // Normalize
+
+    // If empty, reset row and return (or mark error if strict validation on blur needed? No, submit handles strict empty check)
+    if (!code) {
+        clearRowData(input.closest('tr'));
+        // We don't mark error here to allow user to just leave it empty until submit
+        input.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+        return;
+    }
+
+    // Check if already populated correctly
+    const row = input.closest('tr');
+    const existingName = row.querySelector('input[name="product_real_name[]"]').value;
+    // If we have a name, maybe we should check if code changed? 
+    // Ideally we store the 'last valid code' to avoid re-fetch.
+    // simpler: valid code -> fetch.
+
+    try {
+        const response = await fetch(`/products/search?q=${encodeURIComponent(code)}`);
+        const products = await response.json();
+
+        // Find EXACT match
+        const exactMatch = products.find(p => p.product_code === code);
+
+        if (exactMatch) {
+            selectProductForRow(exactMatch, row);
+            input.classList.remove('border-red-500', 'ring-1', 'ring-red-500'); // Clear error
+        } else {
+            // Not found
+            clearRowData(row);
+            // Mark error
+            input.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+            // We can also show a small toast or tooltip if needed, but red border is standard
+        }
+    } catch (e) {
+        console.error('Auto-fetch error', e);
+    }
+}
+
+function clearRowData(row) {
+    row.querySelector('input[name="product_name[]"]').value = '';
+    row.querySelector('input[name="product_real_name[]"]').value = '';
+    row.querySelector('input[name="product_color[]"]').value = '';
+    row.querySelector('input[name="product_size[]"]').value = '';
+    row.querySelector('input[name="price[]"]').value = '';
+    row.querySelector('input[name="total[]"]').value = '';
+    calculateTotals();
+}
+
+function selectProductForRow(product, row) {
+    row.querySelector('input[name="product_code[]"]').value = product.product_code;
+    row.querySelector('input[name="product_name[]"]').value = `${product.product_name_th} (${product.color_th}/${product.product_size})`;
+    row.querySelector('input[name="product_real_name[]"]').value = product.product_name_th;
+    row.querySelector('input[name="product_color[]"]').value = product.color_th;
+    row.querySelector('input[name="product_size[]"]').value = product.product_size;
+    row.querySelector('input[name="price[]"]').value = product.price_per_unit;
+    calculateRow(row);
+}
+

@@ -16,7 +16,8 @@
                 <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <!-- 1.1 Date -->
                     <div class="sm:col-span-2">
-                        <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date</label>
+                        <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date <span
+                                class="text-red-500">*</span></label>
                         <input type="date" name="order_date" id="order_date"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 p-2 border"
                             value="<%= new Date().toISOString().split('T')[0] %>">
@@ -28,7 +29,7 @@
                         <div class="flex gap-2">
                             <div class="flex-grow">
                                 <label for="buyer_id" class="block text-sm font-medium text-gray-700">Buyer Citizen
-                                    ID</label>
+                                    ID <span class="text-red-500">*</span></label>
                                 <input type="text" name="buyer_id" id="buyer_id" readonly
                                     class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                                     value="<%= customer ? customer.customer_citizen_id : '' %>">
@@ -48,7 +49,8 @@
 
                     <!-- 2.2 Buyer Name -->
                     <div class="sm:col-span-2">
-                        <label for="buyer_name" class="block text-sm font-medium text-gray-700">Buyer Name</label>
+                        <label for="buyer_name" class="block text-sm font-medium text-gray-700">Buyer Name <span
+                                class="text-red-500">*</span></label>
                         <input type="text" id="buyer_name" readonly
                             class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                             value="<%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th) : '' %>">
