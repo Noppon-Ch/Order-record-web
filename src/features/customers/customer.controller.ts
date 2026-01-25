@@ -126,7 +126,13 @@ export class CustomerController {
 			if (!customer) {
 				return res.redirect('/homepage');
 			}
-			res.render('edit', { user: req.user, customer, error: null });
+
+			let recommender = null;
+			if (customer.customer_recommender_id) {
+				recommender = await customerService.findByCitizenId(customer.customer_recommender_id, req.user?.access_token);
+			}
+
+			res.render('edit', { user: req.user, customer, recommender, error: null });
 		} catch (err) {
 			console.error('Error showing edit form:', err);
 			res.redirect('/homepage');

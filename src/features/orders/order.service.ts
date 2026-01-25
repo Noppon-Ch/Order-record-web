@@ -94,6 +94,10 @@ export class OrderService {
                 customers:orders_order_customer_id_fkey (
                     customer_fname_th,
                     customer_lname_th
+                ),
+                recommender:orders_order_recommender_id_fkey (
+                    customer_fname_th,
+                    customer_lname_th
                 )
             `, { count: 'exact' })
             .range(from, to)

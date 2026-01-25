@@ -105,6 +105,9 @@ async function selectPerson(person) {
         document.getElementById('assistant_name').value = `${person.customer_fname_th} ${person.customer_lname_th}`;
         document.getElementById('assistant_uuid').value = person.customer_id;
     }
+    if (currentSearchType === 'buyer') {
+        calculateTotals();
+    }
     closePersonSearch();
 }
 
@@ -261,9 +264,36 @@ function calculateTotals() {
     });
 
     // Discount Logic
+    // Discount Logic
     let discount = 0;
-    if (subtotal > 20000) {
-        discount = (subtotal - 20000) * 0.2;
+
+    const positionInput = document.getElementById('buyer_position');
+    const position = positionInput ? positionInput.value.toUpperCase().trim() : '';
+
+    const orderTypeInput = document.getElementById('order_type');
+    const orderType = orderTypeInput ? orderTypeInput.value : 'f_order';
+
+    if (position === 'SAG') {
+        discount = subtotal * 0.60;
+    } else if (position === 'SFAG') {
+        discount = subtotal * 0.50;
+    } else if (position === 'AG') {
+        discount = subtotal * 0.40;
+    } else if (position === 'BM') {
+        if (orderType === 'c_order') {
+            // BM Continue Order: 20% flat (no threshold)
+            discount = subtotal * 0.20;
+        } else {
+            // BM First Order: 20% on amount > 20,000
+            if (subtotal > 20000) {
+                discount = (subtotal - 20000) * 0.20;
+            }
+        }
+    } else {
+        // Default Logic (Same as BM First Order)
+        if (subtotal > 20000) {
+            discount = (subtotal - 20000) * 0.20;
+        }
     }
 
     const priceAfterDiscount = subtotal - discount;

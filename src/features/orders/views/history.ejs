@@ -46,6 +46,10 @@
                                         Position
                                     </th>
                                     <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ผู้แนะนำ
+                                    </th>
+                                    <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Total Amount
                                     </th>
@@ -78,6 +82,14 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <%= order.position || '-' %>
                                             </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <% if (order.recommender) { %>
+                                                    <%= order.recommender.customer_fname_th %>
+                                                        <%= order.recommender.customer_lname_th %>
+                                                            <% } else { %>
+                                                                -
+                                                                <% } %>
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                                                 <%= (order.order_total_amount / 100).toLocaleString('en-US', {
                                                     minimumFractionDigits: 2 }) %>
@@ -97,7 +109,7 @@
                                         </tr>
                                         <!-- Details Row -->
                                         <tr id="details-<%= order.order_id %>" class="hidden bg-gray-50">
-                                            <td colspan="6" class="px-6 py-4">
+                                            <td colspan="7" class="px-6 py-4">
                                                 <div
                                                     class="rounded-md border border-gray-200 bg-white shadow-sm overflow-hidden">
                                                     <table class="min-w-full divide-y divide-gray-200">

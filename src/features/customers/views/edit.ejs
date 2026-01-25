@@ -182,11 +182,11 @@
                 </div>
             </div>
             <div class="sm:col-span-3">
-                <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ
-                    *</label>
+                <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ</label>
                 <div class="mt-1">
-                    <input type="text" name="referrer_name" id="referrer_name" required
-                        class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    <input type="text" name="referrer_name" id="referrer_name" readonly
+                        value="${recommender ? (recommender.customer_fname_th + ' ' + recommender.customer_lname_th) : ''}"
+                        class="shadow-sm bg-gray-50 focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                     <!-- Note: We might not have referrer name directly in customer object unless joined, client might need to fetch it or we make do -->
                 </div>
             </div>
