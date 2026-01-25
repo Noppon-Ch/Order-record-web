@@ -76,6 +76,27 @@ export class OrderService {
 
         return newOrder;
     }
+
+    async getOrderById(orderId: string, accessToken?: string) {
+        console.log('[OrderService] Fetching order by ID:', orderId);
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const { data: order, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('order_id', orderId)
+            .single();
+
+        if (error) {
+            console.error('[OrderService] Error fetching order:', error);
+            return null;
+        }
+
+        return order;
+    }
+
     async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string) {
         console.log('[OrderService] Fetching orders with query:', query);
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {

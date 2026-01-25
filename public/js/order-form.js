@@ -418,7 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 alert('Order saved successfully!');
-                window.location.href = '/orders/history'; // Redirect to history or detail
+                const orderId = result.orderId;
+                window.location.href = `/orders/finish?orderId=${orderId}`;
             } else {
                 alert('Error saving order: ' + (result.details || result.error));
             }

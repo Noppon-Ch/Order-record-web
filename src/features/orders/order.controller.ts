@@ -74,6 +74,50 @@ export class OrderController {
             });
         }
     }
+
+    // Show Finish Order Page
+    // Show Finish Order Page
+    async showFinishPage(req: Request, res: Response) {
+        try {
+            const customerId = req.query.customerId as string;
+            const orderId = req.query.orderId as string;
+
+            const accessToken = (req.user as any)?.access_token;
+
+            let customer = null;
+            let order = null;
+
+            if (orderId) {
+                order = await orderService.getOrderById(orderId, accessToken);
+                if (order && order.order_customer_id) {
+                    // Fetch customer from order
+                    customer = await customerService.findById(order.order_customer_id, accessToken);
+                }
+            } else if (customerId) {
+                // Fallback if only customer provided (less ideal for this new requirement)
+                if (customerId.length === 13 && /^\d+$/.test(customerId)) {
+                    customer = await customerService.findByCitizenId(customerId, accessToken);
+                } else {
+                    customer = await customerService.findById(customerId, accessToken);
+                }
+            }
+
+            if (!customer) {
+                return res.status(404).render('error', { message: 'Customer data required for finish page' });
+            }
+
+            res.render('order-finish', {
+                customer,
+                order, // Pass order to view
+                user: req.user
+            });
+        } catch (error) {
+            console.error('Error showing finish order page:', error);
+            res.status(500).render('error', {
+                message: error instanceof Error ? error.message : 'Unknown error loading finish order page'
+            });
+        }
+    }
     // Create New Order
     async createOrder(req: Request, res: Response) {
         try {

@@ -1,0 +1,69 @@
+<%- include('layout-header') %>
+    <div class="max-w-xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-10 text-center">
+
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <% if (order) { %>
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">
+                    <% if (order.order_type==='f_order' ) { %>
+                        บันทึกใบสั่งซื้อรอบแรกเรียบร้อย
+                        <% } else if (order.order_type==='c_order' ) { %>
+                            บันทึกใบสั่งซื้อต่อเนื่องเรียบร้อย
+                            <% } else { %>
+                                บันทึกออเดอร์เรียบร้อย
+                                <% } %>
+                </h2>
+                <p class="text-gray-500 mb-8">บันทึกข้อมูลการสั่งซื้อลงในระบบเรียบร้อยแล้ว</p>
+
+                <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-100">
+                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">ข้อมูลลูกค้า</h3>
+                    <div class="text-xl font-bold text-gray-900 mb-4">
+                        คุณ <%= customer.customer_fname_th %>
+                            <%= customer.customer_lname_th %>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">ราคาสุดท้าย</h3>
+                        <div class="text-3xl font-extrabold text-blue-600">
+                            <%= (order.order_final_price / 100).toLocaleString('en-US', { minimumFractionDigits: 2,
+                                maximumFractionDigits: 2 }) %> บาท
+                        </div>
+                    </div>
+                </div>
+
+                <% } else { %>
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">บันทึกออเดอร์เรียบร้อย</h2>
+                    <p class="text-gray-500 mb-8">บันทึกข้อมูลการสั่งซื้อลงในระบบเรียบร้อยแล้ว</p>
+                    <div class="bg-gray-50 rounded-xl p-6 mb-8 border border-gray-100">
+                        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">ลูกค้า</h3>
+                        <div class="text-2xl font-bold text-gray-900">
+                            <%= customer.customer_fname_th %>
+                                <%= customer.customer_lname_th %>
+                        </div>
+                    </div>
+                    <% } %>
+
+
+                        <div class="space-y-4">
+                            <a href="/customer/<%= customer.customer_id %>/pdf" target="_blank"
+                                class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md transition-all">
+                                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Download PDF
+                            </a>
+
+                            <a href="/orders/history"
+                                class="w-full inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all">
+                                ไปที่ประวัติการสั่งซื้อ
+                            </a>
+                        </div>
+        </div>
+    </div>
+    <%- include('layout-footer') %>
