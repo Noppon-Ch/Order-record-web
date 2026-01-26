@@ -37,6 +37,37 @@ export class VisualizationController {
             });
         }
     }
+
+    async getOrganizationChartPage(req: Request, res: Response) {
+        try {
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth() + 1;
+
+            const year = req.query.year ? parseInt(req.query.year as string) : currentYear;
+            const month = req.query.month ? parseInt(req.query.month as string) : currentMonth;
+
+            console.log(`[VisualizationController] Requesting Org Chart for Year: ${year}, Month: ${month}`);
+
+            const scoreData = await visualizationService.getScoreSummary(year, month, (req.user as any)?.access_token);
+            console.log(`[VisualizationController] Org Chart: Service returned ${scoreData.length} records.`);
+
+            res.render('organization-chart', {
+                user: req.user,
+                path: req.path,
+                scoreData,
+                filters: {
+                    year,
+                    month
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching org chart data:', error);
+            res.status(500).render('error', {
+                message: 'Error loading organization chart.',
+                error
+            });
+        }
+    }
 }
 
 export const visualizationController = new VisualizationController();

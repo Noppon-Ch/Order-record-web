@@ -8,5 +8,6 @@ const router = Router();
 router.use(isAuthenticated);
 
 router.get('/summary', visualizationController.getSummaryPage);
+router.get('/organization-chart', visualizationController.getOrganizationChartPage);
 
 export const visualizationRoutes = router;
