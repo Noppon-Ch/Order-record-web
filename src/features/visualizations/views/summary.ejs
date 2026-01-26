@@ -1,0 +1,136 @@
+<%- include('layout-header') %>
+
+    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+        <!-- Page Header -->
+        <div class="mb-8 border-b border-gray-200 pb-4">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Score Summary</h1>
+            <p class="mt-2 text-sm text-gray-500">View team structure and monthly scores.</p>
+        </div>
+
+        <!-- Filter Form -->
+        <div class="mb-6 bg-white p-4 rounded-lg shadow sm:flex sm:items-end sm:gap-4">
+            <form action="/visualizations/summary" method="GET" class="w-full sm:flex sm:gap-4 items-end">
+                <div class="flex-1">
+                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                    <select id="year" name="year"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                        onchange="this.form.submit()">
+                        <% const currentYear=new Date().getFullYear(); for(let i=currentYear; i>= currentYear - 5; i--)
+                            {
+                            %>
+                            <option value="<%= i %>" <%=filters.year===i ? 'selected' : '' %>><%= i %>
+                            </option>
+                            <% } %>
+                    </select>
+                </div>
+
+                <div class="flex-1 mt-4 sm:mt-0">
+                    <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
+                    <select id="month" name="month"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+                        onchange="this.form.submit()">
+                        <% const months=[ 'January' , 'February' , 'March' , 'April' , 'May' , 'June' , 'July'
+                            , 'August' , 'September' , 'October' , 'November' , 'December' ]; months.forEach((m,
+                            index)=> {
+                            const val = index + 1;
+                            %>
+                            <option value="<%= val %>" <%=filters.month===val ? 'selected' : '' %>><%= m %>
+                            </option>
+                            <% }); %>
+                    </select>
+                </div>
+
+                <div class="mt-4 sm:mt-0">
+                    <button type="submit"
+                        class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Reload
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Data Table -->
+        <div class="flex flex-col">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Customer Name (Tree)
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                                        Level
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Position
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Private S.
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Total S.
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% if (scoreData && scoreData.length> 0) { %>
+                                    <% scoreData.forEach(node=> {
+                                        const paddingLeft = (node.tree_level - 1) * 20;
+                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items:
+                                        center;`;
+                                        %>
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                <div style="<%= indentStyle %>">
+                                                    <% if (node.tree_level> 1) { %>
+                                                        <span class="text-gray-400 mr-2">└</span>
+                                                        <% } else { %>
+                                                            <span class="text-gray-400 mr-2">◉</span>
+                                                            <% } %>
+                                                                <span class="font-medium">
+                                                                    <%= node.customer_name %>
+                                                                </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                                <span
+                                                    class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-gray-500 rounded-full">
+                                                    <%= node.tree_level %>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <%= node.customer_position %>
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                                <%= node.self_private_score.toLocaleString() %>
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
+                                                <%= node.total_score.toLocaleString() %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                                                        No data found for this period.
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('layout-footer') %>

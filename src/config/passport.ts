@@ -24,10 +24,11 @@ passport.use(new GoogleStrategy({
 }, (accessToken, refreshToken, profile, done) => {
     // ตรงนี้คือจุดที่ Google ส่งข้อมูล User กลับมา
     console.log('Google Profile:', profile.displayName);
-    
+
     // TODO: ตรงนี้ต้องเขียนโค้ด เช็คว่ามี User ใน Database ไหม? ถ้าไม่มีให้สร้างใหม่ (Register)
     // สำหรับตอนนี้ ส่ง profile ผ่านไปก่อน
-    return done(null, profile);
+    const user = { ...profile, access_token: accessToken };
+    return done(null, user);
 }));
 
 // 3. LINE Strategy

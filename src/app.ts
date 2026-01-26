@@ -42,6 +42,7 @@ app.set('views', [
   path.resolve(process.cwd(), 'src', 'features', 'users', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'customers', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'orders', 'views'),
+  path.resolve(process.cwd(), 'src', 'features', 'visualizations', 'views'),
   path.resolve(process.cwd(), 'src', 'shared', 'views')
 ]);
 
@@ -81,5 +82,8 @@ app.use('/products', productRoutes);
 import orderRoutes from './features/orders/order.routes.js';
 app.use('/orders', orderRoutes);
 app.use('/order', orderRoutes);
+
+import { visualizationRoutes } from './features/visualizations/visualization.routes.js';
+app.use('/visualizations', visualizationRoutes);
 
 export default app;
