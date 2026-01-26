@@ -83,12 +83,11 @@
                                 <% if (scoreData && scoreData.length> 0) { %>
                                     <% scoreData.forEach(node=> {
                                         const paddingLeft = (node.tree_level - 1) * 20;
-                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items:
-                                        center;`;
+                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items: center;`;
                                         %>
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                <div style="<%= indentStyle %>">
+                                                <div<% if (indentStyle) { %> style="<%= indentStyle %>"<% } %>>
                                                     <% if (node.tree_level> 1) { %>
                                                         <span class="text-gray-400 mr-2">└</span>
                                                         <% } else { %>

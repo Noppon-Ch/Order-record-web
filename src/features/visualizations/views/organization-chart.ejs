@@ -74,7 +74,7 @@
     </div>
 
     <script>
-        const scoreData = <%- JSON.stringify(scoreData || []) %>;
+        const scoreData = JSON.parse('<%- JSON.stringify(scoreData || []) %>');
 
         document.addEventListener('DOMContentLoaded', function () {
             // Toggle Logic
