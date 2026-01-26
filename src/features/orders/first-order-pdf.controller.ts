@@ -7,7 +7,7 @@ import fs from 'fs/promises';
 import { orderService } from './order.service.js';
 import { customerService } from '../customers/customer.service.js';
 
-export class OrderPdfController {
+export class FirstOrderPdfController {
 
     async download(req: Request, res: Response) {
         try {
@@ -393,4 +393,4 @@ export class OrderPdfController {
     }
 }
 
-export const orderPdfController = new OrderPdfController();
+export const firstOrderPdfController = new FirstOrderPdfController();
