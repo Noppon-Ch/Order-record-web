@@ -1,11 +1,11 @@
-<%- include('layout-header') %>
+<%- include('partials/app-header') %>
 
-    <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <!-- Page Header -->
-        <div class="mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
+        <div class="px-4 sm:px-0 mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">ประวัติการสั่งซื้อ (Order History)</h1>
-                <p class="mt-2 text-sm text-gray-500">ดูและจัดการรายการสั่งซื้อของลูกค้า</p>
+                <h1 class="text-3xl font-bold text-gray-900">ประวัติการสั่งซื้อ (Order History)</h1>
+                <p class="mt-1 text-sm text-gray-600">ดูและจัดการรายการสั่งซื้อของลูกค้า</p>
             </div>
             <div class="flex space-x-3">
                 <a href="/orders/first"
@@ -20,14 +20,16 @@
         </div>
 
         <!-- Search Tool (Simple) -->
-        <div class="mb-6">
-            <form action="/orders/history" method="GET" class="flex gap-2">
-                <input type="text" name="q" placeholder="ค้นหารายการ..." value="<%= query %>"
-                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
-                <button type="submit"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
-                    ค้นหา
-                </button>
+        <div class="mb-6 px-4 sm:px-0">
+            <form action="/orders/history" method="GET" class="relative rounded-md shadow-sm max-w-lg">
+                <div class="flex">
+                    <input type="text" name="q" placeholder="ค้นหารายการ..." value="<%= query %>"
+                        class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-none rounded-l-md pl-4 start-0 sm:text-sm border-gray-300 py-2 border-r-0 border">
+                    <button type="submit"
+                        class="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        ค้นหา
+                    </button>
+                </div>
             </form>
         </div>
 
@@ -76,27 +78,27 @@
                                 <% if (orders && orders.length> 0) { %>
                                     <% orders.forEach(order=> { %>
                                         <!-- Main Row -->
-                                        <tr class="cursor-pointer hover:bg-gray-100 transition-colors duration-150 ease-in-out"
-                                            onclick="toggleDetails('<%= order.order_id %>')">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <tr class="order-row cursor-pointer hover:bg-gray-50 transition-colors"
+                                            data-order-id="<%= order.order_id %>">
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
                                                 <%= new Date(order.order_date).toLocaleDateString('th-TH') %>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
                                                 <% if (order.order_type==='f_order' ) { %>
                                                     <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">
                                                         รอบแรก
                                                     </span>
                                                     <% } else if (order.order_type==='c_order' ) { %>
                                                         <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                            class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-blue-100 text-blue-800">
                                                             ต่อเนื่อง
                                                         </span>
                                                         <% } else { %>
                                                             <span class="text-gray-500">-</span>
                                                             <% } %>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
                                                 <% if (order.customers) { %>
                                                     <%= order.customers.customer_fname_th %>
                                                         <%= order.customers.customer_lname_th %>
@@ -104,23 +106,19 @@
                                                                 <span class="text-gray-400">ไม่ระบุ</span>
                                                                 <% } %>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <% let badgeStyle='background-color: #f3f4f6; color: #1f2937;' ; const
-                                                    pos=(order.position || '' ).toUpperCase(); if (pos==='BM' )
-                                                    badgeStyle='background-color: #ADD8E6; color: #4682B4;' ; else if
-                                                    (pos==='AG' )
-                                                    badgeStyle='background-color: #90EE90; color: #259a25;' ; else if
-                                                    (pos==='SFAG' )
-                                                    badgeStyle='background-color: #FFD700; color: #a67e18;' ; else if
-                                                    (pos==='SAG' || pos==='ESAG' )
-                                                    badgeStyle='background-color: #f5b7b1; color: #a93226;' ; %>
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
+                                                <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700' , 'AG'
+                                                    : 'bg-green-200 text-green-700' , 'SFAG'
+                                                    : 'bg-yellow-300 text-yellow-800' , 'SAG'
+                                                    : 'bg-red-200 text-red-800' , 'ESAG' : 'bg-red-200 text-red-800' };
+                                                    const pos=(order.position || '' ).toUpperCase(); const
+                                                    badgeClass=positionClasses[pos] || 'bg-gray-100 text-gray-800' ; %>
                                                     <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                        style="<%= badgeStyle %>">
+                                                        class="px-2 inline-flex text-xs leading-5 font-medium rounded-full <%= badgeClass %>">
                                                         <%= order.position || '-' %>
                                                     </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
                                                 <% if (order.recommender) { %>
                                                     <%= order.recommender.customer_fname_th %>
                                                         <%= order.recommender.customer_lname_th %>
@@ -128,16 +126,16 @@
                                                                 -
                                                                 <% } %>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900 text-right">
                                                 <%= (order.order_total_amount / 100).toLocaleString('en-US', {
                                                     minimumFractionDigits: 2 }) %>
                                             </td>
                                             <td
-                                                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                class="px-6 py-6 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
                                                 <%= (order.order_final_price / 100).toLocaleString('en-US', {
                                                     minimumFractionDigits: 2 }) %>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2"
+                                            <td class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium space-x-2"
                                                 onclick="event.stopPropagation()">
                                                 <% if (order.order_type==='c_order' ) { %>
                                                     <a href="/orders/<%= order.order_id %>/continue-pdf" target="_blank"
@@ -284,6 +282,16 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Attach click listeners to rows
+            document.querySelectorAll('.order-row').forEach(row => {
+                row.addEventListener('click', function () {
+                    const orderId = this.dataset.orderId;
+                    toggleDetails(orderId);
+                });
+            });
+        });
+
         async function deleteOrder(orderId) {
             if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้?')) return;
 
@@ -295,7 +303,6 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Remove row or reload
                     window.location.reload();
                 } else {
                     alert('เกิดข้อผิดพลาดในการลบรายการ: ' + result.message);
@@ -311,7 +318,7 @@
             if (detailsRow) {
                 if (detailsRow.classList.contains('hidden')) {
                     detailsRow.classList.remove('hidden');
-                    detailsRow.classList.add('animate-fade-in-down'); // Optional animation if class exists
+                    // Removed animation class to simplify and match standard behavior
                 } else {
                     detailsRow.classList.add('hidden');
                 }
@@ -319,4 +326,4 @@
         }
     </script>
 
-    <%- include('layout-footer') %>
+    <%- include('partials/app-footer') %>

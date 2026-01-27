@@ -1,4 +1,4 @@
-<%- include('layout-header') %>
+<%- include('partials/app-header') %>
 
     <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <!-- Page Header -->
@@ -83,53 +83,52 @@
                                 <% if (scoreData && scoreData.length> 0) { %>
                                     <% scoreData.forEach(node=> {
                                         const paddingLeft = (node.tree_level - 1) * 20;
-                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items: center;`;
+                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items:
+                                        center;`;
                                         %>
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 <div<% if (indentStyle) { %> style="<%= indentStyle %>"<% } %>>
-                                                    <% if (node.tree_level> 1) { %>
-                                                        <span class="text-gray-400 mr-2">└</span>
-                                                        <% } else { %>
-                                                            <span class="text-gray-400 mr-2">◉</span>
-                                                            <% } %>
-                                                                <span class="font-medium">
-                                                                    <%= node.customer_name %>
-                                                                </span>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                                <span
-                                                    class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-gray-500 rounded-full">
-                                                    <%= node.tree_level %>
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <%= node.customer_position %>
-                                            </td>
-                                            <td
-                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                                                <%= node.self_private_score.toLocaleString() %>
-                                            </td>
-                                            <td
-                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
-                                                <%= node.total_score.toLocaleString() %>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="5" class="px-6 py-10 text-center text-gray-500">
-                                                        No data found for this period.
-                                                    </td>
-                                                </tr>
-                                                <% } %>
-                            </tbody>
-                        </table>
+                                                            <% if (node.tree_level> 1) { %>
+                                                                <span class="text-gray-400 mr-2">└</span>
+                                                                <% } else { %>
+                                                                    <span class="text-gray-400 mr-2">◉</span>
+                                                                    <% } %>
+                                                                        <span class="font-medium">
+                                                                            <%= node.customer_name %>
+                                                                        </span>
                     </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                        <span
+                            class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-gray-500 rounded-full">
+                            <%= node.tree_level %>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <%= node.customer_position %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                        <%= node.self_private_score.toLocaleString() %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
+                        <%= node.total_score.toLocaleString() %>
+                    </td>
+                    </tr>
+                    <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                                    No data found for this period.
+                                </td>
+                            </tr>
+                            <% } %>
+                                </tbody>
+                                </table>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 
-    <%- include('layout-footer') %>
+    <%- include('partials/app-footer') %>

@@ -19,7 +19,9 @@
     "dotenv": "^17.2.3",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-line": "^0.0.4",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/express-rate-limit": "^5.1.3",
     "@types/express-session": "^1.18.2",
     "@types/node": "^25.0.9",
     "@types/passport": "^1.0.17",

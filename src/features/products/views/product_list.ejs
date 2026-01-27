@@ -1,4 +1,4 @@
-<%- include('layout-header') %>
+<%- include('partials/app-header') %>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 sm:px-0 mb-6 flex justify-between items-center">
             <div>
@@ -117,8 +117,9 @@
                                                         product.price_per_unit %>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                                    <button type="button" onclick="openProductModal('<%= index %>')"
-                                                        class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-full transition-colors duration-200">
+                                                    <button type="button"
+                                                        class="open-modal-btn text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-full transition-colors duration-200"
+                                                        data-index="<%= index %>">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -193,8 +194,8 @@
         aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closeProductModal()"></div>
+            <div id="modalOverlay" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                aria-hidden="true"></div>
 
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
@@ -309,9 +310,8 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
-                        onclick="closeProductModal()">
+                    <button type="button" id="closeModalBtn"
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                         ปิด
                     </button>
                 </div>
@@ -321,55 +321,71 @@
 
     <!-- Script to handle Modal -->
     <script>
-        const productsData = JSON.parse('<%- JSON.stringify(products) %>');
-        window.openProductModal = function (index) {
-            try {
-                const product = productsData[index];
+        document.addEventListener('DOMContentLoaded', () => {
+            const productsData = JSON.parse('<%- JSON.stringify(products) %>');
 
-                // Helper to safely show value
-                const showVal = (val, unit = '') => (val !== null && val !== undefined) ? `${val} ${unit}` : '-';
+            // Open Modal Buttons
+            document.querySelectorAll('.open-modal-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const index = this.dataset.index;
+                    openProductModal(index);
+                });
+            });
 
-                // Set Header
-                document.getElementById('modalProductName').textContent = product.product_name_th || product.product_name_en || 'Product Details';
-                document.getElementById('modalProductCode').textContent = `#${product.product_code}`;
+            // Close Modal Elements
+            const closeModal = () => closeProductModal();
+            document.getElementById('modalOverlay').addEventListener('click', closeModal);
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 
-                // Set Bust
-                document.getElementById('modalUnderBust').textContent = showVal(product.under_bust);
-                document.getElementById('modalTopBust').textContent = showVal(product.top_bust);
+            // Close on escape key
+            document.addEventListener('keydown', function (event) {
+                if (event.key === "Escape") {
+                    closeModal();
+                }
+            });
 
-                // Set Waist
-                document.getElementById('modalWaistMin').textContent = showVal(product.waist_min);
-                document.getElementById('modalWaistMax').textContent = showVal(product.waist_max);
+            function openProductModal(index) {
+                try {
+                    const product = productsData[index];
 
-                // Set Hip
-                document.getElementById('modalHipMin').textContent = showVal(product.hip_min);
-                document.getElementById('modalHipMax').textContent = showVal(product.hip_max);
+                    // Helper to safely show value
+                    const showVal = (val, unit = '') => (val !== null && val !== undefined) ? `${val} ${unit}` : '-';
 
-                // Set Height
-                document.getElementById('modalHeightMin').textContent = showVal(product.hight_min, 'cm'); // Using 'hight' from schema
-                document.getElementById('modalHeightMax').textContent = showVal(product.hight_max, 'cm');
+                    // Set Header
+                    document.getElementById('modalProductName').textContent = product.product_name_th || product.product_name_en || 'Product Details';
+                    document.getElementById('modalProductCode').textContent = `#${product.product_code}`;
 
-                // Show Modal
-                document.getElementById('productModal').classList.remove('hidden');
+                    // Set Bust
+                    document.getElementById('modalUnderBust').textContent = showVal(product.under_bust);
+                    document.getElementById('modalTopBust').textContent = showVal(product.top_bust);
 
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
+                    // Set Waist
+                    document.getElementById('modalWaistMin').textContent = showVal(product.waist_min);
+                    document.getElementById('modalWaistMax').textContent = showVal(product.waist_max);
 
-            } catch (e) {
-                console.error('Error opening modal:', e);
+                    // Set Hip
+                    document.getElementById('modalHipMin').textContent = showVal(product.hip_min);
+                    document.getElementById('modalHipMax').textContent = showVal(product.hip_max);
+
+                    // Set Height
+                    document.getElementById('modalHeightMin').textContent = showVal(product.hight_min, 'cm');
+                    document.getElementById('modalHeightMax').textContent = showVal(product.hight_max, 'cm');
+
+                    // Show Modal
+                    document.getElementById('productModal').classList.remove('hidden');
+
+                    // Prevent body scroll using Tailwind class
+                    document.body.classList.add('overflow-hidden');
+
+                } catch (e) {
+                    console.error('Error opening modal:', e);
+                }
             }
-        }
 
-        function closeProductModal() {
-            document.getElementById('productModal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // Close on escape key
-        document.addEventListener('keydown', function (event) {
-            if (event.key === "Escape") {
-                closeProductModal();
+            function closeProductModal() {
+                document.getElementById('productModal').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
             }
         });
     </script>
-    <%- include('layout-footer') %>
+    <%- include('partials/app-footer') %>

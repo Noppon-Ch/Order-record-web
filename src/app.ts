@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 
 import passport from 'passport';
 import session from 'express-session';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 import authRoutes from './features/auth/auth.routes.js';
 import userRoutes from './features/users/user.routes.js';
@@ -22,10 +24,37 @@ const app = express();
 // Middleware to parse application/x-www-form-urlencoded (for form POST)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// --- Security Middleware ---
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "cdn.tailwindcss.com", "https://d3js.org"],
+      styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      fontSrc: ["'self'", "fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:", "wss:"],
+    },
+  },
+}));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+});
+app.use(limiter);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default_secret',
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+  }
 }));
 setupPassport(session);
 app.use(passport.initialize());
@@ -86,5 +115,11 @@ app.use('/order', orderRoutes);
 
 import { visualizationRoutes } from './features/visualizations/visualization.routes.js';
 app.use('/visualizations', visualizationRoutes);
+
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
+});
 
 export default app;

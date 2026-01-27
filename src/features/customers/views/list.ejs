@@ -1,4 +1,4 @@
-<%- include('layout-header') %>
+<%- include('partials/app-header') %>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 sm:px-0 mb-6 flex justify-between items-center">
             <div>
@@ -98,18 +98,15 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
-                                                    <% const positionColors={ 'BM'
-                                                        : 'background-color: #ADD8E6; color: #4682B4;' , 'AG'
-                                                        : 'background-color: #90EE90; color: #259a25;' , 'SFAG'
-                                                        : 'background-color: #FFD700; color: #a67e18;' , 'SAG'
-                                                        : 'background-color: #f5b7b1; color: #a93226;' , 'ESAG'
-                                                        : 'background-color: #f5b7b1; color: #a93226;' }; const
-                                                        pos=(customer.customer_position || '' ).toUpperCase(); const
-                                                        badgeStyle=positionColors[pos]
-                                                        || 'background-color: #f3f4f6; color: #1f2937;' ; %>
+                                                    <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700' , 'AG'
+                                                        : 'bg-green-200 text-green-700' , 'SFAG'
+                                                        : 'bg-yellow-300 text-yellow-800' , 'SAG'
+                                                        : 'bg-red-200 text-red-800' , 'ESAG' : 'bg-red-200 text-red-800'
+                                                        }; const pos=(customer.customer_position || '' ).toUpperCase();
+                                                        const badgeClass=positionClasses[pos]
+                                                        || 'bg-gray-100 text-gray-800' ; %>
                                                         <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                            style="<%= badgeStyle %>">
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= badgeClass %>">
                                                             <%= customer.customer_position %>
                                                         </span>
                                                 </td>
@@ -347,4 +344,4 @@
                 });
             }, true);
         </script>
-        <%- include('layout-footer') %>
+        <%- include('partials/app-footer') %>

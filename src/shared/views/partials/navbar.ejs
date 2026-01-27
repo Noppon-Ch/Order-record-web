@@ -36,9 +36,7 @@
 
             <!-- Profile / Setting / Logout -->
             <div class="flex items-center gap-4">
-                <!-- Debug: show user object and avatar url -->
-                <!-- <pre style="display:none"><%= JSON.stringify(user, null, 2) %></pre> -->
-                <!-- <div style="display:none">user_avatar_url: <%= user.user_avatar_url %></div> -->
+
                 <a href="/user/setting"
                     class="hidden sm:flex items-center gap-3 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors duration-200">
                     <% if (user && typeof user.user_avatar_url !=='undefined' && user.user_avatar_url) { %>
