@@ -12,5 +12,6 @@ router.get(
   productController.debug.bind(productController) as unknown as RequestHandler
 );
 router.get('/search', isAuthenticated, productController.search.bind(productController));
+router.get('/list', isAuthenticated, productController.listPage.bind(productController));
 
 export default router;

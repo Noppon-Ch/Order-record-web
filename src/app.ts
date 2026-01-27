@@ -41,6 +41,7 @@ app.set('views', [
   path.resolve(process.cwd(), 'src', 'features', 'homepage', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'users', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'customers', 'views'),
+  path.resolve(process.cwd(), 'src', 'features', 'products', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'orders', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'visualizations', 'views'),
   path.resolve(process.cwd(), 'src', 'shared', 'views')

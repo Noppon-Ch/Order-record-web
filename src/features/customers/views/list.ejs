@@ -42,15 +42,15 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        วันที่สมัคร
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ชื่อ-นามสกุล
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ตำแหน่ง
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        เลขบัตรประชาชน
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -73,34 +73,44 @@
                                         <% customers.forEach(customer=> { %>
                                             <tr class="hover:bg-gray-50 transition-colors">
                                                 <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-500">
+                                                        <%= new
+                                                            Date(customer.customer_registerdate).toLocaleDateString('th-TH',
+                                                            { year: 'numeric' , month: 'short' , day: 'numeric' }) %>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm font-medium text-gray-900">
                                                         <%= customer.customer_fname_th %>
                                                             <%= customer.customer_lname_th %>
+                                                                <% const regDate=new
+                                                                    Date(customer.customer_registerdate); const now=new
+                                                                    Date(); const monthDiff=(now.getFullYear() -
+                                                                    regDate.getFullYear()) * 12 + (now.getMonth() -
+                                                                    regDate.getMonth()); if (monthDiff>= 0 && monthDiff
+                                                                    <= 1) { %>
+                                                                        <span
+                                                                            class="text-red-500 text-xs ml-1">(ใหม่)</span>
+                                                                        <% } %>
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
-                                                    <% 
-                                                        const positionColors = {
-                                                            'BM': 'background-color: #ADD8E6; color: #4682B4;',
-                                                            'AG': 'background-color: #90EE90; color: #259a25;',
-                                                            'SFAG': 'background-color: #FFD700; color: #a67e18;',
-                                                            'SAG': 'background-color: #f5b7b1; color: #a93226;',
-                                                            'ESAG': 'background-color: #f5b7b1; color: #a93226;'
-                                                        }; 
-                                                        const pos = (customer.customer_position || '').toUpperCase(); 
-                                                        const badgeStyle = positionColors[pos] || 'background-color: #f3f4f6; color: #1f2937;';
-                                                    %>
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                                                        style="<%= badgeStyle %>">
-                                                        <%= customer.customer_position %>
-                                                    </span>
+                                                    <% const positionColors={ 'BM'
+                                                        : 'background-color: #ADD8E6; color: #4682B4;' , 'AG'
+                                                        : 'background-color: #90EE90; color: #259a25;' , 'SFAG'
+                                                        : 'background-color: #FFD700; color: #a67e18;' , 'SAG'
+                                                        : 'background-color: #f5b7b1; color: #a93226;' , 'ESAG'
+                                                        : 'background-color: #f5b7b1; color: #a93226;' }; const
+                                                        pos=(customer.customer_position || '' ).toUpperCase(); const
+                                                        badgeStyle=positionColors[pos]
+                                                        || 'background-color: #f3f4f6; color: #1f2937;' ; %>
+                                                        <span
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                            style="<%= badgeStyle %>">
+                                                            <%= customer.customer_position %>
+                                                        </span>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">
-                                                        <%= customer.customer_citizen_id %>
-                                                    </div>
-                                                </td>
+
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm text-gray-500">
                                                         <%= customer.recommender_name || '-' %>
@@ -129,79 +139,92 @@
                                                             role="menu" aria-orientation="vertical"
                                                             aria-labelledby="options-menu-<%= customer.customer_id %>">
                                                             <div class="py-1" role="none">
-                                                                <a href="/orders/first?customerId=<%= customer.customer_id %>"
-                                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                    role="menuitem">
-                                                                    <span class="mr-3 text-blue-500">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                                                        </svg>
-                                                                    </span>
-                                                                    สร้างบิลใหม่
-                                                                </a>
-                                                                <a href="/orders/continue?customerId=<%= customer.customer_id %>"
-                                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                    role="menuitem">
-                                                                    <span class="mr-3 text-indigo-500">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                                                        </svg>
-                                                                    </span>
-                                                                    ทำรายการต่อ
-                                                                </a>
-                                                                <a href="/customer/<%= customer.customer_id %>/pdf"
-                                                                    target="_blank"
-                                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                    role="menuitem">
-                                                                    <span class="mr-3 text-red-500">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                                        </svg>
-                                                                    </span>
-                                                                    PDF
-                                                                </a>
-                                                                <div class="border-t border-gray-100"></div>
-                                                                <a href="/customer/edit/<%= customer.customer_id %>"
-                                                                    class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                    role="menuitem">
-                                                                    <span class="mr-3 text-yellow-500">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                                        </svg>
-                                                                    </span>
-                                                                    แก้ไข
-                                                                </a>
-                                                                <a href="#"
-                                                                    onclick="deleteCustomer('<%= customer.customer_id %>', '<%= customer.customer_fname_th %>')"
-                                                                    class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900"
-                                                                    role="menuitem">
-                                                                    <span class="mr-3 text-red-500">
-                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                            class="h-5 w-5" fill="none"
-                                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                                            <path stroke-linecap="round"
-                                                                                stroke-linejoin="round" stroke-width="2"
-                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                        </svg>
-                                                                    </span>
-                                                                    ลบ
-                                                                </a>
+                                                                <% if ((customer.customer_position || ''
+                                                                    ).toUpperCase()==='BM' ) { %>
+                                                                    <a href="/orders/first?customerId=<%= customer.customer_id %>"
+                                                                        class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                        role="menuitem">
+                                                                        <span class="mr-3 text-blue-500">
+                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                class="h-5 w-5" fill="none"
+                                                                                viewBox="0 0 24 24"
+                                                                                stroke="currentColor">
+                                                                                <path stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                    stroke-width="2"
+                                                                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                                            </svg>
+                                                                        </span>
+                                                                        สร้างบิลใหม่
+                                                                    </a>
+                                                                    <% } %>
+                                                                        <a href="/orders/continue?customerId=<%= customer.customer_id %>"
+                                                                            class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                            role="menuitem">
+                                                                            <span class="mr-3 text-indigo-500">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-5 w-5" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                                                </svg>
+                                                                            </span>
+                                                                            ทำรายการต่อ
+                                                                        </a>
+                                                                        <a href="/customer/<%= customer.customer_id %>/pdf"
+                                                                            target="_blank"
+                                                                            class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                            role="menuitem">
+                                                                            <span class="mr-3 text-red-500">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-5 w-5" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                                </svg>
+                                                                            </span>
+                                                                            PDF
+                                                                        </a>
+                                                                        <div class="border-t border-gray-100"></div>
+                                                                        <a href="/customer/edit/<%= customer.customer_id %>"
+                                                                            class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                            role="menuitem">
+                                                                            <span class="mr-3 text-yellow-500">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-5 w-5" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                                                </svg>
+                                                                            </span>
+                                                                            แก้ไข
+                                                                        </a>
+                                                                        <a href="#"
+                                                                            onclick="deleteCustomer('<%= customer.customer_id %>', '<%= customer.customer_fname_th %>')"
+                                                                            class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900"
+                                                                            role="menuitem">
+                                                                            <span class="mr-3 text-red-500">
+                                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                    class="h-5 w-5" fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    stroke="currentColor">
+                                                                                    <path stroke-linecap="round"
+                                                                                        stroke-linejoin="round"
+                                                                                        stroke-width="2"
+                                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                </svg>
+                                                                            </span>
+                                                                            ลบ
+                                                                        </a>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -58,6 +58,33 @@ export class ProductService {
         }
         return data;
     }
+
+    async listProducts(query: string, limit: number, offset: number, accessToken?: string) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        const selectColumns = 'product_code, product_name_th, color_th, product_size, price_per_unit';
+
+        let queryBuilder = supabase.from('products').select(selectColumns, { count: 'exact' });
+
+        if (query) {
+            queryBuilder = queryBuilder.or(`product_code.ilike.${query}%,product_name_th.ilike.%${query}%`);
+        } else {
+            // Default sort if no query
+            queryBuilder = queryBuilder.order('product_code', { ascending: true });
+        }
+
+        const { data, count, error } = await queryBuilder
+            .range(offset, offset + limit - 1);
+
+        if (error) {
+            console.error('[ProductService] Error listing products:', error);
+            throw new Error('Database error listing products.');
+        }
+
+        return { products: data || [], total: count || 0 };
+    }
 }
 
 export const productService = new ProductService();

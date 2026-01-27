@@ -61,6 +61,33 @@ export class ProductController {
             res.status(500).json({ error: error instanceof Error ? error.message : 'Error' });
         }
     }
+
+    // Product List Page
+    async listPage(req: Request, res: Response) {
+        try {
+            const query = req.query.search as string || '';
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = 20; // Items per page
+            const offset = (page - 1) * limit;
+            const accessToken = (req.user as any)?.access_token;
+
+            console.log(`[ProductController] Listing products page:${page} query:${query}`);
+            const { products, total } = await productService.listProducts(query, limit, offset, accessToken);
+
+            res.render('product_list', {
+                products,
+                searchQuery: query,
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                user: req.user,
+                path: req.path
+            });
+        } catch (error) {
+            console.error('[ProductController] Error loading product list:', error);
+            res.status(500).send('Error loading product list');
+        }
+    }
 }
 
 export const productController = new ProductController();
