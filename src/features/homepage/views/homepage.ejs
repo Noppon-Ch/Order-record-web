@@ -8,18 +8,19 @@
   </div>
 
   <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-    <span class="block">Welcome back,</span>
+    <span class="block">ยินดีต้อนรับกลับ,</span>
     <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-      ${ (typeof user !== 'undefined' && user?.user_full_name) || 'Guest' }
+      ${ (typeof user !== 'undefined' && user?.user_full_name) || 'แขกผู้มาเยือน' }
     </span>
   </h1>
 
   <p class="text-xl text-gray-500 mb-12 max-w-2xl mx-auto">
-    Your dashboard is ready. Manage your customers and orders from the navigation menu above.
+    แดชบอร์ดของคุณพร้อมแล้ว จัดการลูกค้าและคำสั่งซื้อได้ง่ายๆ จากเมนูด้านล่าง
   </p>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-    <a href="/customers"
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+    <!-- 1. Customer List -->
+    <a href="/customer/list"
       class="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl hover:border-blue-200 transition-all duration-300">
       <div
         class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -29,10 +30,37 @@
           </path>
         </svg>
       </div>
-      <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Manage Customers</h3>
-      <p class="text-gray-500 text-sm mt-1">View, add, and update customer profiles.</p>
+      <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">รายชื่อลูกค้า</h3>
+      <p class="text-gray-500 text-sm mt-1">ดูรายชื่อและจัดการข้อมูลลูกค้าทั้งหมด</p>
     </a>
 
+    <!-- 2. Create Order (First & Continue) -->
+    <div
+      class="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl hover:border-green-200 transition-all duration-300 relative">
+      <div
+        class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+          </path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">สร้างรายการสั่งซื้อ</h3>
+      <p class="text-gray-500 text-sm mt-1 mb-4">เริ่มสร้างบิลใหม่ หรือทำรายการต่อ</p>
+
+      <div class="flex gap-2 relative z-10">
+        <a href="/orders/first"
+          class="flex-1 text-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+          บิลแรก (First)
+        </a>
+        <a href="/orders/continue"
+          class="flex-1 text-center px-4 py-2 bg-white border border-green-600 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium transition-colors">
+          ทำรายการต่อ
+        </a>
+      </div>
+    </div>
+
+    <!-- 3. Order History -->
     <a href="/orders/history"
       class="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl hover:border-purple-200 transition-all duration-300">
       <div
@@ -43,8 +71,22 @@
           </path>
         </svg>
       </div>
-      <h3 class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Order History</h3>
-      <p class="text-gray-500 text-sm mt-1">Check past orders and details.</p>
+      <h3 class="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">ประวัติการสั่งซื้อ</h3>
+      <p class="text-gray-500 text-sm mt-1">ดูรายการสั่งซื้อย้อนหลังทั้งหมด</p>
+    </a>
+
+    <!-- 4. Organization Chart -->
+    <a href="/visualizations/organization-chart"
+      class="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-lg hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+      <div
+        class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">ผังองค์กร</h3>
+      <p class="text-gray-500 text-sm mt-1">แสดงโครงสร้างองค์กรและยอดขาย</p>
     </a>
   </div>
 

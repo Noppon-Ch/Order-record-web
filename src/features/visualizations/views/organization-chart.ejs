@@ -23,15 +23,16 @@
                 <div id="settings-content"
                     class="p-4 flex flex-col gap-4 transition-all duration-500 ease-in-out origin-top overflow-hidden max-h-[600px] opacity-100">
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900 leading-tight pr-8">Organization Chart</h1>
-                        <p class="text-xs text-gray-500">Visualizing team structure</p>
+                        <h1 class="text-xl font-bold text-gray-900 leading-tight pr-8">ผังองค์กร (Organization Chart)
+                        </h1>
+                        <p class="text-xs text-gray-500">แสดงโครงสร้างทีมและสายงาน</p>
                     </div>
 
                     <!-- Filter Form -->
                     <form action="/visualizations/organization-chart" method="GET" class="flex flex-col gap-3">
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label for="year" class="block text-xs font-medium text-gray-700 mb-1">Year</label>
+                                <label for="year" class="block text-xs font-medium text-gray-700 mb-1">ปี (Year)</label>
                                 <select id="year" name="year"
                                     class="block w-full py-1.5 pl-3 pr-8 text-xs border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm">
                                     <% const currentYear=new Date().getFullYear(); for(let i=currentYear; i>=
@@ -43,12 +44,13 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="month" class="block text-xs font-medium text-gray-700 mb-1">Month</label>
+                                <label for="month" class="block text-xs font-medium text-gray-700 mb-1">เดือน
+                                    (Month)</label>
                                 <select id="month" name="month"
                                     class="block w-full py-1.5 pl-3 pr-8 text-xs border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-md shadow-sm">
-                                    <% const months=[ 'January' , 'February' , 'March' , 'April' , 'May' , 'June'
-                                        , 'July' , 'August' , 'September' , 'October' , 'November' , 'December' ];
-                                        months.forEach((m, index)=> { const val = index + 1; %>
+                                    <% const months=[ 'มกราคม' , 'กุมภาพันธ์' , 'มีนาคม' , 'เมษายน' , 'พฤษภาคม'
+                                        , 'มิถุนายน' , 'กรกฎาคม' , 'สิงหาคม' , 'กันยายน' , 'ตุลาคม' , 'พฤศจิกายน'
+                                        , 'ธันวาคม' ]; months.forEach((m, index)=> { const val = index + 1; %>
                                         <option value="<%= val %>" <%=filters.month===val ? 'selected' : '' %>><%= m %>
                                         </option>
                                         <% }); %>
@@ -57,7 +59,7 @@
                         </div>
                         <button type="submit"
                             class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                            Update View
+                            แสดงข้อมูล
                         </button>
                     </form>
                 </div>
@@ -68,7 +70,7 @@
         <div id="chart-container" class="absolute inset-0 w-full h-full cursor-move bg-slate-50">
             <div id="no-data"
                 class="hidden absolute inset-0 flex items-center justify-center text-gray-500 z-20 pointer-events-none">
-                <div class="bg-white p-4 rounded shadow">No data available for this period.</div>
+                <div class="bg-white p-4 rounded shadow">ไม่มีข้อมูลสำหรับช่วงเวลานี้</div>
             </div>
         </div>
     </div>
@@ -204,10 +206,10 @@
                 }
                 function nodeStrokeColor(d) {
                     const pos = getPosition(d);
-                    if (pos === 'SFAG') return '#DAA520';
+                    if (pos === 'SFAG') return '#a67e18';
                     if (pos === 'SAG' || pos === 'ESAG') return '#a93226';
                     if (pos === 'BM') return '#4682B4';
-                    if (pos === 'AG') return '#32CD32';
+                    if (pos === 'AG') return '#259a25';
                     return '#1976d2';
                 }
                 function nodeFillColor(d) {
@@ -324,7 +326,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                document.getElementById('no-data').textContent = "Error rendering chart: " + e.message;
+                document.getElementById('no-data').textContent = "เกิดข้อผิดพลาดในการแสดงแผนผัง: " + e.message;
                 document.getElementById('no-data').classList.remove('hidden');
             }
         }

@@ -3,8 +3,8 @@
     <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <!-- Page Header -->
         <div class="mb-8 border-b border-gray-200 pb-4">
-            <h1 class="text-3xl font-extrabold text-indigo-900 tracking-tight">Continue Order</h1>
-            <p class="mt-2 text-sm text-gray-500">Continue an existing order flow (Type C).</p>
+            <h1 class="text-3xl font-extrabold text-indigo-900 tracking-tight">ทำรายการต่อ (Continue Order)</h1>
+            <p class="mt-2 text-sm text-gray-500">สร้างบิลต่อเนื่องจากบิลเดิม</p>
         </div>
 
         <form id="orderForm" class="space-y-8">
@@ -12,11 +12,11 @@
 
             <!-- 1. General Info & 2. Buyer Info -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
-                <h2 class="text-xl font-semibold text-indigo-900 mb-4">Customer & Order Info</h2>
+                <h2 class="text-xl font-semibold text-indigo-900 mb-4">ข้อมูลลูกค้าและการสั่งซื้อ</h2>
                 <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <!-- 1.1 Date -->
                     <div class="sm:col-span-2">
-                        <label for="order_date" class="block text-sm font-medium text-gray-700">Order Date <span
+                        <label for="order_date" class="block text-sm font-medium text-gray-700">วันที่สั่งซื้อ <span
                                 class="text-red-500">*</span></label>
                         <input type="date" name="order_date" id="order_date"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 p-2 border"
@@ -28,8 +28,9 @@
                     <div class="sm:col-span-2">
                         <div class="flex gap-2">
                             <div class="flex-grow">
-                                <label for="buyer_id" class="block text-sm font-medium text-gray-700">Buyer Citizen
-                                    ID <span class="text-red-500">*</span></label>
+                                <label for="buyer_id"
+                                    class="block text-sm font-medium text-gray-700">เลขบัตรประชาชนผู้ซื้อ <span
+                                        class="text-red-500">*</span></label>
                                 <input type="text" name="buyer_id" id="buyer_id" readonly
                                     class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                                     value="<%= customer ? customer.customer_citizen_id : '' %>">
@@ -49,7 +50,7 @@
 
                     <!-- 2.2 Buyer Name -->
                     <div class="sm:col-span-2">
-                        <label for="buyer_name" class="block text-sm font-medium text-gray-700">Buyer Name <span
+                        <label for="buyer_name" class="block text-sm font-medium text-gray-700">ชื่อผู้ซื้อ <span
                                 class="text-red-500">*</span></label>
                         <input type="text" id="buyer_name" readonly
                             class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
@@ -58,7 +59,7 @@
 
                     <!-- 2.3 Buyer Position -->
                     <div class="sm:col-span-2">
-                        <label for="buyer_position" class="block text-sm font-medium text-gray-700">Position</label>
+                        <label for="buyer_position" class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
                         <input type="text" id="buyer_position" readonly
                             class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                             value="<%= customer ? customer.customer_position : '' %>">
@@ -68,18 +69,18 @@
 
             <!-- 3. Referrer (No Assistant) -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
-                <h3 class="text-lg font-medium text-indigo-900 mb-4">Referrer Info</h3>
+                <h3 class="text-lg font-medium text-indigo-900 mb-4">ข้อมูลผู้แนะนำ (Referrer)</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <label for="referrer_id" class="block text-sm font-medium text-gray-700">Citizen ID</label>
+                        <label for="referrer_id" class="block text-sm font-medium text-gray-700">เลขบัตรประชาชน</label>
                         <input type="text" name="referrer_id" id="referrer_id" maxlength="13" readonly
                             class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
-                            placeholder="13 Digits" value="<%= recommender ? recommender.customer_citizen_id : '' %>">
+                            placeholder="13 หลัก" value="<%= recommender ? recommender.customer_citizen_id : '' %>">
                         <input type="hidden" id="referrer_uuid"
                             value="<%= recommender ? recommender.customer_id : '' %>">
                     </div>
                     <div>
-                        <label for="referrer_name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
                         <input type="text" name="referrer_name" id="referrer_name" readonly
                             class="mt-1 block w-full shadow-sm bg-gray-50 sm:text-sm border-gray-300 rounded-md p-2 border"
                             value="<%= recommender ? (recommender.customer_fname_th + ' ' + recommender.customer_lname_th) : '' %>">
@@ -90,10 +91,10 @@
             <!-- 5. Product List -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-indigo-900">Items</h2>
+                    <h2 class="text-xl font-semibold text-indigo-900">รายการสินค้า</h2>
                     <button type="button" onclick="addProductRow()"
                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none shadow-sm">
-                        + Add Item
+                        + เพิ่มสินค้า
                     </button>
                 </div>
 
@@ -103,21 +104,21 @@
                             <tr>
                                 <th scope="col"
                                     class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                                    Code</th>
+                                    รหัสสินค้า</th>
                                 <th scope="col"
                                     class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                                    Qty</th>
+                                    จำนวน</th>
                                 <th scope="col"
                                     class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Product Name (Color/Size)</th>
+                                    ชื่อสินค้า (สี/ขนาด)</th>
                                 <th scope="col"
                                     class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                                    Unit Price</th>
+                                    ราคาต่อหน่วย</th>
                                 <th scope="col"
                                     class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                    Total</th>
+                                    รวม</th>
                                 <th scope="col" class="relative px-3 py-3 w-10">
-                                    <span class="sr-only">Delete</span>
+                                    <span class="sr-only">ลบ</span>
                                 </th>
                             </tr>
                         </thead>
@@ -132,33 +133,33 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Shipping -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100 h-full">
-                    <h2 class="text-xl font-semibold text-indigo-900 mb-4">Shipping Address</h2>
+                    <h2 class="text-xl font-semibold text-indigo-900 mb-4">ที่อยู่จัดส่ง</h2>
                     <textarea id="shipping_address" name="shipping_address" rows="5" readonly
                         class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-gray-50 border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + '\n' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
                 </div>
 
                 <!-- Summary -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
-                    <h2 class="text-xl font-semibold text-indigo-900 mb-4">Order Summary</h2>
+                    <h2 class="text-xl font-semibold text-indigo-900 mb-4">สรุปรายการสั่งซื้อ</h2>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Subtotal (Before Tax)</span>
+                            <span class="text-gray-600">รวมเป็นเงิน (ก่อนภาษี)</span>
                             <span class="font-medium text-gray-900" id="summary_subtotal">0.00</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Discount</span>
+                            <span class="text-gray-600">ส่วนลด</span>
                             <span class="font-medium text-green-600" id="summary_discount">0.00</span>
                         </div>
                         <div class="border-t border-gray-200 pt-3 flex justify-between">
-                            <span class="text-gray-600">Price After Discount</span>
+                            <span class="text-gray-600">ยอดหลังหักส่วนลด</span>
                             <span class="font-medium text-gray-900" id="summary_after_discount">0.00</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">VAT (7%)</span>
+                            <span class="text-gray-600">ภาษีมูลค่าเพิ่ม (7%)</span>
                             <span class="font-medium text-gray-900" id="summary_tax">0.00</span>
                         </div>
                         <div class="border-t border-gray-200 pt-3 flex justify-between items-center">
-                            <span class="text-base font-bold text-gray-900">Grand Total</span>
+                            <span class="text-base font-bold text-gray-900">จำนวนเงินรวมทั้งสิ้น</span>
                             <span class="text-xl font-bold text-indigo-600" id="summary_grand_total">0.00</span>
                         </div>
                     </div>
@@ -169,7 +170,7 @@
             <div class="flex justify-end pt-5">
                 <button type="submit"
                     class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Save Order (Continue)
+                    บันทึกข้อมูล (Continue)
                 </button>
             </div>
 
@@ -187,14 +188,14 @@
                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                 <div>
                     <div class="mt-3 text-center sm:mt-5">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Search Person</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">ค้นหาบุคคล</h3>
                         <div class="mt-2">
                             <input type="text" id="personSearchInput"
                                 class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                                placeholder="Enter Name or Citizen ID...">
+                                placeholder="ระบุชื่อ หรือ เลขบัตรประชาชน...">
                             <button type="button" onclick="performPersonSearch()"
                                 class="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:text-sm">
-                                Search
+                                ค้นหา
                             </button>
                         </div>
                         <div class="mt-4 text-left max-h-60 overflow-y-auto" id="personSearchResults"></div>
@@ -204,7 +205,7 @@
                     <button type="button"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:text-sm"
                         onclick="closePersonSearch()">
-                        Close
+                        ปิด
                     </button>
                 </div>
             </div>

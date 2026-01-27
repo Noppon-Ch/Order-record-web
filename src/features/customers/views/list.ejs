@@ -2,8 +2,8 @@
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 sm:px-0 mb-6 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Customer List</h1>
-                <p class="mt-1 text-sm text-gray-600">Total customers found: <%= customers.length %>
+                <h1 class="text-3xl font-bold text-gray-900">รายชื่อลูกค้า</h1>
+                <p class="mt-1 text-sm text-gray-600">พบลูกค้าทั้งหมด: <%= customers.length %> ราย
                 </p>
             </div>
             <a href="/customer/add"
@@ -14,7 +14,7 @@
                         d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                         clip-rule="evenodd" />
                 </svg>
-                Add Customer
+                เพิ่มลูกค้า
             </a>
         </div>
 
@@ -23,11 +23,11 @@
             <form action="/customer/list" method="GET" class="relative rounded-md shadow-sm max-w-lg">
                 <input type="text" name="search" id="search"
                     class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
-                    placeholder="Search by name, citizen ID..." value="<%= searchQuery %>">
+                    placeholder="ค้นหาด้วยชื่อ, เลขบัตรประชาชน..." value="<%= searchQuery %>">
                 <div class="absolute inset-y-0 right-0 flex items-center">
                     <button type="submit"
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 h-full">
-                        Search
+                        ค้นหา
                     </button>
                 </div>
             </form>
@@ -42,23 +42,23 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name
+                                        ชื่อ-นามสกุล
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Position
+                                        ตำแหน่ง
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Citizen ID
+                                        เลขบัตรประชาชน
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Recommender Name
+                                        ผู้แนะนำ
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
+                                        จัดการ
                                     </th>
                                 </tr>
                             </thead>
@@ -66,7 +66,7 @@
                                 <% if (customers.length===0) { %>
                                     <tr>
                                         <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                                            No customers found.
+                                            ไม่พบข้อมูลลูกค้า
                                         </td>
                                     </tr>
                                     <% } else { %>
@@ -79,8 +79,20 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
+                                                    <% 
+                                                        const positionColors = {
+                                                            'BM': 'background-color: #ADD8E6; color: #4682B4;',
+                                                            'AG': 'background-color: #90EE90; color: #259a25;',
+                                                            'SFAG': 'background-color: #FFD700; color: #a67e18;',
+                                                            'SAG': 'background-color: #f5b7b1; color: #a93226;',
+                                                            'ESAG': 'background-color: #f5b7b1; color: #a93226;'
+                                                        }; 
+                                                        const pos = (customer.customer_position || '').toUpperCase(); 
+                                                        const badgeStyle = positionColors[pos] || 'background-color: #f3f4f6; color: #1f2937;';
+                                                    %>
                                                     <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                        style="<%= badgeStyle %>">
                                                         <%= customer.customer_position %>
                                                     </span>
                                                 </td>
@@ -91,7 +103,7 @@
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm text-gray-500">
-                                                        <%= customer.recommender_name %>
+                                                        <%= customer.recommender_name || '-' %>
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -102,7 +114,7 @@
                                                             class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
                                                             id="options-menu-<%= customer.customer_id %>"
                                                             aria-expanded="true" aria-haspopup="true">
-                                                            Actions
+                                                            เลือกรายการ
                                                             <svg class="-mr-1 ml-2 h-5 w-5"
                                                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                                                 fill="currentColor" aria-hidden="true">
@@ -129,7 +141,7 @@
                                                                                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                                                         </svg>
                                                                     </span>
-                                                                    New Order
+                                                                    สร้างบิลใหม่
                                                                 </a>
                                                                 <a href="/orders/continue?customerId=<%= customer.customer_id %>"
                                                                     class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -143,7 +155,7 @@
                                                                                 d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                                                                         </svg>
                                                                     </span>
-                                                                    Continue Order
+                                                                    ทำรายการต่อ
                                                                 </a>
                                                                 <a href="/customer/<%= customer.customer_id %>/pdf"
                                                                     target="_blank"
@@ -173,7 +185,7 @@
                                                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                                         </svg>
                                                                     </span>
-                                                                    Edit
+                                                                    แก้ไข
                                                                 </a>
                                                                 <a href="#"
                                                                     onclick="deleteCustomer('<%= customer.customer_id %>', '<%= customer.customer_fname_th %>')"
@@ -188,7 +200,7 @@
                                                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                                         </svg>
                                                                     </span>
-                                                                    Delete
+                                                                    ลบ
                                                                 </a>
                                                             </div>
                                                         </div>
@@ -209,7 +221,7 @@
                 <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm text-gray-700">
-                            Showing page <span class="font-medium">
+                            หน้า <span class="font-medium">
                                 <%= currentPage %>
                             </span>
                         </p>
@@ -219,7 +231,7 @@
                             <% if (currentPage> 1) { %>
                                 <a href="/customer/list?page=<%= currentPage - 1 %>&search=<%= searchQuery %>"
                                     class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Previous</span>
+                                    <span class="sr-only">ก่อนหน้า</span>
                                     <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                         fill="currentColor" aria-hidden="true">
                                         <path fill-rule="evenodd"
@@ -230,13 +242,14 @@
                                 <% } %>
                                     <a href="/customer/list?page=<%= currentPage + 1 %>&search=<%= searchQuery %>"
                                         class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                        <span class="sr-only">Next</span>
+                                        <span class="sr-only">ถัดไป</span>
                                         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                             fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd"
                                                 d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
                                                 clip-rule="evenodd" />
                                         </svg>
+                                    </a>
                                     </a>
                         </nav>
                     </div>

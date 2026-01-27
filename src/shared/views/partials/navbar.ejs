@@ -57,7 +57,7 @@
 
                 <a href="/auth/logout"
                     class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                    title="Logout">
+                    title="ออกจากระบบ">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
@@ -67,10 +67,67 @@
             </div>
             <% } else { %>
                 <!-- If not logged in -->
-                <a href="/login"
-                    class="px-5 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition shadow-sm">Sign
-                    In</a>
+                <div class="flex items-center gap-3">
+                    <a href="/register"
+                        class="px-5 py-2 text-gray-600 font-medium hover:text-blue-600 transition">สมัครสมาชิก</a>
+                    <a href="/login"
+                        class="px-5 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition shadow-sm">เข้าสู่ระบบ</a>
+                </div>
                 <% } %>
 
+                    <!-- Mobile Menu Button -->
+                    <div class="md:hidden flex items-center">
+                        <button id="mobile-menu-btn" type="button"
+                            class="text-gray-600 hover:text-blue-600 focus:outline-none p-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16m-7 6h7"></path>
+                            </svg>
+                        </button>
+                    </div>
+    </div>
+
+    <!-- Mobile Menu Container -->
+    <div id="mobile-menu"
+        class="hidden md:hidden bg-white border-t border-gray-100 absolute w-full left-0 top-full shadow-lg">
+        <% if (typeof user !=='undefined' && user) { %>
+            <ul class="flex flex-col px-6 py-4 space-y-4 font-medium text-gray-600">
+                <li><a href="/customer/list"
+                        class="block hover:text-blue-600 transition-colors duration-200">รายชื่อลูกค้า</a></li>
+                <li><a href="/customer/add"
+                        class="block hover:text-blue-600 transition-colors duration-200">เพิ่มลูกค้า</a></li>
+                <li><a href="/products/search"
+                        class="block hover:text-blue-600 transition-colors duration-200">ค้นหาสินค้า</a></li>
+                <li><a href="/orders/history"
+                        class="block hover:text-blue-600 transition-colors duration-200">ประวัติสั่งซื้อ</a></li>
+                <li><a href="/visualizations/summary"
+                        class="block hover:text-blue-600 transition-colors duration-200">สรุปคะแนน</a></li>
+                <li><a href="/visualizations/organization-chart"
+                        class="block hover:text-blue-600 transition-colors duration-200">ผังองค์กร</a></li>
+                <li class="border-t pt-4 mt-2">
+                    <a href="/user/setting"
+                        class="flex items-center gap-2 hover:text-blue-600 transition-colors duration-200">
+                        <span>ตั้งค่าบัญชี</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/auth/logout"
+                        class="block text-red-500 hover:text-red-600 transition-colors duration-200">ออกจากระบบ</a>
+                </li>
+            </ul>
+            <% } %>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        if (btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+    });
+</script>

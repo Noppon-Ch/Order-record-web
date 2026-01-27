@@ -1,4 +1,4 @@
-<%- include('main', { body: ` <div
+<%- include('main', { fullWidth: true, body: ` <div
   class="relative w-full h-full min-h-[80vh] flex flex-col items-center justify-center text-center overflow-hidden">
   <!-- Background Decoration -->
   <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 -z-10"></div>
@@ -10,24 +10,23 @@
   </div>
 
   <div class="relative z-10 px-6 max-w-4xl mx-auto">
-    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 drop-shadow-sm">
+    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mt-16 mb-6 drop-shadow-sm">
       <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Order Record</span>
-      <span class="block text-4xl md:text-5xl mt-2 text-gray-700 font-bold">Simplify Your Business</span>
+      <span class="block text-4xl md:text-5xl mt-2 text-gray-700 font-bold">จัดการธุรกิจของคุณให้ง่ายขึ้น</span>
     </h1>
 
     <p class="mt-4 text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-      Manage customers, orders, and consents effortlessly with our premium all-in-one solution. Designed for speed,
-      security, and elegance.
+      ระบบจัดการลูกค้า รายการคำสั่งซื้อ และเอกสารสำคัญ ครบจบในที่เดียว ออกแบบมาเพื่อความรวดเร็ว ปลอดภัย และใช้งานง่าย
     </p>
 
     <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
       <a href="/login"
         class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transform transition duration-200 ease-in-out w-full sm:w-auto">
-        Get Started
+        เริ่มต้นใช้งาน
       </a>
     </div>
 
-    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+    <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-left mb-16">
       <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,8 +35,8 @@
             </path>
           </svg>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-2">Customer Management</h3>
-        <p class="text-gray-600 text-sm">Keep track of all your customer details and history in one secure place.</p>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">จัดการข้อมูลลูกค้า</h3>
+        <p class="text-gray-600 text-sm">เก็บรวบรวมข้อมูลและประวัติของลูกค้าไว้อย่างเป็นระเบียบและปลอดภัย</p>
       </div>
       <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
         <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4 text-indigo-600">
@@ -47,8 +46,8 @@
             </path>
           </svg>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-2">Order Tracking</h3>
-        <p class="text-gray-600 text-sm">Create and manage orders efficiently with automated status updates.</p>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">ติดตามรายการสั่งซื้อ</h3>
+        <p class="text-gray-600 text-sm">สร้างและจัดการรายการสั่งซื้อ พร้อมอัปเดตสถานะได้ทันที</p>
       </div>
       <div class="p-6 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50">
         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4 text-purple-600">
@@ -57,8 +56,8 @@
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-2">Secure & Reliable</h3>
-        <p class="text-gray-600 text-sm">Enterprise-grade security on Supabase with seamless Google Auth.</p>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">ปลอดภัยและเชื่อถือได้</h3>
+        <p class="text-gray-600 text-sm">ระบบความปลอดภัยระดับ Enterprise บน Supabase พร้อมรองรับ Google Auth</p>
       </div>
     </div>
   </div>

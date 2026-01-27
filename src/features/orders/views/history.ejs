@@ -4,23 +4,29 @@
         <!-- Page Header -->
         <div class="mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Order History</h1>
-                <p class="mt-2 text-sm text-gray-500">View and manage customer orders.</p>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">ประวัติการสั่งซื้อ (Order History)</h1>
+                <p class="mt-2 text-sm text-gray-500">ดูและจัดการรายการสั่งซื้อของลูกค้า</p>
             </div>
-            <a href="/orders/first"
-                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                + New Order
-            </a>
+            <div class="flex space-x-3">
+                <a href="/orders/first"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    + สร้างบิลใหม่
+                </a>
+                <a href="/orders/continue"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    + ใบสั่งซื้อต่อเนื่อง
+                </a>
+            </div>
         </div>
 
         <!-- Search Tool (Simple) -->
         <div class="mb-6">
             <form action="/orders/history" method="GET" class="flex gap-2">
-                <input type="text" name="q" placeholder="Search orders..." value="<%= query %>"
+                <input type="text" name="q" placeholder="ค้นหารายการ..." value="<%= query %>"
                     class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 <button type="submit"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
-                    Search
+                    ค้นหา
                 </button>
             </form>
         </div>
@@ -35,19 +41,19 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Date
+                                        วันที่
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Type
+                                        ประเภท
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Customer
+                                        ลูกค้า
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Position
+                                        ตำแหน่ง
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -55,14 +61,14 @@
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Amount
+                                        ยอดรวม
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Final Price
+                                        ยอดสุทธิ
                                     </th>
                                     <th scope="col" class="relative px-6 py-3">
-                                        <span class="sr-only">Actions</span>
+                                        <span class="sr-only">จัดการ</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -95,11 +101,24 @@
                                                     <%= order.customers.customer_fname_th %>
                                                         <%= order.customers.customer_lname_th %>
                                                             <% } else { %>
-                                                                <span class="text-gray-400">Unknown</span>
+                                                                <span class="text-gray-400">ไม่ระบุ</span>
                                                                 <% } %>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                <%= order.position || '-' %>
+                                                <% let badgeStyle='background-color: #f3f4f6; color: #1f2937;' ; const
+                                                    pos=(order.position || '' ).toUpperCase(); if (pos==='BM' )
+                                                    badgeStyle='background-color: #ADD8E6; color: #4682B4;' ; else if
+                                                    (pos==='AG' )
+                                                    badgeStyle='background-color: #90EE90; color: #259a25;' ; else if
+                                                    (pos==='SFAG' )
+                                                    badgeStyle='background-color: #FFD700; color: #a67e18;' ; else if
+                                                    (pos==='SAG' || pos==='ESAG' )
+                                                    badgeStyle='background-color: #f5b7b1; color: #a93226;' ; %>
+                                                    <span
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                                        style="<%= badgeStyle %>">
+                                                        <%= order.position || '-' %>
+                                                    </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 <% if (order.recommender) { %>
@@ -128,81 +147,86 @@
                                                             class="text-indigo-600 hover:text-indigo-900">PDF</a>
                                                         <% } %>
                                                             <button onclick="deleteOrder('<%= order.order_id %>')"
-                                                                class="text-red-600 hover:text-red-900">Delete</button>
+                                                                class="text-red-600 hover:text-red-900">ลบ</button>
                                             </td>
                                         </tr>
                                         <!-- Details Row -->
                                         <tr id="details-<%= order.order_id %>" class="hidden bg-gray-50">
-                                            <td colspan="7" class="px-6 py-4">
-                                                <div
-                                                    class="rounded-md border border-gray-200 bg-white shadow-sm overflow-hidden">
-                                                    <table class="min-w-full divide-y divide-gray-200">
-                                                        <thead class="bg-gray-100">
-                                                            <tr>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Product Name</th>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Color</th>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Size</th>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Price (Unit)</th>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Qty</th>
-                                                                <th scope="col"
-                                                                    class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                                                    Total</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class="divide-y divide-gray-200">
-                                                            <% if (order.order_items && order.order_items.length> 0) {
-                                                                %>
-                                                                <% order.order_items.forEach(item=> { %>
-                                                                    <tr>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                                                            <%= item.product_name %>
-                                                                        </td>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                                                            <%= item.product_color || '-' %>
-                                                                        </td>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                                                                            <%= item.product_size || '-' %>
-                                                                        </td>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                                            <%= (item.product_price /
-                                                                                100).toLocaleString('en-US', {
-                                                                                minimumFractionDigits: 2 }) %>
-                                                                        </td>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                                            <%= item.quantity %>
-                                                                        </td>
-                                                                        <td
-                                                                            class="px-4 py-2 whitespace-nowrap text-sm text-blue-600 font-medium text-right">
-                                                                            <%= ((item.product_price * item.quantity) /
-                                                                                100).toLocaleString('en-US', {
-                                                                                minimumFractionDigits: 2 }) %>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <% }) %>
-                                                                        <% } else { %>
-                                                                            <tr>
-                                                                                <td colspan="6"
-                                                                                    class="px-4 py-2 text-center text-sm text-gray-500">
-                                                                                    No items found.</td>
-                                                                            </tr>
-                                                                            <% } %>
-                                                        </tbody>
-                                                    </table>
+                                            <td colspan="8" class="px-6 py-4">
+                                                <!-- Centered Sub-Table Wrapper -->
+                                                <div class="flex justify-center w-full">
+                                                    <div
+                                                        class="w-full max-w-5xl rounded-md border border-gray-200 bg-white shadow-sm overflow-hidden">
+                                                        <table class="min-w-full divide-y divide-gray-200">
+                                                            <thead class="bg-gray-100">
+                                                                <tr>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        ชื่อสินค้า</th>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        สี</th>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        ขนาด</th>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        ราคา/หน่วย</th>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        จำนวน</th>
+                                                                    <th scope="col"
+                                                                        class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                                        รวม</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-gray-200">
+                                                                <% if (order.order_items && order.order_items.length> 0)
+                                                                    {
+                                                                    %>
+                                                                    <% order.order_items.forEach(item=> { %>
+                                                                        <tr>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                                                                                <%= item.product_name %>
+                                                                            </td>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                                                                <%= item.product_color || '-' %>
+                                                                            </td>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                                                                <%= item.product_size || '-' %>
+                                                                            </td>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                                                <%= (item.product_price /
+                                                                                    100).toLocaleString('en-US', {
+                                                                                    minimumFractionDigits: 2 }) %>
+                                                                            </td>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                                                <%= item.quantity %>
+                                                                            </td>
+                                                                            <td
+                                                                                class="px-4 py-2 whitespace-nowrap text-sm text-blue-600 font-medium text-right">
+                                                                                <%= ((item.product_price *
+                                                                                    item.quantity) /
+                                                                                    100).toLocaleString('en-US', {
+                                                                                    minimumFractionDigits: 2 }) %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }) %>
+                                                                            <% } else { %>
+                                                                                <tr>
+                                                                                    <td colspan="6"
+                                                                                        class="px-4 py-2 text-center text-sm text-gray-500">
+                                                                                        ไม่พบสินค้าในรายการ</td>
+                                                                                </tr>
+                                                                                <% } %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -210,7 +234,7 @@
                                             <% } else { %>
                                                 <tr>
                                                     <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-                                                        No orders found.
+                                                        ไม่พบรายการใบสั่งซื้อ
                                                     </td>
                                                 </tr>
                                                 <% } %>
@@ -227,19 +251,19 @@
                 <div class="flex-1 flex justify-between sm:hidden">
                     <a href="?page=<%= Math.max(1, currentPage - 1) %>&q=<%= query %>"
                         class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Previous
+                        ก่อนหน้า
                     </a>
                     <a href="?page=<%= Math.min(totalPages, currentPage + 1) %>&q=<%= query %>"
                         class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Next
+                        ถัดไป
                     </a>
                 </div>
                 <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                         <p class="text-sm text-gray-700">
-                            Page <span class="font-medium">
+                            หน้า <span class="font-medium">
                                 <%= currentPage %>
-                            </span> of <span class="font-medium">
+                            </span> จาก <span class="font-medium">
                                 <%= totalPages %>
                             </span>
                         </p>
@@ -261,7 +285,7 @@
 
     <script>
         async function deleteOrder(orderId) {
-            if (!confirm('Are you sure you want to delete this order?')) return;
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้?')) return;
 
             try {
                 const response = await fetch(`/orders/${orderId}`, {
@@ -274,11 +298,11 @@
                     // Remove row or reload
                     window.location.reload();
                 } else {
-                    alert('Error deleting order: ' + result.message);
+                    alert('เกิดข้อผิดพลาดในการลบรายการ: ' + result.message);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to delete order.');
+                alert('ลบรายการไม่สำเร็จ');
             }
         }
 
