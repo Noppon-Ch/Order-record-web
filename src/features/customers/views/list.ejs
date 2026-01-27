@@ -74,24 +74,27 @@
                                             <tr class="hover:bg-gray-50 transition-colors">
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm text-gray-500">
-                                                        <%= new
-                                                            Date(customer.customer_registerdate).toLocaleDateString('th-TH',
-                                                            { year: 'numeric' , month: 'short' , day: 'numeric' }) %>
+                                                        <% let displayDate='-' ; let isNew=false; if
+                                                            (customer.customer_registerdate) { const regDate=new
+                                                            Date(customer.customer_registerdate); if
+                                                            (!isNaN(regDate.getTime())) {
+                                                            displayDate=regDate.toLocaleDateString('th-TH', {
+                                                            year: 'numeric' , month: 'short' , day: 'numeric' }); const
+                                                            now=new Date(); const monthDiff=(now.getFullYear() -
+                                                            regDate.getFullYear()) * 12 + (now.getMonth() -
+                                                            regDate.getMonth()); if (monthDiff>= 0 && monthDiff <= 1) {
+                                                                isNew=true; } } } %>
+                                                                <%= displayDate %>
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm font-medium text-gray-900">
                                                         <%= customer.customer_fname_th %>
                                                             <%= customer.customer_lname_th %>
-                                                                <% const regDate=new
-                                                                    Date(customer.customer_registerdate); const now=new
-                                                                    Date(); const monthDiff=(now.getFullYear() -
-                                                                    regDate.getFullYear()) * 12 + (now.getMonth() -
-                                                                    regDate.getMonth()); if (monthDiff>= 0 && monthDiff
-                                                                    <= 1) { %>
-                                                                        <span
-                                                                            class="text-red-500 text-xs ml-1">(ใหม่)</span>
-                                                                        <% } %>
+                                                                <% if (isNew) { %>
+                                                                    <span
+                                                                        class="text-red-500 text-xs ml-1">(ใหม่)</span>
+                                                                    <% } %>
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">

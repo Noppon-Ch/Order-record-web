@@ -83,24 +83,24 @@ CREATE TABLE public.orders (
   CONSTRAINT orders_order_assistant_id_fkey FOREIGN KEY (order_assistant_id) REFERENCES public.customers(customer_id)
 );
 CREATE TABLE public.products (
-  product_id bigint,
+  product_id smallint,
   product_code text NOT NULL,
   product_name_th text,
   product_name_en text,
   color_th text,
   color_en text,
   product_size text,
-  under_bust bigint,
-  top_bust bigint,
-  price_per_unit bigint,
-  waist_min bigint,
-  waist_max bigint,
-  hip_min bigint,
-  hip_max bigint,
-  bust_min bigint,
-  bust_max bigint,
-  hight_min bigint,
-  hight_max bigint,
+  under_bust smallint,
+  top_bust smallint,
+  price_per_unit integer,
+  waist_min smallint,
+  waist_max smallint,
+  hip_min smallint,
+  hip_max smallint,
+  bust_min smallint,
+  bust_max smallint,
+  hight_min smallint,
+  hight_max smallint,
   CONSTRAINT products_pkey PRIMARY KEY (product_code)
 );
 CREATE TABLE public.user_profiles (

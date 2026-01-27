@@ -142,7 +142,7 @@ export class CustomerService {
 
         let query = supabase
             .from('customers')
-            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id')
+            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id, customer_registerdate')
             .range(offset, offset + limit - 1);
 
         if (search) {

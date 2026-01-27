@@ -64,7 +64,11 @@ export class ProductService {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
 
-        const selectColumns = 'product_code, product_name_th, color_th, product_size, price_per_unit';
+        const selectColumns = `
+            product_code, product_name_th, color_th, product_size, price_per_unit,
+            under_bust, top_bust, waist_min, waist_max, hip_min, hip_max, 
+            bust_min, bust_max, hight_min, hight_max
+        `;
 
         let queryBuilder = supabase.from('products').select(selectColumns, { count: 'exact' });
 
