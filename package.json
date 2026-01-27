@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc",
-    "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
+    "build": "npm run build:css && tsc",
+    "build:css": "npx @tailwindcss/cli -i ./src/css/input.css -o ./public/css/style.css --minify",
+    "dev": "concurrently \"npm run build:css -- --watch\" \"nodemon --watch src --ext ts --exec tsx src/server.ts\"",
     "check-products": "node src/scripts/check-products.js"
   },
   "keywords": [],
@@ -40,6 +41,7 @@
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
+    "@tailwindcss/cli": "^4.0.0",
     "tailwindcss": "^4.1.18",
     "ts-node": "^1.7.1",
     "tsx": "^4.21.0",

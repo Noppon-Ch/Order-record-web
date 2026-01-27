@@ -35,7 +35,7 @@
                                     value="<%= customer ? customer.customer_citizen_id : '' %>">
                             </div>
                             <div class="flex items-end">
-                                <button type="button" onclick="openPersonSearch('buyer')"
+                                <button type="button" id="searchBuyerBtn"
                                     class="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none mb-[1px]">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -106,7 +106,7 @@
                                 <input type="hidden" id="assistant_uuid">
                             </div>
                             <div class="flex items-end">
-                                <button type="button" onclick="openPersonSearch('assistant')"
+                                <button type="button" id="searchAssistantBtn"
                                     class="inline-flex items-center px-4 py-2 border border-blue-300 shadow-sm text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +131,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-900">รายการสินค้า</h2>
-                    <button type="button" onclick="addProductRow()"
+                    <button type="button" id="addProductBtn"
                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none shadow-sm">
                         + เพิ่มสินค้า
                     </button>
@@ -221,7 +221,7 @@
         role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closePersonSearch()"></div>
+                id="modalBackground"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
@@ -232,7 +232,7 @@
                             <input type="text" id="personSearchInput"
                                 class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                                 placeholder="ระบุชื่อ หรือ เลขบัตรประชาชน...">
-                            <button type="button" onclick="performPersonSearch()"
+                            <button type="button" id="performSearchBtn"
                                 class="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:text-sm">
                                 ค้นหา
                             </button>
@@ -243,7 +243,7 @@
                 <div class="mt-5 sm:mt-6">
                     <button type="button"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:text-sm"
-                        onclick="closePersonSearch()">
+                        onclick="closePersonSearch()" id="closeSearchModalBtn">
                         ปิด
                     </button>
                 </div>
@@ -256,5 +256,5 @@
         class="hidden absolute z-50 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
     </div>
 
-    <script src="/js/order-form.js"></script>
+    <script src="/js/orders/form.js"></script>
     <%- include('partials/app-footer') %>

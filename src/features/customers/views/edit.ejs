@@ -177,7 +177,7 @@
                         maxlength="13" inputmode="numeric" value="${customer.customer_recommender_id || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                         placeholder="13 หลัก">
-                    <button type="button" onclick="openSearchModal()"
+                    <button type="button" id="openSearchModalBtn"
                         class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                         Search
                     </button>
@@ -214,7 +214,7 @@
         aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closeSearchModal()"></div>
+                id="closeSearchModalOverlay"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
@@ -225,7 +225,7 @@
                             <input type="text" id="searchInput"
                                 class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                                 placeholder="Enter Name or Citizen ID...">
-                            <button type="button" onclick="performSearch()"
+                            <button type="button" id="performSearchBtn"
                                 class="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:text-sm">
                                 Search
                             </button>
@@ -236,9 +236,8 @@
                     </div>
                 </div>
                 <div class="mt-5 sm:mt-6">
-                    <button type="button"
-                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:text-sm"
-                        onclick="closeSearchModal()">
+                    <button type="button" id="closeSearchModalBtn"
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:text-sm">
                         Close
                     </button>
                 </div>
@@ -246,6 +245,5 @@
         </div>
     </div>
 
-    <script src="/js/referrer-search.js"></script>
-    <script src="/js/address-autocomplete.js"></script>
+    <script src="/js/customers/form.js"></script>
     ` }) %>

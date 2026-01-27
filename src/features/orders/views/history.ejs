@@ -136,7 +136,7 @@
                                                     minimumFractionDigits: 2 }) %>
                                             </td>
                                             <td class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium space-x-2"
-                                                onclick="event.stopPropagation()">
+                                                data-no-row-click="true">
                                                 <% if (order.order_type==='c_order' ) { %>
                                                     <a href="/orders/<%= order.order_id %>/continue-pdf" target="_blank"
                                                         class="text-indigo-600 hover:text-indigo-900">PDF</a>
@@ -144,7 +144,7 @@
                                                         <a href="/orders/<%= order.order_id %>/pdf" target="_blank"
                                                             class="text-indigo-600 hover:text-indigo-900">PDF</a>
                                                         <% } %>
-                                                            <button onclick="deleteOrder('<%= order.order_id %>')"
+                                                            <button data-delete-order="<%= order.order_id %>"
                                                                 class="text-red-600 hover:text-red-900">ลบ</button>
                                             </td>
                                         </tr>
@@ -281,49 +281,6 @@
             <% } %>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Attach click listeners to rows
-            document.querySelectorAll('.order-row').forEach(row => {
-                row.addEventListener('click', function () {
-                    const orderId = this.dataset.orderId;
-                    toggleDetails(orderId);
-                });
-            });
-        });
-
-        async function deleteOrder(orderId) {
-            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้?')) return;
-
-            try {
-                const response = await fetch(`/orders/${orderId}`, {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    window.location.reload();
-                } else {
-                    alert('เกิดข้อผิดพลาดในการลบรายการ: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('ลบรายการไม่สำเร็จ');
-            }
-        }
-
-        function toggleDetails(orderId) {
-            const detailsRow = document.getElementById(`details-${orderId}`);
-            if (detailsRow) {
-                if (detailsRow.classList.contains('hidden')) {
-                    detailsRow.classList.remove('hidden');
-                    // Removed animation class to simplify and match standard behavior
-                } else {
-                    detailsRow.classList.add('hidden');
-                }
-            }
-        }
-    </script>
+    <script src="/js/orders/history.js"></script>
 
     <%- include('partials/app-footer') %>

@@ -2,6 +2,7 @@ import 'dotenv/config'; // Load env vars before other imports
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 import passport from 'passport';
 import session from 'express-session';
@@ -26,12 +27,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Security Middleware ---
+// --- Security Middleware ---
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "cdn.tailwindcss.com", "https://d3js.org"],
-      styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      scriptSrc: ["'self'", "cdn.jsdelivr.net", "cdn.tailwindcss.com", "https://d3js.org", (req: any, res: any) => `'nonce-${res.locals.nonce}'`],
+
+      // Note: Tailwind play CDN injects styles dynamically. Adding nonce to styleSrc helps if we put nonce on the style tag, 
+      // but sometimes 'unsafe-inline' is still needed for styles injected by JS. 
+      // Let's try adding nonce to styleSrc first. If it fails, we might need unsafe-inline for styles.
+      // The user error showed "Applying inline style...".
+      // Let's explicitly add nonce-based allowance.
+      styleSrc: ["'self'", "fonts.googleapis.com"],
       fontSrc: ["'self'", "fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https:", "wss:"],
