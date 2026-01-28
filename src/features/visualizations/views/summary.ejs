@@ -3,18 +3,17 @@
     <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <!-- Page Header -->
         <div class="mb-8 border-b border-gray-200 pb-4">
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Score Summary</h1>
-            <p class="mt-2 text-sm text-gray-500">View team structure and monthly scores.</p>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">สรุปคะแนนทีม</h1>
+            <p class="mt-2 text-sm text-gray-500">ดูโครงสร้างสายงานและคะแนนประจำเดือน</p>
         </div>
 
         <!-- Filter Form -->
         <div class="mb-6 bg-white p-4 rounded-lg shadow sm:flex sm:items-end sm:gap-4">
             <form action="/visualizations/summary" method="GET" class="w-full sm:flex sm:gap-4 items-end">
                 <div class="flex-1">
-                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                    <label for="year" class="block text-sm font-medium text-gray-700">ปี</label>
                     <select id="year" name="year"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
-                        onchange="this.form.submit()">
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
                         <% const currentYear=new Date().getFullYear(); for(let i=currentYear; i>= currentYear - 5; i--)
                             {
                             %>
@@ -25,13 +24,12 @@
                 </div>
 
                 <div class="flex-1 mt-4 sm:mt-0">
-                    <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
+                    <label for="month" class="block text-sm font-medium text-gray-700">เดือน</label>
                     <select id="month" name="month"
-                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
-                        onchange="this.form.submit()">
-                        <% const months=[ 'January' , 'February' , 'March' , 'April' , 'May' , 'June' , 'July'
-                            , 'August' , 'September' , 'October' , 'November' , 'December' ]; months.forEach((m,
-                            index)=> {
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                        <% const months=['มกราคม', 'กุมภาพันธ์' , 'มีนาคม' , 'เมษายน' , 'พฤษภาคม' , 'มิถุนายน'
+                            , 'กรกฎาคม' , 'สิงหาคม' , 'กันยายน' , 'ตุลาคม' , 'พฤศจิกายน' , 'ธันวาคม' ];
+                            months.forEach((m, index)=> {
                             const val = index + 1;
                             %>
                             <option value="<%= val %>" <%=filters.month===val ? 'selected' : '' %>><%= m %>
@@ -43,7 +41,7 @@
                 <div class="mt-4 sm:mt-0">
                     <button type="submit"
                         class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Reload
+                        ค้นหา
                     </button>
                 </div>
             </form>
@@ -53,42 +51,57 @@
         <div class="flex flex-col">
             <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="shadow border-b border-gray-200 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200" id="scoreTable">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Customer Name (Tree)
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                                        Level
+                                        ชื่อลูกค้า
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Position
+                                        ผู้แนะนำ
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                                        ระดับ
+                                    </th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ตำแหน่ง
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Private S.
+                                        คะแนนส่วนตัว
                                     </th>
                                     <th scope="col"
                                         class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total S.
+                                        คะแนนรวมทีม
                                     </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <% if (scoreData && scoreData.length> 0) { %>
                                     <% scoreData.forEach(node=> {
-                                        const paddingLeft = (node.tree_level - 1) * 20;
-                                        const indentStyle = `padding-left: ${paddingLeft}px; display: flex; align-items:
-                                        center;`;
+                                        const positionClasses = {
+                                        'BM': 'bg-blue-200 text-blue-700',
+                                        'AG': 'bg-green-200 text-green-700',
+                                        'SFAG': 'bg-yellow-300 text-yellow-800',
+                                        'SAG': 'bg-red-200 text-red-800',
+                                        'ESAG': 'bg-red-200 text-red-800'
+                                        };
+                                        const pos = (node.customer_position || '').toUpperCase();
+                                        const badgeClass = positionClasses[pos] || 'bg-gray-100 text-gray-800';
                                         %>
-                                        <tr class="hover:bg-gray-50 transition-colors">
+                                        <tr class="cursor-pointer data-row transform transition-transform duration-200 hover:scale-[1.02] hover:shadow-md bg-white hover:z-10 relative"
+                                            data-level="<%= node.tree_level %>">
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                <div<% if (indentStyle) { %> style="<%= indentStyle %>"<% } %>>
+                                                <div class="flex items-center">
+                                                    <% for(let i=1; i < node.tree_level; i++) { %>
+                                                        <span class="inline-block w-5 flex-shrink-0"></span>
+                                                        <% } %>
+
                                                             <% if (node.tree_level> 1) { %>
                                                                 <span class="text-gray-400 mr-2">└</span>
                                                                 <% } else { %>
@@ -97,38 +110,105 @@
                                                                         <span class="font-medium">
                                                                             <%= node.customer_name %>
                                                                         </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <%= node.customer_recommender_name || '-' %>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                                <span
+                                                    class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-gray-500 rounded-full">
+                                                    <%= node.tree_level %>
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= badgeClass %>">
+                                                    <%= node.customer_position || '-' %>
+                                                </span>
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                                                <%= node.self_private_score.toLocaleString() %>
+                                            </td>
+                                            <td
+                                                class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
+                                                <%= node.total_score.toLocaleString() %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                                                        ไม่พบข้อมูลสำหรับช่วงเวลานี้
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
                     </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                        <span
-                            class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-gray-100 bg-gray-500 rounded-full">
-                            <%= node.tree_level %>
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <%= node.customer_position %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                        <%= node.self_private_score.toLocaleString() %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-600">
-                        <%= node.total_score.toLocaleString() %>
-                    </td>
-                    </tr>
-                    <% }) %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-500">
-                                    No data found for this period.
-                                </td>
-                            </tr>
-                            <% } %>
-                                </tbody>
-                                </table>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+
+    <script nonce="<%= nonce %>">
+        document.addEventListener('DOMContentLoaded', () => {
+            // Filter Form Auto-Submit
+            const yearSelect = document.getElementById('year');
+            const monthSelect = document.getElementById('month');
+
+            if (yearSelect) {
+                yearSelect.addEventListener('change', function () {
+                    this.form.submit();
+                });
+            }
+
+            if (monthSelect) {
+                monthSelect.addEventListener('change', function () {
+                    this.form.submit();
+                });
+            }
+
+            // Table Row Click Handling
+            const tableRows = document.querySelectorAll('#scoreTable tr.data-row');
+            tableRows.forEach(row => {
+                row.addEventListener('click', function () {
+                    handleRowClick(this);
+                });
+            });
+        });
+
+        function handleRowClick(row) {
+            // Reset all rows
+            document.querySelectorAll('#scoreTable tr').forEach(r => {
+                r.classList.remove('bg-purple-100', 'bg-blue-50');
+                // Ensure bg-white is present when not highlighted to maintain white background
+                r.classList.add('bg-white');
+            });
+
+            const currentLevel = parseInt(row.dataset.level);
+            if (isNaN(currentLevel)) return;
+
+            // Highlight clicked row - remove bg-white so color shows
+            row.classList.remove('bg-white');
+            row.classList.add('bg-purple-100');
+
+            // Highlight subtree
+            let nextRow = row.nextElementSibling;
+            while (nextRow) {
+                // Check if nextRow is a data row (has data-level attribute)
+                if (!nextRow.hasAttribute('data-level')) break;
+
+                const nextLevel = parseInt(nextRow.dataset.level);
+                if (isNaN(nextLevel) || nextLevel <= currentLevel) break;
+
+                // Remove bg-white so color shows
+                nextRow.classList.remove('bg-white');
+                nextRow.classList.add('bg-blue-50');
+                nextRow = nextRow.nextElementSibling;
+            }
+        }
+    </script>
 
     <%- include('partials/app-footer') %>

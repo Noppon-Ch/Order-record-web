@@ -19,11 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 4. Modal Interactions
     // 3. Close Modal Elements
     const closeModal = () => closeProductModal();
 
     const overlay = document.getElementById('modalOverlay');
     if (overlay) overlay.addEventListener('click', closeModal);
+
+    // Also allow closing when clicking outside the modal content (on the glass/backdrop)
+    const modalContainer = document.querySelector('#productModal .fixed.inset-0.z-10');
+    if (modalContainer) {
+        modalContainer.addEventListener('click', (e) => {
+            // Only close if clicking directly on the container (backdrop), not its children
+            if (e.target === modalContainer || e.target.classList.contains('min-h-full')) {
+                closeModal();
+            }
+        });
+    }
 
     const closeBtn = document.getElementById('closeModalBtn');
     if (closeBtn) closeBtn.addEventListener('click', closeModal);

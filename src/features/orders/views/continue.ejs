@@ -3,16 +3,16 @@
     <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <!-- Page Header -->
         <div class="mb-8 border-b border-gray-200 pb-4">
-            <h1 class="text-3xl font-extrabold text-indigo-900 tracking-tight">ทำรายการต่อ (Continue Order)</h1>
-            <p class="mt-2 text-sm text-gray-500">สร้างบิลต่อเนื่องจากบิลเดิม</p>
+            <h1 class="text-3xl font-extrabold text-indigo-900 tracking-tight">ใบสั่งซื้อต่อเนื่อง</h1>
+            <p class="mt-2 text-sm text-gray-500">สร้างรายการสั่งซื้อต่อเนื่องสำหรับลูกค้า</p>
         </div>
 
         <form id="orderForm" class="space-y-8">
             <input type="hidden" id="order_type" value="c_order">
 
-            <!-- 1. General Info & 2. Buyer Info -->
+            <!-- 1. General Info -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
-                <h2 class="text-xl font-semibold text-indigo-900 mb-4">ข้อมูลลูกค้าและการสั่งซื้อ</h2>
+                <h2 class="text-xl font-semibold text-indigo-900 mb-4">ข้อมูลทั่วไป</h2>
                 <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <!-- 1.1 Date -->
                     <div class="sm:col-span-2">
@@ -21,8 +21,15 @@
                         <input type="date" name="order_date" id="order_date"
                             class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 p-2 border"
                             value="<%= new Date().toISOString().split('T')[0] %>">
-                        <input type="hidden" id="customer_uuid" value="<%= customer ? customer.customer_id : '' %>">
                     </div>
+                </div>
+            </div>
+
+            <!-- 2. Buyer Info -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
+                <h2 class="text-xl font-semibold text-indigo-900 mb-4">ข้อมูลลูกค้า</h2>
+                <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <input type="hidden" id="customer_uuid" value="<%= customer ? customer.customer_id : '' %>">
 
                     <!-- 2.1 Buyer ID -->
                     <div class="sm:col-span-2">
@@ -69,7 +76,7 @@
 
             <!-- 3. Referrer (No Assistant) -->
             <div class="bg-white p-6 rounded-2xl shadow-lg border border-indigo-100">
-                <h3 class="text-lg font-medium text-indigo-900 mb-4">ข้อมูลผู้แนะนำ (Referrer)</h3>
+                <h3 class="text-lg font-medium text-indigo-900 mb-4">ข้อมูลผู้แนะนำ</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <label for="referrer_id" class="block text-sm font-medium text-gray-700">เลขบัตรประชาชน</label>
@@ -178,14 +185,13 @@
     </div>
 
     <!-- Search Person Modal -->
-    <div id="personSearchModal" class="hidden fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title"
+    <div id="personSearchModal" class="hidden fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                id="modalBackground"></div>
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" id="modalBackground"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
-                class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6 relative z-10">
                 <div>
                     <div class="mt-3 text-center sm:mt-5">
                         <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">ค้นหาบุคคล</h3>

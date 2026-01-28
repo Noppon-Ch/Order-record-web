@@ -9,6 +9,7 @@ export interface ScoreNode {
     customer_name: string;
     customer_position: string | null;
     recommender_id: string | null;
+    customer_recommender_name?: string;
     tree_level: number;
     self_private_score: number;
     total_score: number;
@@ -97,6 +98,7 @@ export class VisualizationService {
                 // Has valid parent in the list
                 const parent = customerMap.get(node.recommender_id)!;
                 parent.children.push(node);
+                node.customer_recommender_name = parent.customer_name;
             } else {
                 // No parent, or parent not found -> Root node
                 rootNodes.push(node);

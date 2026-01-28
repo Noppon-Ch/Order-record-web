@@ -38,12 +38,6 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "cdn.jsdelivr.net", "cdn.tailwindcss.com", "https://d3js.org", (req: any, res: any) => `'nonce-${res.locals.nonce}'`],
-
-      // Note: Tailwind play CDN injects styles dynamically. Adding nonce to styleSrc helps if we put nonce on the style tag, 
-      // but sometimes 'unsafe-inline' is still needed for styles injected by JS. 
-      // Let's try adding nonce to styleSrc first. If it fails, we might need unsafe-inline for styles.
-      // The user error showed "Applying inline style...".
-      // Let's explicitly add nonce-based allowance.
       styleSrc: ["'self'", "fonts.googleapis.com"],
       fontSrc: ["'self'", "fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
