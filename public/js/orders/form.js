@@ -426,7 +426,8 @@ async function handleFormSubmit(e) {
         order_recommender_id: document.getElementById('referrer_uuid').value || null,
         order_assistant_id: document.getElementById('assistant_uuid') ? document.getElementById('assistant_uuid').value : null,
         position: document.getElementById('buyer_position').value || null,
-        order_type: document.getElementById('order_type') ? document.getElementById('order_type').value : 'f_order'
+        order_type: document.getElementById('order_type') ? document.getElementById('order_type').value : 'f_order',
+        order_shipping_address: document.getElementById('shipping_address').value || null
     };
 
     // Collect Items & Validate Rows

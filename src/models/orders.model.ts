@@ -20,4 +20,5 @@ export interface Order {
 
   order_created_at: string | null;
   order_type: string | null;
+  order_shipping_address: string | null;
 }

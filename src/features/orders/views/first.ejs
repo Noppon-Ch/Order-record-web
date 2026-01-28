@@ -182,8 +182,8 @@
                 <!-- Shipping -->
                 <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-full">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">ที่อยู่จัดส่ง</h2>
-                    <textarea id="shipping_address" name="shipping_address" rows="5" readonly
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-gray-50 border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + '\n' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
+                    <textarea id="shipping_address" name="shipping_address" rows="5"
+                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-white border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + '\n' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
                 </div>
 
                 <!-- Summary -->

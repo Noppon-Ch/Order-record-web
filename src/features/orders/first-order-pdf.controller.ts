@@ -375,7 +375,7 @@ export class FirstOrderPdfController {
             // Shipping Addr
             // Use shipping address from logic or customer address?
             // Logic says "note + address".
-            const shippingAddr = (order.order_note ? order.order_note + '\n' : '') + (fullAddress || '');
+            const shippingAddr = order.order_shipping_address || (order.order_note ? order.order_note + '\n' : '') + (fullAddress || '');
             const wrappedShippingLines = wrapText(shippingAddr, font, 10, 174.7);
             drawTextBox({
                 page, textLines: wrappedShippingLines, x: 11.3, yStart: 407.5, lineHeight: 9, fontSize: 10, font, baselineGab

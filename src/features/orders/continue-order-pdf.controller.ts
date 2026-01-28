@@ -475,7 +475,7 @@ export class ContinueOrderPdfController {
             const buyerZipCode = buyerDetails ? (buyerDetails.customer_zipcode || '') : '';
             const fullAddress = `${buyerAddress1} ${buyerAddress2} ${buyerZipCode}`.trim();
 
-            const noteAndAddress = (order.order_note ? order.order_note + '\n' : '') + (fullAddress || '');
+            const noteAndAddress = order.order_shipping_address || (order.order_note ? order.order_note + '\n' : '') + (fullAddress || '');
             const wrappedShippingAddressLines = wrapText(noteAndAddress, font, 10, 174.7); // fontSize 10, maxWidth 174.7
             drawTextBox({
                 page,
