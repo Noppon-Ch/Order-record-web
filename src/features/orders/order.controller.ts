@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { customerService } from '../customers/customer.service.js';
 import { orderService } from './order.service.js';
+import { teamService } from '../teams/services/team.service.js';
 
 export class OrderController {
 
@@ -133,6 +134,11 @@ export class OrderController {
                 order_record_by_user_id: userId
             };
 
+            const userTeam = await teamService.getTeamByUserId(userId);
+            if (userTeam?.team) {
+                (orderData as any).order_record_by_team_id = userTeam.team.team_id;
+            }
+
             const newOrder = await orderService.createOrder({ order: orderData, items }, accessToken);
 
             res.status(201).json({ message: 'Order created successfully', orderId: newOrder.order_id });
@@ -152,7 +158,18 @@ export class OrderController {
             const query = req.query.q as string || '';
             const accessToken = (req.user as any)?.access_token;
 
-            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken);
+            const userTeam = await teamService.getTeamByUserId((req.user as any)?.id || '');
+            const userContext: { userId: string, teamId?: string, role?: string } = {
+                userId: (req.user as any)?.id || ''
+            };
+            if (userTeam?.team?.team_id) {
+                userContext.teamId = userTeam.team.team_id;
+            }
+            if (userTeam?.member?.role) {
+                userContext.role = userTeam.member.role;
+            }
+
+            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken, userContext);
 
             res.render('history', {
                 orders: orders || [],

@@ -135,7 +135,7 @@ export class CustomerService {
         return customer;
     }
 
-    async findAll(limit: number = 20, offset: number = 0, search?: string, accessToken?: string) {
+    async findAll(limit: number = 20, offset: number = 0, search?: string, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
@@ -144,6 +144,14 @@ export class CustomerService {
             .from('customers')
             .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id, customer_registerdate')
             .range(offset, offset + limit - 1);
+
+        // Team Scoping
+        if (userContext?.teamId) {
+            // Show customers recorded by user OR recorded by team
+            query = query.or(`customer_record_by_user_id.eq.${userContext.userId},customer_record_by_team_id.eq.${userContext.teamId}`);
+        } else if (userContext?.userId) {
+            query = query.eq('customer_record_by_user_id', userContext.userId);
+        }
 
         if (search) {
             query = query.or(`customer_citizen_id.ilike.%${search}%,customer_fname_th.ilike.%${search}%,customer_lname_th.ilike.%${search}%`);

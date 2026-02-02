@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getUserProfile, updateUserProfile } from './user.service.js';
+import { teamService } from '../teams/services/team.service.js';
 
 export async function renderUserSetting(req: Request, res: Response, next: NextFunction) {
     try {
@@ -12,8 +13,11 @@ export async function renderUserSetting(req: Request, res: Response, next: NextF
         const profile = await getUserProfile(user.id, user.access_token);
         console.log('[User] renderUserSetting profile:', profile);
 
+        const userTeam = await teamService.getTeamByUserId(user.id, user.access_token);
+
         res.render('setting', {
             user: { ...user, ...(profile || {}) },
+            userTeam,
             success: req.query.success === 'true',
             error: req.query.error
         });
@@ -33,7 +37,7 @@ export async function updateUserSetting(req: Request, res: Response, next: NextF
         console.log('[User] updateUserSetting form body:', req.body);
 
         // Filter empty string to undefined
-        const clean = (v: any) => v === '' ? undefined : v;
+        const clean = (v: any) => v === '' ? null : v;
         const {
             user_full_name,
             user_phone,
@@ -51,11 +55,14 @@ export async function updateUserSetting(req: Request, res: Response, next: NextF
         };
         console.log('[User] updateUserSetting updatePayload:', updatePayload);
 
-        await updateUserProfile(
+        console.log('[User] DEBUG: updateUserSetting PRE-UPDATE payload:', JSON.stringify(updatePayload, null, 2));
+
+        const result = await updateUserProfile(
             user.id,
             updatePayload,
             user.access_token
         );
+        console.log('[User] DEBUG: updateUserSetting POST-UPDATE result:', JSON.stringify(result, null, 2));
 
         res.redirect('/user/setting?success=true');
     } catch (err) {

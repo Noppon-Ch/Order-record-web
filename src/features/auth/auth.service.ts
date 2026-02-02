@@ -5,21 +5,21 @@ import type { CreateUserProfileDTO } from '../../models/user_profiles.model.js';
 let supabase: ReturnType<typeof createClient> | null = null;
 
 function getSupabaseClient() {
-    if (supabase) {
-        return supabase;
-    }
-
-    // Helper to robustly load and clean env vars
-    function getEnv(key: string): string {
-        const value = process.env[key];
-        if (!value) throw new Error(`${key} is required for Supabase`);
-        return value.replace(/['"\s]/g, '');
-    }
-
-    const supabaseUrl = getEnv('SUPABASE_URL');
-    const supabaseServiceRoleKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
-    supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  if (supabase) {
     return supabase;
+  }
+
+  // Helper to robustly load and clean env vars
+  function getEnv(key: string): string {
+    const value = process.env[key];
+    if (!value) throw new Error(`${key} is required for Supabase`);
+    return value.replace(/['"\s]/g, '');
+  }
+
+  const supabaseUrl = getEnv('SUPABASE_URL');
+  const supabaseServiceRoleKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
+  supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  return supabase;
 }
 
 export async function upsertUserProfileAfterOAuth(
@@ -52,26 +52,35 @@ export async function upsertUserProfileAfterOAuth(
   const email = user.email || '';
   const avatar = user.user_metadata?.picture || user.user_metadata?.avatar_url || null;
   const phone = user.phone || null;
-  
+
   // Find the provider-specific user ID.
   // For Supabase auto-linking (like Google), it's in identities.
   // For manual linking (like our LINE setup), we put it in user_metadata.
   const providerUserId = user.identities?.find((i: { provider: string; provider_id: string }) => i.provider === provider)?.provider_id || user.user_metadata?.provider_user_id || null;
 
 
-  const profile: CreateUserProfileDTO = {
+  // We ONLY update identity fields. We process critical fields (like role, phone, payment)
+  // once during creation (if new) or let them persist if they exist.
+  // Using `upsert` with just these fields will NOT nullify others if we don't include them,
+  // PROVIDED we are confident `upsert` in Supabase (Postgres) merges by default if we validly hit the PK.
+  // However, Supabase/PostgREST `upsert` replaces the row if no `ignoreDuplicates` or specific merge logic is used?
+  // Actually, standard `upsert` usually REPLACES the row or UPDATES specified columns. 
+  // If we pass a partial object to `upsert`, does it keep the rest?
+  // NO. `upsert` essentially does `INSERT ... ON CONFLICT DO UPDATE SET ...`.
+  // If we only pass these fields, the other fields might stay if we don't mention them?
+  // Yes, if we use the JS client, it maps to `INSERT ... ON CONFLICT DO UPDATE`.
+  // The JS client `upsert` sends the whole object. If we exclude keys, they won't be in the SET clause (for the UPDATE part).
+  // BUT for the INSERT part, they will be null/default. 
+  // Since we are likely logging in an existing user, this effectively acts as a PATCH for these specific fields.
+
+  const profile: any = {
     user_id: userId,
     user_full_name: displayName,
     user_email: email,
     user_avatar_url: avatar,
     social_login_provider: provider,
     social_provider_user_id: providerUserId,
-    user_phone: phone,
-    user_consent_record_id: null, // or provide appropriate value
-    user_payment_channel: null,   // or provide appropriate value
-    user_payment_bank: null,      // or provide appropriate value
-    user_payment_id: null,        // or provide appropriate value
-    user_role: "user",            // default to 'user'; change if other roles are supported
+    // REMOVED: user_phone, user_payment_*, user_role, etc. to prevent overwriting with null.
   };
 
   // Log the profile data before sending to Supabase

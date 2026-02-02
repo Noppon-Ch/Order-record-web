@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { customerService } from './customer.service.js';
+import { teamService } from '../teams/services/team.service.js';
 import type { CreateCustomerDTO } from './customer.types.js';
 
 export class CustomerController {
@@ -38,6 +39,12 @@ export class CustomerController {
 		// Log values before insert
 		console.log('AddCustomer values:', values);
 		try {
+			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
+			// Add team info if exists
+			if (userTeam?.team) {
+				values.customer_record_by_team_id = userTeam.team.team_id;
+			}
+
 			// Minimal: ไม่เช็คซ้ำ citizen id, แค่ insert
 			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
 
@@ -183,7 +190,15 @@ export class CustomerController {
 			const offset = (page - 1) * limit;
 			const search = req.query.search as string;
 
-			const customers = await customerService.findAll(limit, offset, search, req.user?.access_token);
+			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
+			const userContext: { userId: string, teamId?: string } = {
+				userId: req.user?.id || ''
+			};
+			if (userTeam?.team?.team_id) {
+				userContext.teamId = userTeam.team.team_id;
+			}
+
+			const customers = await customerService.findAll(limit, offset, search, req.user?.access_token, userContext);
 
 			res.render('list', {
 				user: req.user,

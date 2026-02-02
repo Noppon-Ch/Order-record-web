@@ -44,8 +44,10 @@ CREATE TABLE public.customers (
   customer_recommender_id text,
   customer_record_by_user_id uuid,
   customer_created_at timestamp with time zone DEFAULT now(),
+  customer_record_by_team_id uuid,
   CONSTRAINT customers_pkey PRIMARY KEY (customer_id),
-  CONSTRAINT customers_customer_record_by_user_id_fkey FOREIGN KEY (customer_record_by_user_id) REFERENCES auth.users(id)
+  CONSTRAINT customers_customer_record_by_user_id_fkey FOREIGN KEY (customer_record_by_user_id) REFERENCES auth.users(id),
+  CONSTRAINT customers_team_id_fkey FOREIGN KEY (customer_record_by_team_id) REFERENCES public.teams(team_id)
 );
 CREATE TABLE public.order_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -77,11 +79,13 @@ CREATE TABLE public.orders (
   order_created_at timestamp with time zone DEFAULT now(),
   order_type text,
   order_shipping_address text,
+  order_record_by_team_id uuid,
   CONSTRAINT orders_pkey PRIMARY KEY (order_id),
   CONSTRAINT orders_order_record_by_user_id_fkey FOREIGN KEY (order_record_by_user_id) REFERENCES auth.users(id),
   CONSTRAINT orders_order_customer_id_fkey FOREIGN KEY (order_customer_id) REFERENCES public.customers(customer_id),
   CONSTRAINT orders_order_recommender_id_fkey FOREIGN KEY (order_recommender_id) REFERENCES public.customers(customer_id),
-  CONSTRAINT orders_order_assistant_id_fkey FOREIGN KEY (order_assistant_id) REFERENCES public.customers(customer_id)
+  CONSTRAINT orders_order_assistant_id_fkey FOREIGN KEY (order_assistant_id) REFERENCES public.customers(customer_id),
+  CONSTRAINT orders_team_id_fkey FOREIGN KEY (order_record_by_team_id) REFERENCES public.teams(team_id)
 );
 CREATE TABLE public.products (
   product_id smallint,
@@ -103,6 +107,27 @@ CREATE TABLE public.products (
   hight_min smallint,
   hight_max smallint,
   CONSTRAINT products_pkey PRIMARY KEY (product_code)
+);
+CREATE TABLE public.team_members (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  team_id uuid NOT NULL,
+  user_id uuid NOT NULL UNIQUE,
+  role text NOT NULL DEFAULT 'member'::text,
+  status text DEFAULT 'active'::text,
+  joined_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT team_members_pkey PRIMARY KEY (id),
+  CONSTRAINT team_members_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(team_id),
+  CONSTRAINT team_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.teams (
+  team_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  team_name text NOT NULL,
+  team_code text NOT NULL UNIQUE,
+  owner_user_id uuid,
+  created_at timestamp with time zone DEFAULT now(),
+  status text DEFAULT 'pending'::text,
+  CONSTRAINT teams_pkey PRIMARY KEY (team_id),
+  CONSTRAINT teams_owner_user_id_fkey FOREIGN KEY (owner_user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.user_profiles (
   user_id uuid NOT NULL DEFAULT auth.uid(),

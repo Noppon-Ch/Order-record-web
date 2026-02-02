@@ -18,6 +18,7 @@ export interface Customer {
     customer_consent_status?: boolean;
     customer_recommender_id?: string;
     customer_record_by_user_id?: string;
+    customer_record_by_team_id?: string;
     customer_created_at?: string;
     recommender_name?: string; // Virtual field for display
 }

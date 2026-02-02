@@ -38,7 +38,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "cdn.jsdelivr.net", "cdn.tailwindcss.com", "https://d3js.org", (req: any, res: any) => `'nonce-${res.locals.nonce}'`],
-      styleSrc: ["'self'", "fonts.googleapis.com"],
+      styleSrc: ["'self'", "fonts.googleapis.com", "cdn.jsdelivr.net"],
       fontSrc: ["'self'", "fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "https:", "wss:"],
@@ -80,6 +80,7 @@ app.set('views', [
   path.resolve(process.cwd(), 'src', 'features', 'products', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'orders', 'views'),
   path.resolve(process.cwd(), 'src', 'features', 'visualizations', 'views'),
+  path.resolve(process.cwd(), 'src', 'features', 'teams', 'views'),
   path.resolve(process.cwd(), 'src', 'shared', 'views')
 ]);
 
@@ -122,6 +123,9 @@ app.use('/order', orderRoutes);
 
 import { visualizationRoutes } from './features/visualizations/visualization.routes.js';
 app.use('/visualizations', visualizationRoutes);
+
+import teamRoutes from './features/teams/team.routes.js';
+app.use('/teams', teamRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

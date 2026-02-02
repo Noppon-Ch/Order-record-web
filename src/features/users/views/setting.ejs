@@ -1,26 +1,27 @@
-<%- include('main', { body: `
-<div class="max-w-4xl mx-auto w-full">
+<%- include('main', { body: ` <div class="max-w-4xl mx-auto w-full">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">การตั้งค่าบัญชี (Account Settings)</h1>
         <p class="text-gray-500 mt-2">จัดการข้อมูลส่วนตัวและข้อมูลการชำระเงินของคุณ</p>
     </div>
 
     ${ typeof success !=='undefined' && success ? `
-        <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in-down">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            <span>บันทึกข้อมูลเรียบร้อยแล้ว</span>
-        </div>
+    <div
+        class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in-down">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span>บันทึกข้อมูลเรียบร้อยแล้ว</span>
+    </div>
     ` : '' }
 
     ${ typeof error !=='undefined' && error ? `
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in-down">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>เกิดข้อผิดพลาด: ${ typeof error==='object' ? JSON.stringify(error) : error }</span>
-        </div>
+    <div
+        class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-fade-in-down">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <span>เกิดข้อผิดพลาด: ${ typeof error==='object' ? JSON.stringify(error) : error }</span>
+    </div>
     ` : '' }
 
     <form action="/user/setting" method="POST" class="space-y-8">
@@ -29,20 +30,23 @@
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                 <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     ข้อมูลทั่วไป (General Information)
                 </h2>
             </div>
             <div class="p-6 grid gap-6 md:grid-cols-2">
                 <div>
-                    <label for="user_full_name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล (Full Name)</label>
+                    <label for="user_full_name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล (Full
+                        Name)</label>
                     <input type="text" name="user_full_name" id="user_full_name" value="${ user?.user_full_name || '' }"
                         class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors outline-none"
                         placeholder="กรอกชื่อ-นามสกุล">
                 </div>
                 <div>
-                    <label for="user_phone" class="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์ (Phone)</label>
+                    <label for="user_phone" class="block text-sm font-medium text-gray-700 mb-1">เบอร์โทรศัพท์
+                        (Phone)</label>
                     <input type="tel" name="user_phone" id="user_phone" value="${ user?.user_phone || '' }"
                         class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors outline-none"
                         placeholder="08x-xxx-xxxx">
@@ -54,47 +58,128 @@
                     <p class="text-xs text-gray-400 mt-1">* อีเมลไม่สามารถแก้ไขได้</p>
                 </div>
             </div>
+
+        </div>
+        <!-- Team Info Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                    ข้อมูลทีม (Team Information)
+                </h2>
+            </div>
+            <div class="p-6 grid gap-6 md:grid-cols-2">
+                ${ (typeof userTeam !=='undefined' && userTeam && userTeam.team) ? `
+                <!-- Team Name -->
+                <div class="md:col-span-2 flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div
+                        class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
+                        ${ userTeam.team.team_name.charAt(0).toUpperCase() }
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 mb-0.5">ชื่อทีม (Team Name)</p>
+                        <h3 class="text-lg font-bold text-gray-900 leading-tight">
+                            ${ userTeam.team.team_name }
+                        </h3>
+                    </div>
+                </div>
+                <!-- Role -->
+                <div>
+                    <p class="text-sm text-gray-500 mb-2">บทบาท (Role)</p>
+                    <div
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg border ${ userTeam.member.role === 'leader' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-blue-50 border-blue-100 text-blue-700' }">
+                        <span
+                            class="w-2 h-2 rounded-full mr-2 ${ userTeam.member.role === 'leader' ? 'bg-indigo-500' : 'bg-blue-500' }"></span>
+                        <span class="font-medium capitalize">${ userTeam.member.role }</span>
+                    </div>
+                </div>
+                <!-- Status -->
+                <div>
+                    <p class="text-sm text-gray-500 mb-2">สถานะ (Status)</p>
+                    <div
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg border ${ userTeam.member.status === 'active' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-yellow-50 border-yellow-100 text-yellow-700' }">
+                        <span
+                            class="w-2 h-2 rounded-full mr-2 ${ userTeam.member.status === 'active' ? 'bg-green-500' : 'bg-yellow-500' }"></span>
+                        <span class="font-medium capitalize">${ userTeam.member.status }</span>
+                    </div>
+                </div>
+                ` : `
+                <div
+                    class="md:col-span-2 text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                    <p class="text-gray-500 mb-4">คุณยังไม่ได้เข้าร่วมทีม</p>
+                    <a href="/teams"
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+                        สร้างหรือเข้าร่วมทีม
+                    </a>
+                </div>
+                ` }
+            </div>
         </div>
         <!-- Payment Info Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
                 <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z">
+                        </path>
                     </svg>
                     ข้อมูลการชำระเงิน (Payment Information)
                 </h2>
             </div>
             <div class="p-6 grid gap-6 md:grid-cols-2">
                 <div>
-                    <label for="user_payment_channel" class="block text-sm font-medium text-gray-700 mb-1">ช่องทางการชำระเงิน (Payment Channel)</label>
+                    <label for="user_payment_channel"
+                        class="block text-sm font-medium text-gray-700 mb-1">ช่องทางการชำระเงิน (Payment
+                        Channel)</label>
                     <select name="user_payment_channel" id="user_payment_channel"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-100 focus:border-green-400 transition-colors outline-none">
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors outline-none">
                         <option value="">เลือกช่องทาง</option>
-                        <option value="bank_transfer" ${user?.user_payment_channel==='bank_transfer' ? 'selected' : ''}>โอนเงินบัญชีธนาคาร</option>
-                        <option value="promptpay" ${user?.user_payment_channel==='promptpay' ? 'selected' : ''}>พร้อมเพย์ (PromptPay)</option>
-                        <option value="cash" ${user?.user_payment_channel==='cash' ? 'selected' : ''}>เงินสด (Cash)</option>
+                        <option value="bank_counter" ${user?.user_payment_channel==='bank_counter' ? 'selected' : '' }>
+                            เค้าน์เตอร์ธนาคาร</option>
+                        <option value="atm" ${user?.user_payment_channel==='atm' ? 'selected' : '' }>เครื่องเอทีเอ็ม
+                        </option>
+                        <option value="mobile_banking" ${user?.user_payment_channel==='mobile_banking' ? 'selected' : ''
+                            }>แอปพลิเคชันมือถือ</option>
+                        <option value="kbiz" ${user?.user_payment_channel==='kbiz' ? 'selected' : '' }>K BIZ</option>
                     </select>
                 </div>
                 <div>
-                    <label for="user_payment_bank" class="block text-sm font-medium text-gray-700 mb-1">ธนาคาร (Bank)</label>
-                    <input type="text" name="user_payment_bank" id="user_payment_bank" value="${ user?.user_payment_bank || '' }"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-100 focus:border-green-400 transition-colors outline-none"
+                    <label for="user_payment_bank" class="block text-sm font-medium text-gray-700 mb-1">ธนาคาร
+                        (Bank)</label>
+                    <input type="text" name="user_payment_bank" id="user_payment_bank"
+                        value="${ user?.user_payment_bank || '' }"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors outline-none"
                         placeholder="เช่น กสิกรไทย, ไทยพาณิชย์">
                 </div>
                 <div class="md:col-span-2">
-                    <label for="user_payment_id" class="block text-sm font-medium text-gray-700 mb-1">เลขที่บัญชี / เบอร์พร้อมเพย์ (Account No. / PromptPay ID)</label>
-                    <input type="text" name="user_payment_id" id="user_payment_id" value="${ user?.user_payment_id || '' }"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-100 focus:border-green-400 transition-colors outline-none"
+                    <label for="user_payment_id" class="block text-sm font-medium text-gray-700 mb-1">เลขที่บัญชี /
+                        เบอร์พร้อมเพย์ (Account No. / PromptPay ID)</label>
+                    <input type="text" name="user_payment_id" id="user_payment_id"
+                        value="${ user?.user_payment_id || '' }"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-colors outline-none"
                         placeholder="กรอกเลขที่บัญชี">
                 </div>
             </div>
         </div>
+
         <div class="flex justify-end">
-            <button type="submit" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transform transition duration-200 ease-in-out">
+            <button type="submit"
+                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transform transition duration-200 ease-in-out">
                 บันทึกการเปลี่ยนแปลง (Save Changes)
             </button>
         </div>
+        </div>
     </form>
-</div>
-` }) %>
+    </div>
+    ` }) %>
