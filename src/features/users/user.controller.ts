@@ -13,7 +13,17 @@ export async function renderUserSetting(req: Request, res: Response, next: NextF
         const profile = await getUserProfile(user.id, user.access_token);
         console.log('[User] renderUserSetting profile:', profile);
 
-        const userTeam = await teamService.getTeamByUserId(user.id, user.access_token);
+        const teamData = await teamService.getTeamByUserId(user.id, user.access_token);
+        let userTeam = null;
+        if (teamData && teamData.members) {
+            const myMember = teamData.members.find(m => m.user_id === user.id);
+            if (myMember) {
+                userTeam = {
+                    team: teamData.team,
+                    member: myMember
+                };
+            }
+        }
 
         res.render('setting', {
             user: { ...user, ...(profile || {}) },

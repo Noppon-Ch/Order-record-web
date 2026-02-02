@@ -3,14 +3,12 @@ import type { Team } from '../../../models/team.model.js';
 import type { TeamMember } from '../../../models/team_member.model.js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const teamService = {
     async createTeam(userId: string, teamName: string, accessToken?: string): Promise<Team> {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 1. Generate unique team code (simple 6-char alphanum for now)
         const teamCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -53,9 +51,7 @@ export const teamService = {
     },
 
     async joinTeam(userId: string, teamCode: string, accessToken?: string): Promise<TeamMember> {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 1. Find team by code
         const { data: team, error: teamError } = await supabase
@@ -95,40 +91,97 @@ export const teamService = {
         return member;
     },
 
-    async getTeamByUserId(userId: string, accessToken?: string): Promise<{ team: Team, member: TeamMember } | null> {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+    async getTeamByUserId(userId: string, accessToken?: string): Promise<{ team: Team, members: (TeamMember & { user_profile: any })[] } | null> {
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-        const { data: member, error } = await supabase
+        // 1. Get the user's membership to find their team_id
+        const { data: myMembership, error: myError } = await supabase
             .from('team_members')
             .select(`
                 *,
                 teams:team_id (*)
             `)
             .eq('user_id', userId)
+            .limit(1)
             .maybeSingle();
 
-        if (error || !member) return null;
+        if (myError || !myMembership) return null;
 
-        console.log('--- Team Data Debug ---');
-        console.log('Member Status:', member.status);
-        console.log('Member Role:', member.role);
-        console.log('Team Name:', member.teams?.team_name);
-        console.log('Full Query Result:', JSON.stringify(member, null, 2));
-        console.log('-----------------------');
+        const teamId = myMembership.team_id;
+
+        // 2. Fetch all members of this team
+        const { data: allMembers, error: membersError } = await supabase
+            .from('team_members')
+            .select('*')
+            .eq('team_id', teamId);
+
+        if (membersError) {
+            console.error('Error fetching team members:', membersError);
+            // Return just the team info if members fail (graceful degradation) or throw
+            throw new Error('Failed to fetch team members');
+        }
+
+        // 3. Fetch profiles for these members
+        // We need to map user_ids safely
+        const userIds = allMembers.map(m => m.user_id);
+
+        const { data: profiles, error: profilesError } = await supabase
+            .from('user_profiles')
+            .select('user_id, user_full_name, user_email, user_avatar_url')
+            .in('user_id', userIds);
+
+        if (profilesError) {
+            console.error('Error fetching member profiles:', profilesError);
+        }
+
+        // 4. Combine data
+        const membersWithProfiles = allMembers.map(member => {
+            const profile = profiles?.find(p => p.user_id === member.user_id);
+            return {
+                ...member,
+                user_profile: profile || null
+            };
+        });
 
         return {
-            member: {
-                id: member.id,
-                team_id: member.team_id,
-                user_id: member.user_id,
-                role: member.role,
-                status: member.status,
-                joined_at: member.joined_at
-            },
-            team: member.teams // Supabase joins return the joined data on the key
+            team: myMembership.teams,
+            members: membersWithProfiles
         };
+    },
+
+    async updateMemberStatus(requesterId: string, memberId: string, newStatus: string, accessToken?: string): Promise<void> {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 1. Check if requester is a leader of the same team as memberId
+        // First get the member's team_id
+        const { data: memberToUpdate, error: memberError } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('id', memberId)
+            .single();
+
+        if (memberError || !memberToUpdate) throw new Error('Member not found');
+
+        // Check requester role
+        const { data: requester, error: requesterError } = await supabase
+            .from('team_members')
+            .select('role')
+            .eq('user_id', requesterId)
+            .eq('team_id', memberToUpdate.team_id)
+            .eq('status', 'active')
+            .single();
+
+        if (requesterError || !requester || requester.role !== 'leader') {
+            throw new Error('Unauthorized: Only active leaders can update member status');
+        }
+
+        // 2. Update status
+        const { error: updateError } = await supabase
+            .from('team_members')
+            .update({ status: newStatus })
+            .eq('id', memberId);
+
+        if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
     },
 
     async searchTeams(query: string) {

@@ -10,6 +10,7 @@ router.use(isAuthenticated);
 router.get('/', teamController.getTeamPage);
 router.post('/create', teamController.createTeam);
 router.post('/join', teamController.joinTeam);
+router.post('/approve', teamController.approveMember);
 router.get('/search', teamController.searchTeams);
 
 export default router;

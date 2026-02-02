@@ -23,185 +23,310 @@
                 </div>
 
                 <!-- Current Team Status -->
-                <% if (userTeam && userTeam.team) { %>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-4 opacity-10">
-                            <svg class="w-32 h-32 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z">
+                <% if (team) { %>
+                    <!-- Team Information Form -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div
+                                class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900">ข้อมูลทีม</h2>
+                        </div>
+
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อทีม</label>
+                                    <input type="text" value="<%= team.team_name %>" readonly
+                                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-default">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสทีม (Team
+                                        Code)</label>
+                                    <div class="flex">
+                                        <input type="text" value="<%= team.team_code %>" readonly
+                                            class="flex-grow px-4 py-2 bg-gray-50 border border-gray-200 rounded-l-lg text-gray-700 focus:outline-none cursor-default font-mono">
+                                        <button type="button" id="copyTeamCodeBtn"
+                                            data-team-code="<%= team.team_code %>"
+                                            class="px-4 py-2 bg-gray-100 border border-l-0 border-gray-200 rounded-r-lg text-gray-600 hover:bg-gray-200 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">สถานะทีม</label>
+                                    <span
+                                        class="inline-flex px-3 py-1 rounded-full text-sm font-medium capitalize
+                                        <%= team.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' %>">
+                                        <%= team.status %>
+                                    </span>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">วันที่สร้าง</label>
+                                    <input type="text"
+                                        value="<%= new Date(team.created_at).toLocaleDateString('th-TH') %>" readonly
+                                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-default">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Team Members Table -->
+                    <div class="mb-6">
+                        <% if (myMembership.status==='pending' ) { %>
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-yellow-700">
+                                            สถานะของคุณคือ <span class="font-bold">รอการอนุมัติ (Pending)</span>
+                                            <br>คุณจะเห็นข้อมูลสมาชิกคนอื่นเมื่อได้รับการอนุมัติจากหัวหน้าทีม
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <% } %>
+
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-xl font-bold text-gray-900">สมาชิกในทีม</h2>
+                                            <p class="text-sm text-gray-500">จำนวนสมาชิก <%= members.length %> คน</p>
+                                        </div>
+                                    </div>
+                                </div>
+                    </div>
+
+                    <div class="overflow-hidden border border-gray-200 rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ชื่อ - สกุล</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        ตำแหน่ง</th>
+                                    <% if (myMembership.role==='leader' && myMembership.status==='active' ) { %>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            จัดการ</th>
+                                        <% } %>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% members.forEach(member=> { %>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <% if (member.user_profile && member.user_profile.user_avatar_url) {
+                                                        %>
+                                                        <img class="h-10 w-10 rounded-full object-cover"
+                                                            src="<%= member.user_profile.user_avatar_url %>" alt="">
+                                                        <% } else { %>
+                                                            <div
+                                                                class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                                                                <%= member.user_profile &&
+                                                                    member.user_profile.user_full_name ?
+                                                                    member.user_profile.user_full_name.charAt(0).toUpperCase()
+                                                                    : 'U' %>
+                                                            </div>
+                                                            <% } %>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        <%= member.user_profile ? member.user_profile.user_full_name
+                                                            : 'Unknown User' %>
+                                                            <% if (member.user_id===user.id) { %>
+                                                                <span
+                                                                    class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">It's
+                                                                    You</span>
+                                                                <% } %>
+                                                                    <% if (member.status==='pending' ) { %>
+                                                                        <span
+                                                                            class="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+                                                                        <% } %>
+                                                    </div>
+                                                    <div class="text-sm text-gray-500">
+                                                        <%= member.user_profile ? member.user_profile.user_email : '' %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 py-1 text-xs font-semibold rounded-full
+                                                <%= member.role === 'leader' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' %>">
+                                                <%= member.role.charAt(0).toUpperCase() + member.role.slice(1) %>
+                                            </span>
+                                        </td>
+                                        <% if (myMembership.role==='leader' && myMembership.status==='active' ) { %>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <% if (member.status==='pending' ) { %>
+                                                    <button type="button"
+                                                        class="approve-member-btn text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-full transition-colors"
+                                                        data-member-id="<%= member.id %>">
+                                                        อนุมัติ (Approve)
+                                                    </button>
+                                                    <% } %>
+                                            </td>
+                                            <% } %>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+            </div>
+            <% } else { %>
+                <!-- No Team State -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                    <!-- Join Team -->
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full hover:shadow-md transition-shadow">
+                        <div class="mb-4 text-indigo-600">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
                                 </path>
                             </svg>
                         </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">เข้าร่วมทีม</h3>
+                        <p class="text-gray-500 text-sm mb-6 flex-grow">
+                            ค้นหาทีมที่มีอยู่แล้วเพื่อเข้าร่วมทำงานกับผู้อื่น</p>
 
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div
-                                    class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                                    <%= userTeam.team.team_name.charAt(0).toUpperCase() %>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-900">
-                                        <%= userTeam.team.team_name %>
-                                    </h2>
-                                    <p class="text-sm text-gray-500">Code: <span
-                                            class="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700 select-all">
-                                            <%= userTeam.team.team_code %>
-                                        </span></p>
-                                </div>
-                                <div class="ml-auto">
-                                    <span
-                                        class="px-3 py-1 rounded-full text-sm font-medium 
-                                    <%= userTeam.member.role === 'leader' ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700' %>">
-                                        <%= userTeam.member.role==='leader' ? 'Leader' : 'Member' %>
-                                    </span>
+                        <form id="joinTeamForm" class="space-y-4">
+                            <div>
+                                <label for="teamCode" class="block text-sm font-medium text-gray-700 mb-1">รหัสทีม (Team
+                                    Code)</label>
+                                <input type="text" id="teamCode" name="teamCode" required
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
+                                    placeholder="เช่น AB1234">
+                            </div>
+                            <button type="submit"
+                                class="w-full py-2.5 px-4 bg-white border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors">
+                                เข้าร่วมทีม
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Create Team -->
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full hover:shadow-md transition-shadow">
+                        <div class="mb-4 text-purple-600">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">สร้างทีมใหม่</h3>
+                        <p class="text-gray-500 text-sm mb-6 flex-grow">
+                            สร้างพื้นที่ทำงานของคุณเองและเชิญสมาชิกมาร่วมทีม</p>
+
+                        <button id="openCreateTeamBtn"
+                            class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+                            สร้างทีม
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Create Team Modal -->
+                <div id="createTeamModal" class="fixed inset-0 z-50 hidden overflow-y-auto"
+                    aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div
+                        class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+
+                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                            id="closeCreateTeamOverlay"></div>
+
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                            aria-hidden="true">&#8203;</span>
+
+                        <div
+                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-50">
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <div class="sm:flex sm:items-start">
+                                    <div
+                                        class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                                        <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                            สร้างทีมใหม่</h3>
+                                        <div class="mt-2">
+                                            <p class="text-sm text-gray-500 mb-4">
+                                                กรุณาระบุชื่อทีมของคุณเพื่อเริ่มต้นใช้งาน
+                                                (สามารถเปลี่ยนแปลงได้ภายหลัง)</p>
+                                            <form id="createTeamForm">
+                                                <label for="teamName"
+                                                    class="block text-sm font-medium text-gray-700 mb-1">ชื่อทีม</label>
+                                                <input type="text" id="teamName" name="teamName" required
+                                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                                    placeholder="เช่น Dream Team">
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <p class="text-sm text-gray-500 mb-1">สถานะสมาชิก</p>
-                                    <p class="font-semibold text-gray-700 capitalize">
-                                        <%= userTeam.member.status %>
-                                    </p>
-                                </div>
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <p class="text-sm text-gray-500 mb-1">วันที่เข้าร่วม</p>
-                                    <p class="font-semibold text-gray-700">
-                                        <%= new Date(userTeam.member.joined_at).toLocaleDateString('th-TH') %>
-                                    </p>
-                                </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="button" id="submitCreateTeamBtn"
+                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    ยืนยันสร้างทีม
+                                </button>
+                                <button type="button" id="cancelCreateTeamBtn"
+                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    ยกเลิก
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <% } else { %>
-                        <!-- No Team State -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                </div>
 
-                            <!-- Join Team -->
-                            <div
-                                class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full hover:shadow-md transition-shadow">
-                                <div class="mb-4 text-indigo-600">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-gray-900 mb-2">เข้าร่วมทีม</h3>
-                                <p class="text-gray-500 text-sm mb-6 flex-grow">
-                                    ค้นหาทีมที่มีอยู่แล้วเพื่อเข้าร่วมทำงานกับผู้อื่น</p>
+                <!-- Search Teams Section (Optional Enhancement for joining) -->
+                <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 hidden" id="searchSection">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">ค้นหาทีม</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="searchTeamInput" placeholder="พิมพ์ชื่อทีมเพื่อค้นหา..."
+                            class="flex-grow px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <button id="searchTeamsBtn"
+                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ค้นหา</button>
+                    </div>
+                    <div id="searchResults" class="space-y-2"></div>
+                </div>
 
-                                <form id="joinTeamForm" class="space-y-4">
-                                    <div>
-                                        <label for="teamCode"
-                                            class="block text-sm font-medium text-gray-700 mb-1">รหัสทีม (Team
-                                            Code)</label>
-                                        <input type="text" id="teamCode" name="teamCode" required
-                                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                            placeholder="เช่น AB1234">
-                                    </div>
-                                    <button type="submit"
-                                        class="w-full py-2.5 px-4 bg-white border border-indigo-600 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-50 transition-colors">
-                                        เข้าร่วมทีม
-                                    </button>
-                                </form>
-                            </div>
+                <% } %>
 
-                            <!-- Create Team -->
-                            <div
-                                class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full hover:shadow-md transition-shadow">
-                                <div class="mb-4 text-purple-600">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-gray-900 mb-2">สร้างทีมใหม่</h3>
-                                <p class="text-gray-500 text-sm mb-6 flex-grow">
-                                    สร้างพื้นที่ทำงานของคุณเองและเชิญสมาชิกมาร่วมทีม</p>
-
-                                <button id="openCreateTeamBtn"
-                                    class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
-                                    สร้างทีม
-                                </button>
-                            </div>
-
-                        </div>
-
-                        <!-- Create Team Modal -->
-                        <div id="createTeamModal" class="fixed inset-0 z-50 hidden overflow-y-auto"
-                            aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                            <div
-                                class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-
-                                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-                                    aria-hidden="true" id="closeCreateTeamOverlay"></div>
-
-                                <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
-                                    aria-hidden="true">&#8203;</span>
-
-                                <div
-                                    class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-50">
-                                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <div class="sm:flex sm:items-start">
-                                            <div
-                                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
-                                                <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z">
-                                                    </path>
-                                                </svg>
-                                            </div>
-                                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                                <h3 class="text-lg leading-6 font-medium text-gray-900"
-                                                    id="modal-title">สร้างทีมใหม่</h3>
-                                                <div class="mt-2">
-                                                    <p class="text-sm text-gray-500 mb-4">
-                                                        กรุณาระบุชื่อทีมของคุณเพื่อเริ่มต้นใช้งาน
-                                                        (สามารถเปลี่ยนแปลงได้ภายหลัง)</p>
-                                                    <form id="createTeamForm">
-                                                        <label for="teamName"
-                                                            class="block text-sm font-medium text-gray-700 mb-1">ชื่อทีม</label>
-                                                        <input type="text" id="teamName" name="teamName" required
-                                                            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
-                                                            placeholder="เช่น Dream Team">
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                        <button type="button" id="submitCreateTeamBtn"
-                                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
-                                            ยืนยันสร้างทีม
-                                        </button>
-                                        <button type="button" id="cancelCreateTeamBtn"
-                                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                                            ยกเลิก
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Search Teams Section (Optional Enhancement for joining) -->
-                        <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 hidden"
-                            id="searchSection">
-                            <h3 class="text-lg font-bold text-gray-900 mb-4">ค้นหาทีม</h3>
-                            <div class="flex gap-2 mb-4">
-                                <input type="text" id="searchTeamInput" placeholder="พิมพ์ชื่อทีมเพื่อค้นหา..."
-                                    class="flex-grow px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <button id="searchTeamsBtn"
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">ค้นหา</button>
-                            </div>
-                            <div id="searchResults" class="space-y-2"></div>
-                        </div>
-
-                        <% } %>
-
-            </div>
+                    </div>
         </main>
 
         <script nonce="<%= nonce %>">
@@ -226,6 +351,27 @@
                 if (openCreateTeamBtn) openCreateTeamBtn.addEventListener('click', openModal);
                 if (closeCreateTeamOverlay) closeCreateTeamOverlay.addEventListener('click', closeModal);
                 if (cancelCreateTeamBtn) cancelCreateTeamBtn.addEventListener('click', closeModal);
+
+                // --- Copy Team Code Logic ---
+                const copyTeamCodeBtn = document.getElementById('copyTeamCodeBtn');
+                if (copyTeamCodeBtn) {
+                    copyTeamCodeBtn.addEventListener('click', () => {
+                        const code = copyTeamCodeBtn.getAttribute('data-team-code');
+                        if (code) {
+                            navigator.clipboard.writeText(code).then(() => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'คัดลอกแล้ว!',
+                                    text: 'Team code copied to clipboard',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            }).catch(err => {
+                                console.error('Failed to copy request code: ', err);
+                            });
+                        }
+                    });
+                }
 
                 // --- API Interaction ---
                 async function submitCreateTeam() {
@@ -332,6 +478,58 @@
                 async function searchTeams() {
                     // ... implementation ...
                 }
+                // --- Approve Member Logic ---
+                const approveButtons = document.querySelectorAll('.approve-member-btn');
+                approveButtons.forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const memberId = btn.getAttribute('data-member-id');
+                        if (!memberId) return;
+
+                        const confirmed = await Swal.fire({
+                            title: 'ยืนยันการอนุมัติ?',
+                            text: "คุณต้องการอนุมัติสมาชิกคนนี้เข้าทีมใช่หรือไม่?",
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#10b981',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'ใช่, อนุมัติเลย',
+                            cancelButtonText: 'ยกเลิก'
+                        });
+
+                        if (confirmed.isConfirmed) {
+                            try {
+                                const response = await fetch('/teams/approve', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ memberId })
+                                });
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'สำเร็จ!',
+                                        text: 'อนุมัติสมาชิกเรียบร้อยแล้ว',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    throw new Error(result.message);
+                                }
+                            } catch (error) {
+                                console.error(error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: error.message || 'Failed to approve member',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                        }
+                    });
+                });
             });
         </script>
 </body>

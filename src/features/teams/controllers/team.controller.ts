@@ -7,16 +7,51 @@ export const teamController = {
             const userId = req.user?.id;
             if (!userId) return res.redirect('/login');
 
-            const userTeam = await teamService.getTeamByUserId(userId);
+            console.log('[TeamController] getTeamPage userId:', userId);
+            const accessToken = (req.user as any)?.access_token;
+            const teamData = await teamService.getTeamByUserId(userId, accessToken);
+            console.log('[TeamController] teamData:', JSON.stringify(teamData, null, 2));
+
+            // If user has a team, extract their personal membership info
+            let myMembership = null;
+            if (teamData && teamData.members) {
+                myMembership = teamData.members.find(m => m.user_id === userId);
+            }
+
+            // Filter logic:
+            // 1. If myMembership.status is 'pending', only show myself.
+            // 2. If 'active', show everyone.
+            let visibleMembers = teamData?.members || [];
+            if (myMembership && myMembership.status === 'pending') {
+                visibleMembers = teamData?.members.filter(m => m.user_id === userId) || [];
+            }
 
             res.render('team', {
                 user: req.user,
-                userTeam: userTeam,
+                team: teamData?.team,
+                members: visibleMembers,
+                myMembership: myMembership,
                 path: '/teams'
             });
         } catch (error) {
             console.error('Error fetching team page:', error);
             res.status(500).render('error', { message: 'Internal Server Error' });
+        }
+    },
+
+    async approveMember(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            const { memberId } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+            if (!memberId) return res.status(400).json({ success: false, message: 'Member ID is required' });
+
+            await teamService.updateMemberStatus(userId, memberId, 'active', (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Member approved successfully' });
+        } catch (error: any) {
+            console.error('Error approving member:', error);
+            res.status(500).json({ success: false, message: error.message });
         }
     },
 

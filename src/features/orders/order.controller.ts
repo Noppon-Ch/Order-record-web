@@ -165,8 +165,10 @@ export class OrderController {
             if (userTeam?.team?.team_id) {
                 userContext.teamId = userTeam.team.team_id;
             }
-            if (userTeam?.member?.role) {
-                userContext.role = userTeam.member.role;
+
+            const currentUserMember = userTeam?.members?.find(m => m.user_id === userContext.userId);
+            if (currentUserMember?.role) {
+                userContext.role = currentUserMember.role;
             }
 
             const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken, userContext);
