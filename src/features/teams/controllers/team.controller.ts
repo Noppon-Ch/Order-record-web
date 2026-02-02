@@ -55,6 +55,38 @@ export const teamController = {
         }
     },
 
+    async removeMember(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            const { memberId } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+            if (!memberId) return res.status(400).json({ success: false, message: 'Member ID is required' });
+
+            await teamService.removeMember(userId, memberId, (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Member removed successfully' });
+        } catch (error: any) {
+            console.error('Error removing member:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    async updateMemberRole(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            const { memberId, newRole } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+            if (!memberId || !newRole) return res.status(400).json({ success: false, message: 'Member ID and New Role are required' });
+
+            await teamService.updateMemberRole(userId, memberId, newRole, (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Member role updated successfully' });
+        } catch (error: any) {
+            console.error('Error updating member role:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
     async createTeam(req: Request, res: Response) {
         try {
             const userId = req.user?.id;

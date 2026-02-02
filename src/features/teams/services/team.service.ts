@@ -171,8 +171,9 @@ export const teamService = {
             .eq('status', 'active')
             .single();
 
-        if (requesterError || !requester || requester.role !== 'leader') {
-            throw new Error('Unauthorized: Only active leaders can update member status');
+        // Allow leader OR co-leader to update status (Approve)
+        if (requesterError || !requester || !['leader', 'co-leader'].includes(requester.role)) {
+            throw new Error('Unauthorized: Only active leaders or co-leaders can update member status');
         }
 
         // 2. Update status
@@ -182,6 +183,96 @@ export const teamService = {
             .eq('id', memberId);
 
         if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
+    },
+
+    async removeMember(requesterId: string, memberId: string, accessToken?: string): Promise<void> {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 1. Get member info to find team_id and status
+        const { data: memberToRemove, error: memberError } = await supabase
+            .from('team_members')
+            .select('team_id, status, role') // Select role to prevent removing leaders if needed, and status for co-leader check
+            .eq('id', memberId)
+            .single();
+
+        if (memberError || !memberToRemove) throw new Error('Member not found');
+
+        // 2. Check permission: Requester must be leader of that team
+        const { data: requester, error: requesterError } = await supabase
+            .from('team_members')
+            .select('role')
+            .eq('user_id', requesterId)
+            .eq('team_id', memberToRemove.team_id)
+            .eq('status', 'active')
+            .single();
+
+        if (requesterError || !requester) {
+            throw new Error('Unauthorized: User not found or inactive');
+        }
+
+        // Permission Logic:
+        // Leader: Can remove anyone (Pending or Active) - maybe restriction on removing other leaders? Assuming OK for now or user didn't specify.
+        // Co-leader: Can remove ONLY 'pending' members (Reject). Cannot remove 'active' members.
+
+        const isLeader = requester.role === 'leader';
+
+        if (!isLeader) {
+            throw new Error('Unauthorized: Only leaders can remove or reject members');
+        }
+
+        // Optional: Protect leaders from being removed by anyone other than themselves (or system admin)?
+        // User request: "Target Leader: No action".
+        // Implicitly means we shouldn't allow removing a leader via this API if the UI blocks it. 
+        // Let's add a backend check to be safe: Cannot remove a leader.
+        if (memberToRemove.role === 'leader') {
+            throw new Error('Unauthorized: Cannot remove a Team Leader');
+        }
+
+        // 3. Delete
+        const { error: deleteError } = await supabase
+            .from('team_members')
+            .delete()
+            .eq('id', memberId);
+
+        if (deleteError) throw new Error(`Failed to remove member: ${deleteError.message}`);
+    },
+
+    async updateMemberRole(requesterId: string, memberId: string, newRole: string, accessToken?: string): Promise<void> {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        if (!['leader', 'co-leader', 'member'].includes(newRole)) {
+            throw new Error('Invalid role');
+        }
+
+        // 1. Get member info to find team_id
+        const { data: memberToUpdate, error: memberError } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('id', memberId)
+            .single();
+
+        if (memberError || !memberToUpdate) throw new Error('Member not found');
+
+        // 2. Check permission: Requester must be leader of that team
+        const { data: requester, error: requesterError } = await supabase
+            .from('team_members')
+            .select('role')
+            .eq('user_id', requesterId)
+            .eq('team_id', memberToUpdate.team_id)
+            .eq('status', 'active')
+            .single();
+
+        if (requesterError || !requester || requester.role !== 'leader') {
+            throw new Error('Unauthorized: Only active leaders can update member roles.');
+        }
+
+        // 3. Update role
+        const { error: updateError } = await supabase
+            .from('team_members')
+            .update({ role: newRole })
+            .eq('id', memberId);
+
+        if (updateError) throw new Error(`Failed to update member role: ${updateError.message}`);
     },
 
     async searchTeams(query: string) {

@@ -130,7 +130,8 @@
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ตำแหน่ง</th>
-                                    <% if (myMembership.role==='leader' && myMembership.status==='active' ) { %>
+                                    <% const myRole=myMembership.role; const myStatus=myMembership.status; if
+                                        ((myRole==='leader' || myRole==='co-leader' ) && myStatus==='active' ) { %>
                                         <th scope="col"
                                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             จัดการ</th>
@@ -184,14 +185,71 @@
                                                 <%= member.role.charAt(0).toUpperCase() + member.role.slice(1) %>
                                             </span>
                                         </td>
-                                        <% if (myMembership.role==='leader' && myMembership.status==='active' ) { %>
+                                        <% const targetIsLeader=member.role==='leader' ; const
+                                            amILeader=myMembership.role==='leader' ; const
+                                            amICoLeader=myMembership.role==='co-leader' ; let canShowManage=false; if
+                                            (!targetIsLeader) { if (amILeader) { canShowManage=true; } else if
+                                            (amICoLeader && member.status==='pending' ) { canShowManage=true; } } if
+                                            ((amILeader || amICoLeader) && myMembership.status==='active' ) { %>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <% if (member.status==='pending' ) { %>
-                                                    <button type="button"
-                                                        class="approve-member-btn text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-full transition-colors"
-                                                        data-member-id="<%= member.id %>">
-                                                        อนุมัติ (Approve)
-                                                    </button>
+                                                <% if (canShowManage) { %>
+                                                    <div class="relative inline-block text-left">
+                                                        <button type="button"
+                                                            class="manage-dropdown-btn inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                                            data-member-id="<%= member.id %>">
+                                                            จัดการ
+                                                            <svg class="-mr-1 ml-2 h-5 w-5"
+                                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                                fill="currentColor" aria-hidden="true">
+                                                                <path fill-rule="evenodd"
+                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                    clip-rule="evenodd" />
+                                                            </svg>
+                                                        </button>
+
+                                                        <div class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                                                            id="dropdown-<%= member.id %>">
+                                                            <div class="py-1 flex flex-col" role="menu"
+                                                                aria-orientation="vertical"
+                                                                aria-labelledby="options-menu">
+                                                                <% if (member.status==='pending' ) { %>
+                                                                    <button type="button"
+                                                                        class="approve-member-btn block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                                                                        role="menuitem"
+                                                                        data-member-id="<%= member.id %>">
+                                                                        1. อนุมัติ (Approve)
+                                                                    </button>
+                                                                    <% if (amILeader) { %>
+                                                                        <button type="button"
+                                                                            class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                                                            role="menuitem"
+                                                                            data-member-id="<%= member.id %>">
+                                                                            2. ปฏิเสธ (Reject)
+                                                                        </button>
+                                                                        <% } %>
+                                                                            <% } else if (member.status==='active' &&
+                                                                                amILeader) { %>
+                                                                                <div
+                                                                                    class="px-4 py-2 text-xs text-gray-500 font-semibold">
+                                                                                    3. ปรับตำแหน่ง (Position)</div>
+                                                                                <button type="button"
+                                                                                    class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                                                    role="menuitem"
+                                                                                    data-member-id="<%= member.id %>"
+                                                                                    data-role="co-leader">
+                                                                                    - Co-leader (ผู้ช่วย)
+                                                                                </button>
+                                                                                <button type="button"
+                                                                                    class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                                                    role="menuitem"
+                                                                                    data-member-id="<%= member.id %>"
+                                                                                    data-role="member">
+                                                                                    - Member (สมาชิก)
+                                                                                </button>
+                                                                                <% } %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <% } %>
                                             </td>
                                             <% } %>
@@ -478,12 +536,100 @@
                 async function searchTeams() {
                     // ... implementation ...
                 }
+
+                // --- Dropdown Logic (Adapted from list.js) ---
+                function closeAllDropdowns() {
+                    document.querySelectorAll('[id^=dropdown-]').forEach(el => {
+                        el.classList.add('hidden');
+                        el.style.position = '';
+                        el.style.top = '';
+                        el.style.left = '';
+                        el.style.zIndex = '';
+                    });
+                }
+
+                function toggleDropdown(id, button) {
+                    const dropdown = document.getElementById('dropdown-' + id);
+                    if (!dropdown) return;
+
+                    const isHidden = dropdown.classList.contains('hidden');
+
+                    // Close all first
+                    closeAllDropdowns();
+
+                    if (isHidden) {
+                        dropdown.classList.remove('hidden');
+
+                        // Get button position and dropdown size
+                        const rect = button.getBoundingClientRect();
+                        const dropdownWidth = dropdown.offsetWidth;
+                        const dropdownHeight = dropdown.offsetHeight;
+                        const margin = 5;
+
+                        // Default position: below button, right-aligned
+                        let left = rect.right - dropdownWidth;
+                        let top = rect.bottom + margin;
+
+                        // Prevent overflow right
+                        if (left + dropdownWidth > window.innerWidth - 8) {
+                            left = window.innerWidth - dropdownWidth - 8;
+                        }
+                        // Prevent overflow left
+                        if (left < 8) {
+                            left = 8;
+                        }
+                        // Prevent overflow bottom
+                        if (top + dropdownHeight > window.innerHeight - 8) {
+                            // Try to show above the button if not enough space below
+                            if (rect.top - dropdownHeight - margin > 8) {
+                                top = rect.top - dropdownHeight - margin;
+                            } else {
+                                // Clamp to bottom
+                                top = window.innerHeight - dropdownHeight - 8;
+                            }
+                        }
+
+                        dropdown.style.position = 'fixed';
+                        dropdown.style.zIndex = '50';
+                        dropdown.style.left = left + 'px';
+                        dropdown.style.top = top + 'px';
+                        dropdown.style.right = '';
+                    }
+                }
+
+                document.addEventListener('click', (e) => {
+                    // Check for dropdown toggle
+                    const toggleBtn = e.target.closest('.manage-dropdown-btn');
+                    if (toggleBtn) {
+                        e.stopPropagation();
+                        // Get ID from data-member-id
+                        const id = toggleBtn.getAttribute('data-member-id');
+                        toggleDropdown(id, toggleBtn);
+                        return;
+                    }
+
+                    // Close if clicking outside
+                    const isDropdown = e.target.closest('div[id^=dropdown-]');
+                    if (!isDropdown) {
+                        closeAllDropdowns();
+                    }
+                });
+
+                // Close on scroll
+                window.addEventListener('scroll', closeAllDropdowns, true);
+
+
                 // --- Approve Member Logic ---
-                const approveButtons = document.querySelectorAll('.approve-member-btn');
-                approveButtons.forEach(btn => {
-                    btn.addEventListener('click', async () => {
+                // Using event delegation because buttons are inside logic blocks
+                // Actually they are static in this view, but delegation is safer if we dynamically update
+                // But here we can use what we have, just need to re-query or delegate.
+
+                // Let's use delegation for the dropdown actions
+                document.body.addEventListener('click', async (e) => {
+                    // Approve
+                    if (e.target.closest('.approve-member-btn')) {
+                        const btn = e.target.closest('.approve-member-btn');
                         const memberId = btn.getAttribute('data-member-id');
-                        if (!memberId) return;
 
                         const confirmed = await Swal.fire({
                             title: 'ยืนยันการอนุมัติ?',
@@ -504,31 +650,93 @@
                                     body: JSON.stringify({ memberId })
                                 });
                                 const result = await response.json();
-
                                 if (result.success) {
                                     Swal.fire({
-                                        icon: 'success',
-                                        title: 'สำเร็จ!',
-                                        text: 'อนุมัติสมาชิกเรียบร้อยแล้ว',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.location.reload();
-                                    });
+                                        icon: 'success', title: 'สำเร็จ!', text: 'อนุมัติสมาชิกเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false
+                                    }).then(() => window.location.reload());
                                 } else {
                                     throw new Error(result.message);
                                 }
                             } catch (error) {
-                                console.error(error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'เกิดข้อผิดพลาด',
-                                    text: error.message || 'Failed to approve member',
-                                    confirmButtonColor: '#ef4444'
-                                });
+                                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed' });
                             }
                         }
-                    });
+                    }
+
+                    // Reject
+                    if (e.target.closest('.remove-member-btn')) {
+                        const btn = e.target.closest('.remove-member-btn');
+                        const memberId = btn.getAttribute('data-member-id');
+
+                        const confirmed = await Swal.fire({
+                            title: 'ยืนยันการปฏิเสธ?',
+                            text: "คุณต้องการปฏิเสธและลบคำขอนี้ใช่หรือไม่?",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'ใช่, ปฏิเสธและลบ',
+                            cancelButtonText: 'ยกเลิก'
+                        });
+
+                        if (confirmed.isConfirmed) {
+                            try {
+                                const response = await fetch('/teams/remove', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ memberId })
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    Swal.fire({
+                                        icon: 'success', title: 'สำเร็จ!', text: 'ลบสมาชิกเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    throw new Error(result.message);
+                                }
+                            } catch (error) {
+                                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed' });
+                            }
+                        }
+                    }
+
+                    // Change Role
+                    if (e.target.closest('.change-role-btn')) {
+                        const btn = e.target.closest('.change-role-btn');
+                        const memberId = btn.getAttribute('data-member-id');
+                        const newRole = btn.getAttribute('data-role');
+
+                        const confirmed = await Swal.fire({
+                            title: 'ยืนยันการเปลี่ยนตำแหน่ง?',
+                            text: `คุณต้องการปรับตำแหน่งสมาชิกเป็น ${newRole} ใช่หรือไม่?`,
+                            icon: 'info',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3b82f6',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'ใช่, ยืนยัน',
+                            cancelButtonText: 'ยกเลิก'
+                        });
+
+                        if (confirmed.isConfirmed) {
+                            try {
+                                const response = await fetch('/teams/update-role', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ memberId, newRole })
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    Swal.fire({
+                                        icon: 'success', title: 'สำเร็จ!', text: 'ปรับตำแหน่งเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    throw new Error(result.message);
+                                }
+                            } catch (error) {
+                                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed' });
+                            }
+                        }
+                    }
                 });
             });
         </script>
