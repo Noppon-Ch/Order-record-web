@@ -25,7 +25,7 @@ CREATE TABLE public.consent_records (
 );
 CREATE TABLE public.customers (
   customer_id uuid NOT NULL DEFAULT gen_random_uuid(),
-  customer_citizen_id text NOT NULL UNIQUE,
+  customer_citizen_id text NOT NULL,
   customer_fname_th text,
   customer_lname_th text,
   customer_fname_en text,

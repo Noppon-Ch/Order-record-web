@@ -41,10 +41,35 @@ export const teamService = {
             .insert(newMember);
 
         if (memberError) {
-            // Rollback team creation if member addition fails (conceptual, supabase doesn't support trans across request easily without RPC)
-            // For now, just throw
+            // Rollback team creation if member addition fails
             await supabase.from('teams').delete().eq('team_id', team.team_id);
             throw new Error(`Failed to add leader: ${memberError.message}`);
+        }
+
+        // 3. Update existing customers: Assign this new team to customers created by this user
+        // where team_id is currently null.
+        const { error: updateCustomersError } = await supabase
+            .from('customers')
+            .update({ customer_record_by_team_id: team.team_id })
+            .eq('customer_record_by_user_id', userId)
+            .is('customer_record_by_team_id', null);
+
+        if (updateCustomersError) {
+            console.error('Error updating customer team association:', updateCustomersError);
+            // We choose not to rollback the entire team creation for this non-critical failure,
+            // but logging it is important.
+        }
+
+        // 4. Update existing orders: Assign this new team to orders created by this user
+        // where team_id is currently null.
+        const { error: updateOrdersError } = await supabase
+            .from('orders')
+            .update({ order_record_by_team_id: team.team_id })
+            .eq('order_record_by_user_id', userId)
+            .is('order_record_by_team_id', null);
+
+        if (updateOrdersError) {
+            console.error('Error updating order team association:', updateOrdersError);
         }
 
         return team;

@@ -39,10 +39,15 @@ export class CustomerController {
 		// Log values before insert
 		console.log('AddCustomer values:', values);
 		try {
-			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
-			// Add team info if exists
+			const userId = req.user?.id || '';
+			const userTeam = await teamService.getTeamByUserId(userId);
+
+			// Add team info only if user is an ACTIVE member of the team
 			if (userTeam?.team) {
-				values.customer_record_by_team_id = userTeam.team.team_id;
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (memberRecord && memberRecord.status === 'active') {
+					values.customer_record_by_team_id = userTeam.team.team_id;
+				}
 			}
 
 			// Minimal: ไม่เช็คซ้ำ citizen id, แค่ insert
@@ -104,7 +109,16 @@ export class CustomerController {
 			if (!query) {
 				return res.json([]);
 			}
-			const results = await customerService.searchCustomers(query, req.user?.access_token);
+
+			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
+			const userContext: { userId: string, teamId?: string } = {
+				userId: req.user?.id || ''
+			};
+			if (userTeam?.team?.team_id) {
+				userContext.teamId = userTeam.team.team_id;
+			}
+
+			const results = await customerService.searchCustomers(query, req.user?.access_token, userContext);
 			res.json(results);
 		} catch (err) {
 			console.error('Search error:', err);

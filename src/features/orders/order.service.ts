@@ -4,6 +4,7 @@ import type { OrderItem } from '../../models/order_items.model.js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
 
 interface CreateOrderParams {
     order: Partial<Order>;
@@ -16,6 +17,10 @@ export class OrderService {
         const { order, items } = params;
 
         console.log('[OrderService] Creating Supabase client');
+        // Use normal client for creation to respect RLS on insert if needed, 
+        // or service role if we want to bypass checks during creation (usually safe for backend created orders).
+        // Let's stick to anon/access token for creation unless issues arise, 
+        // but for fetching team data (getOrders), we will definitely use service role.
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
@@ -99,9 +104,9 @@ export class OrderService {
 
     async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string, userContext?: { userId: string, teamId?: string, role?: string }) {
         console.log('[OrderService] Fetching orders with query:', query);
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+
+        // Use service role key to bypass RLS for team-based fetching
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
         // Calculate pagination range
         const from = (page - 1) * pageSize;
@@ -126,8 +131,8 @@ export class OrderService {
 
         // Team Scoping
         if (userContext?.teamId && userContext?.role) {
-            if (userContext.role === 'leader') {
-                // Leader: access all by order_record_by_team_id
+            if (['leader', 'co-leader'].includes(userContext.role)) {
+                // Leader & Co-leader: access all by order_record_by_team_id
                 queryBuilder = queryBuilder.eq('order_record_by_team_id', userContext.teamId);
             } else {
                 // Member: order_record_by_user_id AND order_record_by_team_id

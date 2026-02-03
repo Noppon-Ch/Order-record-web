@@ -4,6 +4,7 @@ import type { CreateCustomerDTO } from './customer.types.js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
 
 
 export class CustomerService {
@@ -69,17 +70,26 @@ export class CustomerService {
         return customer;
     }
 
-    async searchCustomers(query: string, accessToken?: string) {
+    async searchCustomers(query: string, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
         if (!query) return [];
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+        // Use service role key to bypass RLS and allow scoped searching
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-        const { data, error } = await supabase
+        let queryBuilder = supabase
             .from('customers')
             .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th')
             .or(`customer_citizen_id.ilike.%${query}%,customer_fname_th.ilike.%${query}%,customer_lname_th.ilike.%${query}%`)
             .limit(10);
+
+        if (userContext?.teamId) {
+            queryBuilder = queryBuilder.or(`customer_record_by_user_id.eq.${userContext.userId},customer_record_by_team_id.eq.${userContext.teamId}`);
+        } else if (userContext?.userId) {
+            queryBuilder = queryBuilder.eq('customer_record_by_user_id', userContext.userId);
+        } else {
+            return [];
+        }
+
+        const { data, error } = await queryBuilder;
 
         if (error) {
             console.error('Error searching customers:', error);
@@ -132,13 +142,11 @@ export class CustomerService {
         }
 
         return customer;
-        return customer;
     }
 
     async findAll(limit: number = 20, offset: number = 0, search?: string, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
+        // Use service role key to bypass potential RLS recursion issues
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
         let query = supabase
             .from('customers')
@@ -147,8 +155,10 @@ export class CustomerService {
 
         // Team Scoping
         if (userContext?.teamId) {
-            // Show customers recorded by user OR recorded by team
-            query = query.or(`customer_record_by_user_id.eq.${userContext.userId},customer_record_by_team_id.eq.${userContext.teamId}`);
+            // New logic: Filter by BOTH user_id AND team_id
+            query = query
+                .eq('customer_record_by_user_id', userContext.userId)
+                .eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
             query = query.eq('customer_record_by_user_id', userContext.userId);
         }
