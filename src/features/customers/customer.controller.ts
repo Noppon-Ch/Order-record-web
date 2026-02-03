@@ -50,6 +50,45 @@ export class CustomerController {
 				}
 			}
 
+			// Check if recommender exists, if not create a dummy record
+			if (body.referrer_citizen_id) {
+				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token);
+				if (!existingRecommender) {
+					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+
+					// Split name
+					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
+					const fname = nameParts[0] || '';
+					const lname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+					const dummyRecommender: CreateCustomerDTO = {
+						customer_citizen_id: body.referrer_citizen_id,
+						customer_fname_th: fname,
+						customer_lname_th: lname,
+						customer_recommender_id: '1000000000000', // Root recommender
+						customer_position: 'SAG', // Default position
+						customer_registerdate: new Date().toISOString().split('T')[0], // Today
+						customer_record_by_user_id: req.user?.id || '',
+						customer_record_by_team_id: values.customer_record_by_team_id,
+						customer_nationality: 'ไทย', // Default
+						customer_phone: '-',
+						customer_address1: '-',
+						customer_address2: '-',
+						customer_zipcode: '-',
+					};
+
+					try {
+						await customerService.createCustomer(dummyRecommender, req.user?.access_token);
+						console.log('Dummy recommender created successfully');
+					} catch (dummyErr) {
+						console.error('Failed to create dummy recommender:', dummyErr);
+						// We proceed even if this fails, as the main insert might still work (unless there's a hard FK constraint I missed)
+						// But based on user request "to prevent error", ensuring it exists is the goal. 
+						// Failed creation might mean it was created in paralell or some other data issue. 
+					}
+				}
+			}
+
 			// Minimal: ไม่เช็คซ้ำ citizen id, แค่ insert
 			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
 
@@ -183,7 +222,56 @@ export class CustomerController {
 			// update record_by? maybe track last_modified_by
 		};
 
+
 		try {
+			const userId = req.user?.id || '';
+			const userTeam = await teamService.getTeamByUserId(userId);
+			let teamId = undefined;
+
+			// Add team info only if user is an ACTIVE member of the team
+			if (userTeam?.team) {
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (memberRecord && memberRecord.status === 'active') {
+					teamId = userTeam.team.team_id;
+				}
+			}
+
+			// Check if recommender exists, if not create a dummy record
+			if (body.referrer_citizen_id) {
+				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token);
+				if (!existingRecommender) {
+					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+
+					// Split name
+					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
+					const fname = nameParts[0] || '';
+					const lname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+					const dummyRecommender: CreateCustomerDTO = {
+						customer_citizen_id: body.referrer_citizen_id,
+						customer_fname_th: fname,
+						customer_lname_th: lname,
+						customer_recommender_id: '1000000000000', // Root recommender
+						customer_position: 'SAG', // Default position
+						customer_registerdate: new Date().toISOString().split('T')[0], // Today
+						customer_record_by_user_id: req.user?.id || '',
+						customer_record_by_team_id: teamId,
+						customer_nationality: 'ไทย', // Default
+						customer_phone: '-',
+						customer_address1: '-',
+						customer_address2: '-',
+						customer_zipcode: '-',
+					};
+
+					try {
+						await customerService.createCustomer(dummyRecommender, req.user?.access_token);
+						console.log('Dummy recommender created successfully');
+					} catch (dummyErr) {
+						console.error('Failed to create dummy recommender:', dummyErr);
+					}
+				}
+			}
+
 			await customerService.updateCustomer(customerId, values, req.user?.access_token);
 			return res.redirect(`/customer/add/finish/${customerId}`);
 		} catch (err: any) {

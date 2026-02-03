@@ -29,12 +29,12 @@
     ` : '' }
 
     <form action="/customer/edit/${customer.customer_id}" method="POST"
-        class="space-y-8 divide-y divide-gray-200 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+        class="space-y-12 divide-y divide-gray-200 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
 
         <!-- General Info -->
-        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+        <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
             <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900 border-l-4 border-amber-500 pl-3">ข้อมูลทั่วไป</h2>
+                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลทั่วไป</h2>
             </div>
 
             <div class="sm:col-span-3">
@@ -59,9 +59,9 @@
         </div>
 
         <!-- Personal Info & Address -->
-        <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+        <div class="pt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
             <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900 border-l-4 border-amber-500 pl-3">ข้อมูลส่วนตัวและที่อยู่
+                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลส่วนตัวและที่อยู่
                 </h2>
             </div>
 
@@ -188,9 +188,9 @@
         </div>
 
         <!-- Referrer Info -->
-        <div class="pt-8 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+        <div class="pt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
             <div class="sm:col-span-6">
-                <h2 class="text-xl font-semibold text-gray-900 border-l-4 border-amber-500 pl-3">ข้อมูลผู้แนะนำ</h2>
+                <h2 class="text-xl font-semibold text-gray-900">ข้อมูลผู้แนะนำ</h2>
             </div>
             <div class="sm:col-span-3">
                 <label for="referrer_citizen_id"
@@ -209,14 +209,13 @@
             <div class="sm:col-span-3">
                 <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ</label>
                 <div class="mt-1">
-                    <input type="text" name="referrer_name" id="referrer_name" readonly
+                    <input type="text" name="referrer_name" id="referrer_name"
                         value="${recommender ? (recommender.customer_fname_th + ' ' + recommender.customer_lname_th) : ''}"
-                        class="shadow-sm bg-gray-50 focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                     <!-- Note: We might not have referrer name directly in customer object unless joined, client might need to fetch it or we make do -->
                 </div>
             </div>
         </div>
-
         <div class="pt-5">
             <div class="flex justify-end">
                 <a href="/homepage"
