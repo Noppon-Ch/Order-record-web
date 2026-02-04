@@ -1,0 +1,263 @@
+[
+    {
+        "policy_name": "customer_delete_by_user_no_team",
+        "command": "d",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_user_id = auth.uid()) AND (customer_record_by_team_id IS NULL))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_private_insert",
+        "command": "a",
+        "roles": "16481",
+        "using_expression": null,
+        "with_check_expression": "((customer_record_by_user_id = auth.uid()) AND (customer_record_by_team_id IS NULL))",
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_private_select",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_user_id = auth.uid()) AND (customer_record_by_team_id IS NULL))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_private_update",
+        "command": "w",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_user_id = auth.uid()) AND (customer_record_by_team_id IS NULL))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_team_delete_leaders_only",
+        "command": "d",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_team_insert_all_roles",
+        "command": "a",
+        "roles": "16481",
+        "using_expression": null,
+        "with_check_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text, 'member'::text]))))))",
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_team_insert_via_leader",
+        "command": "a",
+        "roles": "16481",
+        "using_expression": null,
+        "with_check_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.team_id = customers.customer_record_by_team_id) AND (tm.user_id = auth.uid()) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_team_select_all_roles",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text, 'member'::text]))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "customers_team_update_all_roles",
+        "command": "w",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text, 'member'::text]))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "leaders_view_pending_member_customers",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "((customer_record_by_team_id IS NULL) AND (EXISTS ( SELECT 1\n   FROM (team_members target_member\n     JOIN team_members leader_me ON ((target_member.team_id = leader_me.team_id)))\n  WHERE ((target_member.user_id = customers.customer_record_by_user_id) AND (target_member.status = 'pending'::text) AND (leader_me.user_id = auth.uid()) AND (leader_me.status = 'active'::text) AND (leader_me.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
+        "policy_name": "Users manage items via orders",
+        "command": "*",
+        "roles": "0",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM orders\n  WHERE ((orders.order_id = order_items.order_id) AND (((orders.order_record_by_user_id = auth.uid()) AND (orders.order_record_by_team_id IS NULL)) OR (orders.order_record_by_team_id IN ( SELECT team_members.team_id\n           FROM team_members\n          WHERE ((team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text))))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "order_items"
+    },
+    {
+        "policy_name": "order_items_delete_via_orders",
+        "command": "d",
+        "roles": "16481",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.order_id = order_items.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "order_items"
+    },
+    {
+        "policy_name": "order_items_insert_via_orders",
+        "command": "a",
+        "roles": "16481",
+        "using_expression": null,
+        "with_check_expression": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.order_id = o.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",
+        "schema_name": "public",
+        "table_name": "order_items"
+    },
+    {
+        "policy_name": "order_items_select_via_orders",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE ((o.order_id = order_items.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "order_items"
+    },
+    {
+        "policy_name": "orders_delete_policy",
+        "command": "d",
+        "roles": "0",
+        "using_expression": "((auth.uid() = order_record_by_user_id) OR ((order_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.team_id = orders.order_record_by_team_id) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text])))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "orders"
+    },
+    {
+        "policy_name": "orders_insert_policy",
+        "command": "a",
+        "roles": "0",
+        "using_expression": null,
+        "with_check_expression": "((auth.uid() = order_record_by_user_id) AND ((order_record_by_team_id IS NULL) OR (EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.team_id = orders.order_record_by_team_id) AND (tm.status = 'active'::text))))))",
+        "schema_name": "public",
+        "table_name": "orders"
+    },
+    {
+        "policy_name": "orders_select_policy",
+        "command": "r",
+        "roles": "0",
+        "using_expression": "((auth.uid() = order_record_by_user_id) OR ((order_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.team_id = orders.order_record_by_team_id) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text])))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "orders"
+    },
+    {
+        "policy_name": "allow_authenticated_select_products",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "true",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "products"
+    },
+    {
+        "policy_name": "delete_team_members",
+        "command": "d",
+        "roles": "0",
+        "using_expression": "((user_id = auth.uid()) OR (get_user_team_role(team_id) = 'leader'::text))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "team_members"
+    },
+    {
+        "policy_name": "insert_team_members",
+        "command": "a",
+        "roles": "0",
+        "using_expression": null,
+        "with_check_expression": "(user_id = auth.uid())",
+        "schema_name": "public",
+        "table_name": "team_members"
+    },
+    {
+        "policy_name": "update_team_members",
+        "command": "w",
+        "roles": "0",
+        "using_expression": "(get_user_team_role(team_id) = ANY (ARRAY['leader'::text, 'co-leader'::text]))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "team_members"
+    },
+    {
+        "policy_name": "view_team_members",
+        "command": "r",
+        "roles": "0",
+        "using_expression": "((user_id = auth.uid()) OR (get_user_team_role(team_id) IS NOT NULL))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "team_members"
+    },
+    {
+        "policy_name": "Public read teams",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "true",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "teams"
+    },
+    {
+        "policy_name": "teams_read_policy",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "((EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.team_id = teams.team_id) AND (tm.user_id = auth.uid())))) OR (status = 'active'::text))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "teams"
+    },
+    {
+        "policy_name": "user_profiles_can_insert_teams",
+        "command": "a",
+        "roles": "16481",
+        "using_expression": null,
+        "with_check_expression": "(EXISTS ( SELECT 1\n   FROM user_profiles up\n  WHERE (up.user_id = ( SELECT auth.uid() AS uid))))",
+        "schema_name": "public",
+        "table_name": "teams"
+    },
+    {
+        "policy_name": "user_profiles_can_select_teams",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "(EXISTS ( SELECT 1\n   FROM user_profiles up\n  WHERE (up.user_id = ( SELECT auth.uid() AS uid))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "teams"
+    },
+    {
+        "policy_name": "user_profiles_select_own",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "(( SELECT auth.uid() AS uid) = user_id)",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "user_profiles"
+    },
+    {
+        "policy_name": "user_profiles_update_own",
+        "command": "w",
+        "roles": "16481",
+        "using_expression": "(( SELECT auth.uid() AS uid) = user_id)",
+        "with_check_expression": "(( SELECT auth.uid() AS uid) = user_id)",
+        "schema_name": "public",
+        "table_name": "user_profiles"
+    },
+    {
+        "policy_name": "Allow authenticated read",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "true",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "zipcode_th"
+    }
+]

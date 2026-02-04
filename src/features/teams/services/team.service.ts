@@ -175,7 +175,12 @@ export const teamService = {
     },
 
     async updateMemberStatus(requesterId: string, memberId: string, newStatus: string, accessToken?: string): Promise<void> {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Use authenticated client if token is provided to ensure RLS policies are applied correctly
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
 
         // 1. Check if requester is a leader of the same team as memberId
         // First get the member's team_id AND user_id
@@ -201,16 +206,11 @@ export const teamService = {
             throw new Error('Unauthorized: Only active leaders or co-leaders can update member status');
         }
 
-        // 2. Update status
-        const { error: updateError } = await supabase
-            .from('team_members')
-            .update({ status: newStatus })
-            .eq('id', memberId);
-
-        if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
-
-        // 3. If approved (active), CLONE their existing customers to this team
+        // 3. PREPARE CLONING: fetch data BEFORE status update because RLS relies on member being 'pending'
+        let clonesToInsert: any[] = [];
         if (newStatus === 'active') {
+            console.log('[TeamService] Member approving. Fetching data for cloning...');
+
             // A. Fetch existing private customers
             const { data: customersToClone, error: fetchError } = await supabase
                 .from('customers')
@@ -219,26 +219,56 @@ export const teamService = {
                 .is('customer_record_by_team_id', null);
 
             if (fetchError) {
-                console.error('Error fetching customers to clone:', fetchError);
-            } else if (customersToClone && customersToClone.length > 0) {
-                // B. Prepare clones
-                const clones = customersToClone.map(c => {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const { customer_id, customer_created_at, ...rest } = c;
-                    return {
-                        ...rest,
-                        customer_record_by_team_id: memberToUpdate.team_id
-                    };
-                });
+                console.error('[TeamService] Error fetching customers to clone:', fetchError);
+            } else {
+                console.log(`[TeamService] Found ${customersToClone?.length || 0} private customers to clone.`);
+            }
 
-                // C. Insert clones
-                const { error: insertError } = await supabase
+            if (customersToClone && customersToClone.length > 0) {
+                // B. Fetch existing citizen IDs in the team to prevent duplicates
+                const { data: existingTeamCustomers, error: teamCustError } = await supabase
                     .from('customers')
-                    .insert(clones);
+                    .select('customer_citizen_id')
+                    .eq('customer_record_by_team_id', memberToUpdate.team_id);
 
-                if (insertError) {
-                    console.error('Error cloning customers to team:', insertError);
-                }
+                if (teamCustError) console.error('[TeamService] Error fetching existing team customers:', teamCustError);
+
+                const existingCitizenIds = new Set(existingTeamCustomers?.map(c => c.customer_citizen_id) || []);
+
+                // C. Prepare clones
+                clonesToInsert = customersToClone
+                    .filter(c => !existingCitizenIds.has(c.customer_citizen_id))
+                    .map(c => {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { customer_id, customer_created_at, ...rest } = c;
+                        return {
+                            ...rest,
+                            customer_record_by_team_id: memberToUpdate.team_id
+                        };
+                    });
+
+                console.log(`[TeamService] Prepared ${clonesToInsert.length} clones.`);
+            }
+        }
+
+        // 2. Update status
+        const { error: updateError } = await supabase
+            .from('team_members')
+            .update({ status: newStatus })
+            .eq('id', memberId);
+
+        if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
+
+        // 4. EXECUTE CLONING
+        if (newStatus === 'active' && clonesToInsert.length > 0) {
+            const { error: insertError } = await supabase
+                .from('customers')
+                .insert(clonesToInsert);
+
+            if (insertError) {
+                console.error('[TeamService] Error cloning customers to team:', insertError);
+            } else {
+                console.log('[TeamService] Cloning completed successfully.');
             }
         }
     },

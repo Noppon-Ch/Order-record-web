@@ -154,3 +154,75 @@ CREATE TABLE public.zipcode_th (
   full_locate text NOT NULL,
   CONSTRAINT zipcode_th_pkey PRIMARY KEY (full_locate)
 );
+
+--------------------------------------------------------------------------------
+-- NEW RLS POLICIES FOR team_members
+-- Run this script in your Supabase SQL Editor
+--------------------------------------------------------------------------------
+
+-- 1. Helper Function: Get User's Role in a Team
+-- Returns the role if the user is an ACTIVE member of the team, else NULL.
+-- SECURITY DEFINER is crucial to avoid infinite recursion when querying team_members within a policy.
+CREATE OR REPLACE FUNCTION public.get_user_team_role(check_team_id uuid)
+RETURNS text
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role
+  FROM public.team_members
+  WHERE team_id = check_team_id
+    AND user_id = auth.uid()
+    AND status = 'active'
+  LIMIT 1;
+$$;
+
+-- 2. Enable RLS
+ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
+
+-- 3. Cleanup: Drop existing policies (If you haven't already deleted them)
+DROP POLICY IF EXISTS "view_team_members" ON public.team_members;
+DROP POLICY IF EXISTS "insert_team_members" ON public.team_members;
+DROP POLICY IF EXISTS "update_team_members" ON public.team_members;
+DROP POLICY IF EXISTS "delete_team_members" ON public.team_members;
+
+-- 4. Create New Policies
+
+-- SELECT: Users can see:
+-- (a) Their own record.
+-- (b) Other members IF they are an ACTIVE member of that team (Leaders, Co-leaders, Members).
+-- Pending members will only see themselves.
+CREATE POLICY "view_team_members" ON public.team_members
+FOR SELECT
+USING (
+  user_id = auth.uid() 
+  OR 
+  get_user_team_role(team_id) IS NOT NULL
+);
+
+-- INSERT: Users can only insert records for themselves (e.g., Joining a team, Creating a team).
+CREATE POLICY "insert_team_members" ON public.team_members
+FOR INSERT
+WITH CHECK (
+  user_id = auth.uid()
+);
+
+-- UPDATE: Only Leaders and Co-leaders can update member status/roles in their team.
+-- Note: Logic for 'who can update what' (e.g. Co-leaders only approve) is further enforced in the Service Layer.
+CREATE POLICY "update_team_members" ON public.team_members
+FOR UPDATE
+USING (
+  get_user_team_role(team_id) IN ('leader', 'co-leader')
+);
+
+-- DELETE: 
+-- (a) Users can remove themselves (Leave Team).
+-- (b) Leaders can remove members.
+-- (Co-leaders usually cannot remove active members, enforced by Service Layer, but RLS here restricts to Leaders only for deletion of others).
+CREATE POLICY "delete_team_members" ON public.team_members
+FOR DELETE
+USING (
+  user_id = auth.uid() 
+  OR 
+  get_user_team_role(team_id) = 'leader'
+);
