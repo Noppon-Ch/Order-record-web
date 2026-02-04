@@ -158,20 +158,7 @@ export class OrderController {
             const query = req.query.q as string || '';
             const accessToken = (req.user as any)?.access_token;
 
-            const userTeam = await teamService.getTeamByUserId((req.user as any)?.id || '');
-            const userContext: { userId: string, teamId?: string, role?: string } = {
-                userId: (req.user as any)?.id || ''
-            };
-            if (userTeam?.team?.team_id) {
-                userContext.teamId = userTeam.team.team_id;
-            }
-
-            const currentUserMember = userTeam?.members?.find(m => m.user_id === userContext.userId);
-            if (currentUserMember?.role) {
-                userContext.role = currentUserMember.role;
-            }
-
-            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken, userContext);
+            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken);
 
             res.render('history', {
                 orders: orders || [],

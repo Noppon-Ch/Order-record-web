@@ -102,11 +102,13 @@ export class OrderService {
         return order;
     }
 
-    async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string, userContext?: { userId: string, teamId?: string, role?: string }) {
+    async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string) {
         console.log('[OrderService] Fetching orders with query:', query);
 
-        // Use service role key to bypass RLS for team-based fetching
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        // Use authenticated client to leverage RLS policies for security
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
 
         // Calculate pagination range
         const from = (page - 1) * pageSize;
@@ -129,19 +131,8 @@ export class OrderService {
             .range(from, to)
             .order('order_date', { ascending: false });
 
-        // Team Scoping
-        if (userContext?.teamId && userContext?.role) {
-            if (['leader', 'co-leader'].includes(userContext.role)) {
-                // Leader & Co-leader: access all by order_record_by_team_id
-                queryBuilder = queryBuilder.eq('order_record_by_team_id', userContext.teamId);
-            } else {
-                // Member: order_record_by_user_id AND order_record_by_team_id
-                queryBuilder = queryBuilder.eq('order_record_by_team_id', userContext.teamId).eq('order_record_by_user_id', userContext.userId);
-            }
-        } else if (userContext?.userId) {
-            // Personal Context (No Team)
-            queryBuilder = queryBuilder.eq('order_record_by_user_id', userContext.userId);
-        }
+        // RLS policies now handle team scoping automatically based on the authenticated user.
+        // No manual queryBuilder.eq(...) for security needed here.
 
         // Apply filters if query exists
         if (query) {
