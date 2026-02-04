@@ -102,7 +102,8 @@ export class CustomerService {
         if (userContext?.teamId) {
             queryBuilder = queryBuilder.eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
-            queryBuilder = queryBuilder.eq('customer_record_by_user_id', userContext.userId);
+            queryBuilder = queryBuilder.eq('customer_record_by_user_id', userContext.userId)
+                .is('customer_record_by_team_id', null);
         } else {
             return [];
         }
@@ -176,7 +177,8 @@ export class CustomerService {
             // New logic: Filter by team_id ONLY to show ALL team customers
             query = query.eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
-            query = query.eq('customer_record_by_user_id', userContext.userId);
+            query = query.eq('customer_record_by_user_id', userContext.userId)
+                .is('customer_record_by_team_id', null);
         }
 
         if (search) {

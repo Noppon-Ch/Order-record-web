@@ -343,5 +343,64 @@ export const teamService = {
 
         if (error) throw error;
         return data;
+    },
+
+    async leaveTeam(userId: string, accessToken?: string): Promise<void> {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 1. Get member info to find team_id
+        const { data: membership, error: memberError } = await supabase
+            .from('team_members')
+            .select('id, team_id, role')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (memberError || !membership) throw new Error('You are not in a team.');
+
+        if (membership.role === 'leader') {
+            // Optional: Block leader from leaving without transferring ownership?
+            // Or allow it and team becomes leaderless/deleted? 
+            // For now, let's allow it but maybe warn or just proceed. 
+            // If they are the ONLY leader, maybe the team should be archived? 
+            // Assuming basic leave for now.
+        }
+
+        // 2. Clone Customers: "Copy team customers created by me -> to private customers"
+        // Why clone? Because the originals belong to the team (team_id is set). 
+        // User wants to "take them with me" meaning having a private copy.
+        const { data: teamCustomers, error: fetchError } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('customer_record_by_user_id', userId)
+            .eq('customer_record_by_team_id', membership.team_id);
+
+        if (fetchError) {
+            console.error('Error fetching customers to clone for leaving user:', fetchError);
+            // Proceed to leave?
+        } else if (teamCustomers && teamCustomers.length > 0) {
+            // Prepare clones: same data, but team_id = NULL
+            const clones = teamCustomers.map(c => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { customer_id, customer_created_at, ...rest } = c;
+                return {
+                    ...rest,
+                    customer_record_by_team_id: null
+                };
+            });
+
+            const { error: insertError } = await supabase
+                .from('customers')
+                .insert(clones);
+
+            if (insertError) console.error('Error cloning customers for leaving user:', insertError);
+        }
+
+        // 3. Delete membership
+        const { error: deleteError } = await supabase
+            .from('team_members')
+            .delete()
+            .eq('id', membership.id);
+
+        if (deleteError) throw new Error(`Failed to leave team: ${deleteError.message}`);
     }
 };

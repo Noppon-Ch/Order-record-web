@@ -130,5 +130,18 @@ export const teamController = {
             console.error('Error searching teams:', error);
             res.status(500).json({ error: 'Internal Server Error' });
         }
+    },
+
+    async leaveTeam(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+            await teamService.leaveTeam(userId, (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Left team successfully' });
+        } catch (error: any) {
+            console.error('Error leaving team:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
     }
 };

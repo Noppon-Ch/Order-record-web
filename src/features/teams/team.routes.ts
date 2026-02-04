@@ -13,6 +13,7 @@ router.post('/join', teamController.joinTeam);
 router.post('/approve', teamController.approveMember);
 router.post('/remove', teamController.removeMember);
 router.post('/update-role', teamController.updateMemberRole);
+router.post('/leave', teamController.leaveTeam);
 router.get('/search', teamController.searchTeams);
 
 export default router;

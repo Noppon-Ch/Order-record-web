@@ -26,16 +26,29 @@
                 <% if (team) { %>
                     <!-- Team Information Form -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                        <div class="flex items-center gap-3 mb-6">
-                            <div
-                                class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                    </path>
-                                </svg>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-bold text-gray-900">ข้อมูลทีม</h2>
                             </div>
-                            <h2 class="text-xl font-bold text-gray-900">ข้อมูลทีม</h2>
+                            <% if (team.owner_user_id !==user.id) { %>
+                                <button type="button" id="leaveTeamBtn"
+                                    class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                        </path>
+                                    </svg>
+                                    ออกจากทีม
+                                </button>
+                                <% } %>
                         </div>
 
                         <form class="space-y-6">
@@ -245,6 +258,16 @@
                                                                                     data-member-id="<%= member.id %>"
                                                                                     data-role="member">
                                                                                     - Member (สมาชิก)
+                                                                                </button>
+
+                                                                                <div
+                                                                                    class="border-t border-gray-100 my-1">
+                                                                                </div>
+                                                                                <button type="button"
+                                                                                    class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                                                                    role="menuitem"
+                                                                                    data-member-id="<%= member.id %>">
+                                                                                    4. ลบออกจากทีม (Remove)
                                                                                 </button>
                                                                                 <% } %>
                                                             </div>
@@ -617,6 +640,43 @@
 
                 // Close on scroll
                 window.addEventListener('scroll', closeAllDropdowns, true);
+
+                // --- Leave Team Logic ---
+                const leaveTeamBtn = document.getElementById('leaveTeamBtn');
+                if (leaveTeamBtn) {
+                    leaveTeamBtn.addEventListener('click', async () => {
+                        const confirmed = await Swal.fire({
+                            title: 'ยืนยันการออกจากทีม?',
+                            text: "คุณต้องการออกจากทีมนี้ใช่หรือไม่? ข้อมูลลูกค้าของคุณจะถูกแยกออกมาเป็นข้อมูลส่วนตัว",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'ใช่, ออกจากทีม',
+                            cancelButtonText: 'ยกเลิก'
+                        });
+
+                        if (confirmed.isConfirmed) {
+                            try {
+                                const response = await fetch('/teams/leave', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    Swal.fire({
+                                        icon: 'success', title: 'สำเร็จ!', text: 'ออกจากทีมเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false
+                                    }).then(() => window.location.reload());
+                                } else {
+                                    throw new Error(result.message);
+                                }
+                            } catch (error) {
+                                console.error(error);
+                                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Failed' });
+                            }
+                        }
+                    });
+                }
 
 
                 // --- Approve Member Logic ---
