@@ -274,12 +274,17 @@ export const teamService = {
     },
 
     async removeMember(requesterId: string, memberId: string, accessToken?: string): Promise<void> {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        // Use authenticated client
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
 
         // 1. Get member info to find team_id and status
         const { data: memberToRemove, error: memberError } = await supabase
             .from('team_members')
-            .select('team_id, status, role') // Select role to prevent removing leaders if needed, and status for co-leader check
+            .select('id, team_id, user_id, status, role')
             .eq('id', memberId)
             .single();
 
@@ -298,25 +303,69 @@ export const teamService = {
             throw new Error('Unauthorized: User not found or inactive');
         }
 
-        // Permission Logic:
-        // Leader: Can remove anyone (Pending or Active) - maybe restriction on removing other leaders? Assuming OK for now or user didn't specify.
-        // Co-leader: Can remove ONLY 'pending' members (Reject). Cannot remove 'active' members.
-
         const isLeader = requester.role === 'leader';
 
         if (!isLeader) {
             throw new Error('Unauthorized: Only leaders can remove or reject members');
         }
 
-        // Optional: Protect leaders from being removed by anyone other than themselves (or system admin)?
-        // User request: "Target Leader: No action".
-        // Implicitly means we shouldn't allow removing a leader via this API if the UI blocks it. 
-        // Let's add a backend check to be safe: Cannot remove a leader.
         if (memberToRemove.role === 'leader') {
+            // Redundant check if RLS `delete_team_members` handles it, but good for safety
             throw new Error('Unauthorized: Cannot remove a Team Leader');
         }
 
-        // 3. Delete
+        // 3. CLONE PROCESS: Before removing, clone their team customers back to private
+        // "customer_record_by_user_id = member_id" AND "customer_record_by_team_id = team_id"
+        // -> clone to "customer_record_by_team_id = NULL"
+        console.log(`[TeamService] Removing member ${memberToRemove.user_id}. Starting cloning process...`);
+
+        const { data: teamCustomers, error: fetchError } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('customer_record_by_user_id', memberToRemove.user_id)
+            .eq('customer_record_by_team_id', memberToRemove.team_id);
+
+        if (fetchError) {
+            console.error('[TeamService] Error fetching member customers to clone:', fetchError);
+        } else if (teamCustomers && teamCustomers.length > 0) {
+            console.log(`[TeamService] Found ${teamCustomers.length} customers to clone back to private.`);
+
+            // Check duplicates in PRIVATE scope for this user
+            const { data: existingPrivate, error: privateError } = await supabase
+                .from('customers')
+                .select('customer_citizen_id')
+                .eq('customer_record_by_user_id', memberToRemove.user_id)
+                .is('customer_record_by_team_id', null);
+
+            if (privateError) console.error('[TeamService] Error fetching existing private customers:', privateError);
+
+            const existingCitizenIds = new Set(existingPrivate?.map(c => c.customer_citizen_id) || []);
+
+            const clones = teamCustomers
+                .filter(c => !existingCitizenIds.has(c.customer_citizen_id))
+                .map(c => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { customer_id, customer_created_at, ...rest } = c;
+                    return {
+                        ...rest,
+                        customer_record_by_team_id: null
+                    };
+                });
+
+            if (clones.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('customers')
+                    .insert(clones); // This relies on "leaders_create_private_customer_for_member" policy
+
+                if (insertError) {
+                    console.error('[TeamService] Error cloning customers back to private:', insertError);
+                } else {
+                    console.log(`[TeamService] Successfully cloned ${clones.length} customers back to private.`);
+                }
+            }
+        }
+
+        // 4. Delete membership
         const { error: deleteError } = await supabase
             .from('team_members')
             .delete()
@@ -326,7 +375,11 @@ export const teamService = {
     },
 
     async updateMemberRole(requesterId: string, memberId: string, newRole: string, accessToken?: string): Promise<void> {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
 
         if (!['leader', 'co-leader', 'member'].includes(newRole)) {
             throw new Error('Invalid role');
@@ -376,7 +429,11 @@ export const teamService = {
     },
 
     async leaveTeam(userId: string, accessToken?: string): Promise<void> {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
 
         // 1. Get member info to find team_id
         const { data: membership, error: memberError } = await supabase
@@ -387,17 +444,7 @@ export const teamService = {
 
         if (memberError || !membership) throw new Error('You are not in a team.');
 
-        if (membership.role === 'leader') {
-            // Optional: Block leader from leaving without transferring ownership?
-            // Or allow it and team becomes leaderless/deleted? 
-            // For now, let's allow it but maybe warn or just proceed. 
-            // If they are the ONLY leader, maybe the team should be archived? 
-            // Assuming basic leave for now.
-        }
-
         // 2. Clone Customers: "Copy team customers created by me -> to private customers"
-        // Why clone? Because the originals belong to the team (team_id is set). 
-        // User wants to "take them with me" meaning having a private copy.
         const { data: teamCustomers, error: fetchError } = await supabase
             .from('customers')
             .select('*')
@@ -405,24 +452,38 @@ export const teamService = {
             .eq('customer_record_by_team_id', membership.team_id);
 
         if (fetchError) {
-            console.error('Error fetching customers to clone for leaving user:', fetchError);
-            // Proceed to leave?
+            console.error('[TeamService] Error fetching customers to clone for leaving user:', fetchError);
         } else if (teamCustomers && teamCustomers.length > 0) {
-            // Prepare clones: same data, but team_id = NULL
-            const clones = teamCustomers.map(c => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { customer_id, customer_created_at, ...rest } = c;
-                return {
-                    ...rest,
-                    customer_record_by_team_id: null
-                };
-            });
 
-            const { error: insertError } = await supabase
+            // Check duplicates in PRIVATE scope
+            const { data: existingPrivate, error: privateError } = await supabase
                 .from('customers')
-                .insert(clones);
+                .select('customer_citizen_id')
+                .eq('customer_record_by_user_id', userId)
+                .is('customer_record_by_team_id', null);
 
-            if (insertError) console.error('Error cloning customers for leaving user:', insertError);
+            if (privateError) console.error('[TeamService] Error fetching existing private customers:', privateError);
+
+            const existingCitizenIds = new Set(existingPrivate?.map(c => c.customer_citizen_id) || []);
+
+            const clones = teamCustomers
+                .filter(c => !existingCitizenIds.has(c.customer_citizen_id))
+                .map(c => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { customer_id, customer_created_at, ...rest } = c;
+                    return {
+                        ...rest,
+                        customer_record_by_team_id: null
+                    };
+                });
+
+            if (clones.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('customers')
+                    .insert(clones); // Relies on "customers_private_insert"
+
+                if (insertError) console.error('[TeamService] Error cloning customers for leaving user:', insertError);
+            }
         }
 
         // 3. Delete membership

@@ -81,6 +81,15 @@
         "table_name": "customers"
     },
     {
+        "policy_name": "leaders_create_private_customer_for_member",
+        "command": "a",
+        "roles": "0",
+        "using_expression": null,
+        "with_check_expression": "((customer_record_by_team_id IS NULL) AND (EXISTS ( SELECT 1\n   FROM (team_members target_member\n     JOIN team_members leader_me ON ((target_member.team_id = leader_me.team_id)))\n  WHERE ((target_member.user_id = customers.customer_record_by_user_id) AND (leader_me.user_id = auth.uid()) AND (leader_me.role = ANY (ARRAY['leader'::text, 'co-leader'::text])) AND (leader_me.status = 'active'::text)))))",
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
         "policy_name": "leaders_view_pending_member_customers",
         "command": "r",
         "roles": "16481",
