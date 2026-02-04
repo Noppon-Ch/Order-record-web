@@ -8,18 +8,36 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabase
 
 
 export class CustomerService {
-    async findByCitizenId(customer_citizen_id: string, accessToken?: string) {
+    async findByCitizenId(customer_citizen_id: string, accessToken?: string, userContext?: { userId?: string, teamId?: string }) {
         if (!customer_citizen_id) return null;
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
-        } : undefined);
-        const { data, error } = await supabase
+        // Use service role to look up citizens, applying manual scoping to handle duplicates (Private vs Team)
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+        let query = supabase
             .from('customers')
             .select('*')
-            .eq('customer_citizen_id', customer_citizen_id)
-            .maybeSingle();
+            .eq('customer_citizen_id', customer_citizen_id);
+
+        if (userContext?.teamId) {
+            // Case 1: User is in a team -> Look for Team Record
+            query = query.eq('customer_record_by_team_id', userContext.teamId);
+        } else if (userContext?.userId) {
+            // Case 2: User is NOT in a team -> Look for Private Record (Team is NULL)
+            // ensuring we don't accidentally pick up a team record if the user joined one but context is missing (edge case)
+            query = query
+                .eq('customer_record_by_user_id', userContext.userId)
+                .is('customer_record_by_team_id', null);
+        }
+
+        // Use limit(1) to avoid PGRST116 if multiple rows somehow exist despite scoping
+        const { data, error } = await query.limit(1).maybeSingle();
+
         if (error) {
-            throw new Error('Database error.');
+            console.error('Error finding customer by citizen ID:', error);
+            // Don't throw database error to UI if it's just "not found" or similar query issue, 
+            // but maybeSingle handles "not found" by returning null. 
+            // Real errors (connection, syntax) should be thrown.
+            throw new Error(`Database error: ${error.message}`);
         }
         return data;
     }
@@ -82,7 +100,7 @@ export class CustomerService {
             .limit(10);
 
         if (userContext?.teamId) {
-            queryBuilder = queryBuilder.or(`customer_record_by_user_id.eq.${userContext.userId},customer_record_by_team_id.eq.${userContext.teamId}`);
+            queryBuilder = queryBuilder.eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
             queryBuilder = queryBuilder.eq('customer_record_by_user_id', userContext.userId);
         } else {
@@ -155,10 +173,8 @@ export class CustomerService {
 
         // Team Scoping
         if (userContext?.teamId) {
-            // New logic: Filter by BOTH user_id AND team_id
-            query = query
-                .eq('customer_record_by_user_id', userContext.userId)
-                .eq('customer_record_by_team_id', userContext.teamId);
+            // New logic: Filter by team_id ONLY to show ALL team customers
+            query = query.eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
             query = query.eq('customer_record_by_user_id', userContext.userId);
         }

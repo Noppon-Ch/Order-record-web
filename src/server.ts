@@ -7,5 +7,5 @@ import app from './app.js'; // Import app จากไฟล์ app.ts
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    // console.log(`Server is running on http://localhost:${PORT}`);
 });

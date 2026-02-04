@@ -178,10 +178,10 @@ export const teamService = {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 1. Check if requester is a leader of the same team as memberId
-        // First get the member's team_id
+        // First get the member's team_id AND user_id
         const { data: memberToUpdate, error: memberError } = await supabase
             .from('team_members')
-            .select('team_id')
+            .select('team_id, user_id')
             .eq('id', memberId)
             .single();
 
@@ -208,6 +208,39 @@ export const teamService = {
             .eq('id', memberId);
 
         if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
+
+        // 3. If approved (active), CLONE their existing customers to this team
+        if (newStatus === 'active') {
+            // A. Fetch existing private customers
+            const { data: customersToClone, error: fetchError } = await supabase
+                .from('customers')
+                .select('*')
+                .eq('customer_record_by_user_id', memberToUpdate.user_id)
+                .is('customer_record_by_team_id', null);
+
+            if (fetchError) {
+                console.error('Error fetching customers to clone:', fetchError);
+            } else if (customersToClone && customersToClone.length > 0) {
+                // B. Prepare clones
+                const clones = customersToClone.map(c => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { customer_id, customer_created_at, ...rest } = c;
+                    return {
+                        ...rest,
+                        customer_record_by_team_id: memberToUpdate.team_id
+                    };
+                });
+
+                // C. Insert clones
+                const { error: insertError } = await supabase
+                    .from('customers')
+                    .insert(clones);
+
+                if (insertError) {
+                    console.error('Error cloning customers to team:', insertError);
+                }
+            }
+        }
     },
 
     async removeMember(requesterId: string, memberId: string, accessToken?: string): Promise<void> {

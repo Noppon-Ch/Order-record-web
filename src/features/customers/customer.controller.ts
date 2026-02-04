@@ -41,18 +41,22 @@ export class CustomerController {
 		try {
 			const userId = req.user?.id || '';
 			const userTeam = await teamService.getTeamByUserId(userId);
+			let teamId = undefined;
 
 			// Add team info only if user is an ACTIVE member of the team
 			if (userTeam?.team) {
 				const memberRecord = userTeam.members.find(m => m.user_id === userId);
 				if (memberRecord && memberRecord.status === 'active') {
-					values.customer_record_by_team_id = userTeam.team.team_id;
+					teamId = userTeam.team.team_id;
+					values.customer_record_by_team_id = teamId;
 				}
 			}
 
+			const userContext = { userId, ...(teamId ? { teamId } : {}) };
+
 			// Check if recommender exists, if not create a dummy record
 			if (body.referrer_citizen_id) {
-				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token);
+				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token, userContext);
 				if (!existingRecommender) {
 					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
 
@@ -149,12 +153,18 @@ export class CustomerController {
 				return res.json([]);
 			}
 
-			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
+			const userId = req.user?.id || '';
+			const userTeam = await teamService.getTeamByUserId(userId);
 			const userContext: { userId: string, teamId?: string } = {
-				userId: req.user?.id || ''
+				userId: userId
 			};
+
 			if (userTeam?.team?.team_id) {
-				userContext.teamId = userTeam.team.team_id;
+				// Only use team context if user is an ACTIVE member
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (memberRecord && memberRecord.status === 'active') {
+					userContext.teamId = userTeam.team.team_id;
+				}
 			}
 
 			const results = await customerService.searchCustomers(query, req.user?.access_token, userContext);
@@ -292,12 +302,21 @@ export class CustomerController {
 			const offset = (page - 1) * limit;
 			const search = req.query.search as string;
 
-			const userTeam = await teamService.getTeamByUserId(req.user?.id || '');
+			const userId = req.user?.id || '';
+			const userTeam = await teamService.getTeamByUserId(userId);
 			const userContext: { userId: string, teamId?: string } = {
-				userId: req.user?.id || ''
+				userId: userId
 			};
+
+			let userTeamRole = null;
+
 			if (userTeam?.team?.team_id) {
-				userContext.teamId = userTeam.team.team_id;
+				// Only use team context if user is an ACTIVE member
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (memberRecord && memberRecord.status === 'active') {
+					userContext.teamId = userTeam.team.team_id;
+					userTeamRole = memberRecord.role;
+				}
 			}
 
 			const customers = await customerService.findAll(limit, offset, search, req.user?.access_token, userContext);
@@ -306,7 +325,8 @@ export class CustomerController {
 				user: req.user,
 				customers,
 				currentPage: page,
-				searchQuery: search || ''
+				searchQuery: search || '',
+				userTeamRole
 			});
 		} catch (err) {
 			console.error('Error listing customers:', err);
@@ -317,6 +337,35 @@ export class CustomerController {
 	async deleteCustomer(req: Request, res: Response) {
 		try {
 			const customerId = req.params.customerId as string;
+
+			// 1. Verify existence and Fetch details for permission check
+			const customer = await customerService.findById(customerId, req.user?.access_token);
+			if (!customer) {
+				return res.status(404).json({ error: 'Customer not found' });
+			}
+
+			// 2. Check Permissions (Backend Guard)
+			const userId = req.user?.id || '';
+
+			if (customer.customer_record_by_team_id) {
+				// Team Record: Check if user is Leader/Co-leader of THIS team
+				const userTeam = await teamService.getTeamByUserId(userId);
+				// Ensure user is in the SAME team as the customer record
+				if (!userTeam?.team || userTeam.team.team_id !== customer.customer_record_by_team_id) {
+					return res.status(403).json({ error: 'Unauthorized: You are not a member of the team owning this record.' });
+				}
+
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (!memberRecord || memberRecord.status !== 'active' || !['leader', 'co-leader'].includes(memberRecord.role)) {
+					return res.status(403).json({ error: 'Unauthorized: Only Leader or Co-leader can delete team customers.' });
+				}
+			} else {
+				// Private Record: Check Ownership
+				if (customer.customer_record_by_user_id !== userId) {
+					return res.status(403).json({ error: 'Unauthorized: You do not own this customer.' });
+				}
+			}
+
 			await customerService.deleteCustomer(customerId, req.user?.access_token);
 			res.json({ success: true });
 		} catch (err) {

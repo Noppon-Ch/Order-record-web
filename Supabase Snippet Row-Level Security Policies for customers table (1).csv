@@ -1,0 +1,75 @@
+policy_name,command,roles,using_expression,with_check_expression,schema_name,table_name
+customer_delete_by_leader,d,16481,"((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1
+   FROM team_members
+  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",null,public,customers
+customer_delete_by_user_no_team,d,16481,((customer_record_by_team_id IS NULL) AND (customer_record_by_user_id = ( SELECT auth.uid() AS uid))),null,public,customers
+customers_insert_by_user_or_team,a,16481,null,((( SELECT auth.uid() AS uid) = customer_record_by_user_id) AND ((((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)) OR (((auth.jwt() ->> 'team_id'::text) IS NULL) AND (customer_record_by_team_id IS NULL)))),public,customers
+customers_select_own,r,16481,(customer_record_by_user_id = ( SELECT auth.uid() AS uid)),null,public,customers
+customers_team_insert,a,16481,null,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND (((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) OR ((auth.jwt() ->> 'team_role'::text) = 'member'::text)) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),public,customers
+customers_team_leader_all,*,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'leader'::text) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'leader'::text) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),public,customers
+customers_team_select,r,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND (((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) OR ((auth.jwt() ->> 'team_role'::text) = 'member'::text)) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),null,public,customers
+customers_team_update,w,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND (((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) OR ((auth.jwt() ->> 'team_role'::text) = 'member'::text)) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND (((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) OR ((auth.jwt() ->> 'team_role'::text) = 'member'::text)) AND (customer_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),public,customers
+customers_update_own,w,16481,(customer_record_by_user_id = ( SELECT auth.uid() AS uid)),(customer_record_by_user_id = ( SELECT auth.uid() AS uid)),public,customers
+customers_user_insert,a,16481,null,((customer_record_by_user_id IS NOT NULL) AND (customer_record_by_user_id = ( SELECT auth.uid() AS uid))),public,customers
+customers_user_select,r,16481,((customer_record_by_user_id IS NOT NULL) AND (customer_record_by_user_id = ( SELECT auth.uid() AS uid))),null,public,customers
+customers_user_update,w,16481,((customer_record_by_user_id IS NOT NULL) AND (customer_record_by_user_id = ( SELECT auth.uid() AS uid))),((customer_record_by_user_id IS NOT NULL) AND (customer_record_by_user_id = ( SELECT auth.uid() AS uid))),public,customers
+Users manage items via orders,*,0,"(EXISTS ( SELECT 1
+   FROM orders
+  WHERE ((orders.order_id = order_items.order_id) AND (((orders.order_record_by_user_id = auth.uid()) AND (orders.order_record_by_team_id IS NULL)) OR (orders.order_record_by_team_id IN ( SELECT team_members.team_id
+           FROM team_members
+          WHERE ((team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text))))))))",null,public,order_items
+order_items_delete_via_orders,d,16481,"(EXISTS ( SELECT 1
+   FROM orders o
+  WHERE ((o.order_id = order_items.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",null,public,order_items
+order_items_insert_via_orders,a,16481,null,"(EXISTS ( SELECT 1
+   FROM orders o
+  WHERE ((o.order_id = o.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",public,order_items
+order_items_select_via_orders,r,16481,"(EXISTS ( SELECT 1
+   FROM orders o
+  WHERE ((o.order_id = order_items.order_id) AND (o.order_record_by_user_id = ( SELECT auth.uid() AS uid)))))",null,public,order_items
+Users manage own orders or active team orders,*,0,"(((auth.uid() = order_record_by_user_id) AND (order_record_by_team_id IS NULL)) OR (order_record_by_team_id IN ( SELECT team_members.team_id
+   FROM team_members
+  WHERE ((team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text)))))",null,public,orders
+orders_delete_by_owner,d,16481,(( SELECT auth.uid() AS uid) = order_record_by_user_id),null,public,orders
+orders_insert_by_owner,a,16481,null,(( SELECT auth.uid() AS uid) = order_record_by_user_id),public,orders
+orders_select_by_owner,r,16481,(( SELECT auth.uid() AS uid) = order_record_by_user_id),null,public,orders
+orders_team_co_leader_insert,a,16481,null,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) AND (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),public,orders
+orders_team_co_leader_select,r,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'co-leader'::text) AND (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),null,public,orders
+orders_team_leader_delete,d,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'leader'::text) AND (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),null,public,orders
+orders_team_leader_insert,a,16481,null,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'leader'::text) AND (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),public,orders
+orders_team_leader_select,r,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'leader'::text) AND (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid)),null,public,orders
+orders_team_member_delete,d,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'member'::text) AND ((order_record_by_user_id = ( SELECT auth.uid() AS uid)) OR (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid))),null,public,orders
+orders_team_member_insert,a,16481,null,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'member'::text) AND ((order_record_by_user_id = ( SELECT auth.uid() AS uid)) OR (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid))),public,orders
+orders_team_member_select,r,16481,(((auth.jwt() ->> 'team_id'::text) IS NOT NULL) AND ((auth.jwt() ->> 'team_status'::text) = 'active'::text) AND ((auth.jwt() ->> 'team_role'::text) = 'member'::text) AND ((order_record_by_user_id = ( SELECT auth.uid() AS uid)) OR (order_record_by_team_id = ((auth.jwt() ->> 'team_id'::text))::uuid))),null,public,orders
+orders_update_own,w,16481,(( SELECT auth.uid() AS uid) = order_record_by_user_id),(( SELECT auth.uid() AS uid) = order_record_by_user_id),public,orders
+orders_user_delete,d,16481,((order_record_by_user_id IS NOT NULL) AND (order_record_by_user_id = ( SELECT auth.uid() AS uid))),null,public,orders
+orders_user_insert,a,16481,null,((order_record_by_user_id IS NOT NULL) AND (order_record_by_user_id = ( SELECT auth.uid() AS uid))),public,orders
+orders_user_select,r,16481,((order_record_by_user_id IS NOT NULL) AND (order_record_by_user_id = ( SELECT auth.uid() AS uid))),null,public,orders
+allow_authenticated_select_products,r,16481,true,null,public,products
+Allow user_profiles to insert into team_members,a,16481,null,((user_id = auth.uid()) AND (role = 'member'::text) AND (status = 'pending'::text)),public,team_members
+team_members_authenticated_select,r,16481,true,null,public,team_members
+team_members_delete_by_leader,d,16481,"(EXISTS ( SELECT 1
+   FROM team_members tm
+  WHERE ((tm.user_id = ( SELECT auth.uid() AS uid)) AND (tm.team_id = team_members.team_id) AND (tm.role = 'leader'::text))))",null,public,team_members
+team_members_delete_by_self,d,16481,(( SELECT auth.uid() AS uid) = user_id),null,public,team_members
+team_members_update_by_leader,w,16481,"((auth.uid() = user_id) AND (role = ANY (ARRAY['leader'::text, 'co-leader'::text])))","((user_id = ( SELECT tm.user_id
+   FROM team_members tm
+  WHERE (tm.id = team_members.id))) AND (team_id = ( SELECT tm.team_id
+   FROM team_members tm
+  WHERE (tm.id = team_members.id))))",public,team_members
+Allow members to view teams,r,16481,"(EXISTS ( SELECT 1
+   FROM team_members
+  WHERE ((team_members.team_id = teams.team_id) AND (team_members.user_id = ( SELECT auth.uid() AS uid)))))",null,public,teams
+Enable read for team members,r,0,"(auth.uid() IN ( SELECT team_members.user_id
+   FROM team_members
+  WHERE (team_members.team_id = teams.team_id)))",null,public,teams
+Public read teams,r,0,true,null,public,teams
+user_profiles_can_insert_teams,a,16481,null,"(EXISTS ( SELECT 1
+   FROM user_profiles up
+  WHERE (up.user_id = ( SELECT auth.uid() AS uid))))",public,teams
+user_profiles_can_select_teams,r,16481,"(EXISTS ( SELECT 1
+   FROM user_profiles up
+  WHERE (up.user_id = ( SELECT auth.uid() AS uid))))",null,public,teams
+user_profiles_select_own,r,16481,(( SELECT auth.uid() AS uid) = user_id),null,public,user_profiles
+user_profiles_update_own,w,16481,(( SELECT auth.uid() AS uid) = user_id),(( SELECT auth.uid() AS uid) = user_id),public,user_profiles
+Allow authenticated read,r,16481,true,null,public,zipcode_th
