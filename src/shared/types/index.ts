@@ -4,7 +4,7 @@ import type { Order } from "../../models/orders.model.js";
 import type { OrderItem } from "../../models/order_items.model.js";
 import type { Product } from "../../models/products.model.js";
 import type { ConsentDoc } from "../../models/consent_docs.model.js";
-import type { ConsentRecord } from "../../models/consent_record.smodel.js";
+import type { ConsentRecord } from "../../models/consent_records.model.js";
 
 export type { UserProfile, CreateUserProfileDTO };
 

@@ -43,8 +43,8 @@ export function setupPassport(session: any) {
       });
       if (error) return done(error, false);
 
-      // Upsert user profile after OAuth
-      await upsertUserProfileAfterOAuth(data.user, 'google');
+      // Upsert user profile logic moved to route handler (callback) to handle intents properly.
+      // await upsertUserProfileAfterOAuth(data.user, 'google');
 
       // Attach access_token for RLS
       const userWithToken = { ...data.user, access_token: data.session?.access_token };

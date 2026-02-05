@@ -14,14 +14,14 @@ CREATE TABLE public.consent_docs (
 CREATE TABLE public.consent_records (
   consent_record_id uuid NOT NULL DEFAULT gen_random_uuid(),
   consent_doc_id uuid,
-  sign_by_id uuid,
+  sign_by_customer_id uuid,
   consent_status boolean DEFAULT true,
   record_by_user_id uuid,
   created_at timestamp with time zone DEFAULT now(),
   consent_for_team_id uuid,
   CONSTRAINT consent_records_pkey PRIMARY KEY (consent_record_id),
   CONSTRAINT consent_records_consent_doc_id_fkey FOREIGN KEY (consent_doc_id) REFERENCES public.consent_docs(consent_doc_id),
-  CONSTRAINT consent_records_sign_by_id_fkey FOREIGN KEY (sign_by_id) REFERENCES public.customers(customer_id),
+  CONSTRAINT consent_records_sign_by_id_fkey FOREIGN KEY (sign_by_customer_id) REFERENCES public.customers(customer_id),
   CONSTRAINT consent_records_record_by_user_id_fkey FOREIGN KEY (record_by_user_id) REFERENCES auth.users(id),
   CONSTRAINT consent_records_consent_for_team_id_fkey FOREIGN KEY (consent_for_team_id) REFERENCES public.teams(team_id)
 );
@@ -142,7 +142,6 @@ CREATE TABLE public.user_profiles (
   user_payment_channel text,
   user_payment_bank text,
   user_payment_id text,
-  user_consent_record_id text,
   social_provider_user_id text,
   user_role text,
   CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id),

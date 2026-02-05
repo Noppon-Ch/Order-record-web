@@ -5,8 +5,25 @@
       <h2 class="text-2xl font-extrabold text-gray-900 mb-4">สร้างบัญชีใหม่</h2>
       <p class="text-gray-600 mb-8">เราใช้บัญชี Google เพื่อสร้างโปรไฟล์ของคุณโดยอัตโนมัติ</p>
 
-      <a href="/auth/google"
-        class="w-full flex items-center justify-center py-3 px-4 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 group">
+      <div class="mb-4 text-left">
+        <label class="flex items-start space-x-3 cursor-pointer group">
+          <div class="relative flex items-center">
+            <input type="checkbox" id="consentCheckbox"
+              class="peer h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+          </div>
+          <span class="text-sm text-gray-600 select-none">
+            ฉันยอมรับ
+            <button type="button" id="openConsentModalBtn"
+              class="text-blue-600 font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer">
+              ข้อตกลงและนโยบายความเป็นส่วนตัว
+            </button>
+            <span class="text-red-500">*</span>
+          </span>
+        </label>
+      </div>
+
+      <a href="/auth/google/register" id="googleLoginBtn"
+        class="w-full flex items-center justify-center py-3 px-4 bg-white border border-gray-300 rounded-xl shadow-sm transition-all duration-200 group opacity-50 pointer-events-none grayscale">
         <svg class="h-6 w-6 mr-3" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -31,4 +48,145 @@
     </div>
   </div>
   </div>
+
+  <!-- Consent Modal -->
+  <div id="consentModal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"
+      id="modalBackdrop"></div>
+
+    <!-- Modal Panel -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div
+          class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+          <!-- Header pattern or simple clean header -->
+          <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-0">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                <div class="mt-2">
+                  <div
+                    class="h-[60vh] overflow-y-auto rounded-xl p-6 bg-gray-50 text-gray-700 text-sm leading-relaxed prose max-w-none shadow-inner custom-scrollbar"
+                    id="consentScrollArea" style="border: none;">
+                    <!-- Loading State -->
+                    <div id="consentContentLoading" class="flex justify-center items-center h-full py-20">
+                      <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                      </svg>
+                    </div>
+                    <!-- Content Container -->
+                    <div id="consentContent" class="hidden"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 pt-6 pb-6">
+            <button type="button" id="closeModalBtn"
+              class="inline-flex w-full justify-center rounded-xl bg-blue-600 px-5 py-3 text-base font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700 hover:shadow-blue-300 transform hover:-translate-y-0.5 transition-all duration-200 sm:ml-3 sm:w-auto">
+              รับทราบ
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script nonce="${nonce}">
+    (function () {
+      // Use IIFE to avoid polluting global scope but execute immediately
+      function initRegister() {
+        const checkbox = document.getElementById('consentCheckbox');
+        const loginBtn = document.getElementById('googleLoginBtn');
+        const modal = document.getElementById('consentModal');
+        const openModalBtn = document.getElementById('openConsentModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+
+        const contentDiv = document.getElementById('consentContent');
+        const loadingDiv = document.getElementById('consentContentLoading');
+
+        // Check for error messages in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === 'needs_registration') {
+          const errorBanner = document.createElement('div');
+          errorBanner.className = 'bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r shadow-sm text-left';
+          errorBanner.role = 'alert';
+          errorBanner.innerHTML = '<p class="font-bold">ไม่พบผู้ใช้งาน</p><p>กรุณาลงทะเบียนผ่านแบบฟอร์มด้านล่างนี้ก่อนเข้าสู่ระบบ</p>';
+
+          const title = document.querySelector('h2');
+          if (title) title.parentNode.insertBefore(errorBanner, title);
+        }
+
+        if (!checkbox || !loginBtn || !modal) return;
+
+        // Function to update button state
+        function updateButtonState() {
+          if (checkbox.checked) {
+            loginBtn.classList.remove('opacity-50', 'pointer-events-none', 'grayscale');
+            loginBtn.classList.add('hover:shadow-md', 'hover:bg-gray-50');
+          } else {
+            loginBtn.classList.add('opacity-50', 'pointer-events-none', 'grayscale');
+            loginBtn.classList.remove('hover:shadow-md', 'hover:bg-gray-50');
+          }
+        }
+
+        // Event Listeners for Button State
+        checkbox.addEventListener('change', updateButtonState);
+        // Initial check on load (in case of browser cache)
+        updateButtonState();
+
+        // Modal Logic
+        function showModal() {
+          modal.classList.remove('hidden');
+          // Fetch content only when opened for the first time or if empty
+          if (contentDiv.innerHTML.trim() === '') {
+            fetchConsentContent();
+          }
+        }
+
+        function hideModal() {
+          modal.classList.add('hidden');
+        }
+
+        function fetchConsentContent() {
+          fetch('/consents/platform-terms.html')
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              return response.text();
+            })
+            .then(html => {
+              contentDiv.innerHTML = html;
+              loadingDiv.classList.add('hidden');
+              contentDiv.classList.remove('hidden');
+            })
+            .catch(err => {
+              console.error('Failed to load consent:', err);
+              contentDiv.innerHTML = '<div class="text-center p-4"><p class="text-red-500 font-bold mb-2">ไม่สามารถโหลดข้อมูลได้</p><p class="text-sm text-gray-500">กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต แล้วลองใหม่อีกครั้ง</p></div>';
+              loadingDiv.classList.add('hidden');
+              contentDiv.classList.remove('hidden');
+            });
+        }
+
+        // Attach Modal Events
+        if (openModalBtn) openModalBtn.addEventListener('click', showModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', hideModal);
+        if (modalBackdrop) modalBackdrop.addEventListener('click', hideModal);
+      }
+
+      // Try to init immediately if DOM is ready, else wait
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initRegister);
+      } else {
+        initRegister();
+      }
+    })();
+  </script>
   ` }) %>

@@ -24,7 +24,8 @@ function getSupabaseClient() {
 
 export async function upsertUserProfileAfterOAuth(
   user: any, // Expects a Supabase User object for both Google and LINE
-  provider: 'google' | 'line'
+  provider: 'google' | 'line',
+  intent: 'login' | 'register' = 'login'
 ): Promise<void> {
   if (!user) return;
 
@@ -48,30 +49,24 @@ export async function upsertUserProfileAfterOAuth(
     return;
   }
 
+  // --- Check if User Exists ---
+  const existingProfile = await getUserProfile(userId);
+
+  // --- Strict Login Check ---
+  // If trying to LOGIN but no profile exists, reject.
+  if (intent === 'login' && !existingProfile) {
+    console.warn(`[Auth] User ${userId} tried to login but has no profile. Rejecting.`);
+    throw new Error('User not found. Please register first.');
+  }
+
+  // --- Prepare Profile Data ---
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || '';
   const email = user.email || '';
   const avatar = user.user_metadata?.picture || user.user_metadata?.avatar_url || null;
   const phone = user.phone || null;
 
   // Find the provider-specific user ID.
-  // For Supabase auto-linking (like Google), it's in identities.
-  // For manual linking (like our LINE setup), we put it in user_metadata.
   const providerUserId = user.identities?.find((i: { provider: string; provider_id: string }) => i.provider === provider)?.provider_id || user.user_metadata?.provider_user_id || null;
-
-
-  // We ONLY update identity fields. We process critical fields (like role, phone, payment)
-  // once during creation (if new) or let them persist if they exist.
-  // Using `upsert` with just these fields will NOT nullify others if we don't include them,
-  // PROVIDED we are confident `upsert` in Supabase (Postgres) merges by default if we validly hit the PK.
-  // However, Supabase/PostgREST `upsert` replaces the row if no `ignoreDuplicates` or specific merge logic is used?
-  // Actually, standard `upsert` usually REPLACES the row or UPDATES specified columns. 
-  // If we pass a partial object to `upsert`, does it keep the rest?
-  // NO. `upsert` essentially does `INSERT ... ON CONFLICT DO UPDATE SET ...`.
-  // If we only pass these fields, the other fields might stay if we don't mention them?
-  // Yes, if we use the JS client, it maps to `INSERT ... ON CONFLICT DO UPDATE`.
-  // The JS client `upsert` sends the whole object. If we exclude keys, they won't be in the SET clause (for the UPDATE part).
-  // BUT for the INSERT part, they will be null/default. 
-  // Since we are likely logging in an existing user, this effectively acts as a PATCH for these specific fields.
 
   const profile: any = {
     user_id: userId,
@@ -96,7 +91,72 @@ export async function upsertUserProfileAfterOAuth(
     console.error('[Supabase] Error upserting user profile:', upsertError);
     throw upsertError;
   }
+
+  // --- Record Consent ---
+  // Only record consent if this is a registration flow (implies they agreed on the UI)
+  // OR if we decide later to force re-consent on login (but logic here is specific to initial flow).
+  if (intent === 'register') {
+    try {
+      await recordUserConsent(userId, 'platform_terms', '1.0');
+    } catch (consentError) {
+      console.error('[Supabase] Error recording consent:', consentError);
+      // Don't block login if consent recording fails, but log it.
+    }
+  }
 }
+
+// Helper to record consent
+async function recordUserConsent(userId: string, consentType: string, version: string) {
+  const client = getSupabaseClient();
+
+  // 1. Get the consent_doc_id for the specified type/version
+  const { data: docData, error: docError } = await client
+    .from('consent_docs')
+    .select('consent_doc_id')
+    .eq('consent_type', consentType)
+    .eq('consent_version', version)
+    .eq('is_active', true)
+    .single();
+
+  if (docError || !docData) {
+    console.warn(`[Supabase] Active consent doc not found for ${consentType} v${version}`);
+    return;
+  }
+
+  // Cast docData to any to avoid 'never' type error
+  const docId = (docData as any).consent_doc_id;
+
+  // 2. Check if user already has a record for this doc
+  const { data: existingRecord, error: checkError } = await (client
+    .from('consent_records')
+    .select('consent_record_id')
+    .eq('record_by_user_id', userId)
+    .eq('consent_doc_id', docId) as any) // Cast the query builder or result if needed, but simpler to cast result logic
+    .single();
+
+  if (existingRecord) {
+    // Already recorded
+    return;
+  }
+
+  // 3. Insert new consent record
+  const { error: insertError } = await client
+    .from('consent_records')
+    .insert([
+      {
+        consent_doc_id: docId,
+        record_by_user_id: userId,
+        consent_status: true,
+      }
+    ] as any);
+
+  if (insertError) {
+    console.error('[Supabase] Error inserting consent record:', insertError);
+  } else {
+    console.log(`[Supabase] Recorded consent ${consentType} v${version} for user ${userId}`);
+  }
+}
+
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await getSupabaseClient()

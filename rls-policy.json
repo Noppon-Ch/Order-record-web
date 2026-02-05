@@ -1,5 +1,32 @@
 [
     {
+        "policy_name": "Public read access to active consent docs",
+        "command": "r",
+        "roles": "public",
+        "using_expression": "(is_active = true)",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "consent_docs"
+    },
+    {
+        "policy_name": "Users can insert own consent records",
+        "command": "a",
+        "roles": "0",
+        "using_expression": null,
+        "with_check_expression": "(auth.uid() = record_by_user_id)",
+        "schema_name": "public",
+        "table_name": "consent_records"
+    },
+    {
+        "policy_name": "Users can view own consent records",
+        "command": "r",
+        "roles": "0",
+        "using_expression": "(auth.uid() = record_by_user_id)",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "consent_records"
+    },
+    {
         "policy_name": "customer_delete_by_user_no_team",
         "command": "d",
         "roles": "16481",
