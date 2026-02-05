@@ -245,6 +245,29 @@
                         </div>
                     </div>
 
+                    <!-- PDPA Consent -->
+                    <div class="pt-4 mb-6 pb-6 border-b border-gray-200">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="customer_consent" name="customer_consent" type="checkbox" required
+                                    class="focus:ring-blue-500 h-5 w-5 text-blue-600 border-gray-300 rounded cursor-pointer">
+                            </div>
+                            <div class="ml-3 text-sm leading-5">
+                                <label for="customer_consent"
+                                    class="font-medium text-gray-700 select-none cursor-pointer">
+                                    ข้าพเจ้าขอรับรองว่าลูกค้าได้อ่านและยอมรับ
+                                    <button type="button" id="openConsentModalBtn"
+                                        class="text-blue-600 hover:text-blue-800 font-bold hover:underline bg-transparent border-none p-0 cursor-pointer transition-colors duration-200">
+                                        นโยบายความเป็นส่วนตัว (PDPA)
+                                    </button>
+                                    เรียบร้อยแล้ว
+                                    <span class="text-red-500">*</span>
+                                </label>
+                                <p class="text-gray-500 text-xs mt-1">ต้องได้รับความยินยอมก่อนบันทึกข้อมูล</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-5">
                         <div class="flex justify-end">
                             <a href="/homepage"
@@ -297,6 +320,103 @@
             </div>
         </div>
     </div>
+
+    <!-- Consent Modal (PDPA) -->
+    <div id="consentModal" class="hidden fixed z-[60] inset-0 overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Modal Backdrop -->
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity backdrop-blur-sm" aria-hidden="true"
+                id="closeConsentModalOverlay"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal Panel -->
+            <div
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full relative z-10 border border-gray-100">
+                <!-- Header -->
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-0">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+
+                            <!-- Scrolling Content Area -->
+                            <div class="mt-2 text-left">
+                                <div id="consentScrollArea"
+                                    class="h-[60vh] overflow-y-auto rounded-xl p-6 bg-gray-50 text-gray-700 text-sm leading-relaxed prose max-w-none shadow-inner border border-gray-100">
+                                    <!-- Loading State -->
+                                    <div id="consentLoading" class="flex justify-center items-center h-full py-20">
+                                        <svg class="animate-spin h-10 w-10 text-blue-600"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <!-- Content -->
+                                    <div id="consentContent" class="hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Footer Buttons -->
+                <div class="bg-white px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse pb-6 pt-4 border-t border-gray-50">
+                    <button type="button" id="acceptConsentBtn"
+                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg shadow-blue-200 px-5 py-3 bg-blue-600 text-base font-semibold text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transform transition hover:-translate-y-0.5">
+                        รับทราบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to handle Consent Modal -->
+    <script nonce="<%= (typeof nonce !== 'undefined' ? nonce : '') %>">
+        document.addEventListener('DOMContentLoaded', function () {
+            const consentModal = document.getElementById('consentModal');
+            const openBtn = document.getElementById('openConsentModalBtn');
+            const closeOverlay = document.getElementById('closeConsentModalOverlay');
+            const acceptBtn = document.getElementById('acceptConsentBtn');
+            const contentDiv = document.getElementById('consentContent');
+            const loadingDiv = document.getElementById('consentLoading');
+
+            function openModal() {
+                consentModal.classList.remove('hidden');
+                if (contentDiv.innerHTML.trim() === '') {
+                    fetch('/consents/customer-pdpa.html')
+                        .then(res => {
+                            if (!res.ok) throw new Error('Failed to load');
+                            return res.text();
+                        })
+                        .then(html => {
+                            contentDiv.innerHTML = html;
+                            loadingDiv.classList.add('hidden');
+                            contentDiv.classList.remove('hidden');
+                        })
+                        .catch(err => {
+                            contentDiv.innerHTML = '<p class="text-red-500 text-center p-4">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง</p>';
+                            loadingDiv.classList.add('hidden');
+                            contentDiv.classList.remove('hidden');
+                        });
+                }
+            }
+
+            function closeModal() {
+                consentModal.classList.add('hidden');
+            }
+
+            if (openBtn) {
+                openBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openModal();
+                });
+            }
+            if (closeOverlay) closeOverlay.addEventListener('click', closeModal);
+            if (acceptBtn) acceptBtn.addEventListener('click', closeModal);
+        });
+    </script>
 
     <script src="/js/customers/form.js"></script>
     <%- include('partials/app-footer') %>

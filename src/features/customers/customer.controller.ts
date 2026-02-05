@@ -6,7 +6,7 @@ import type { CreateCustomerDTO } from './customer.types.js';
 export class CustomerController {
 	async showAddForm(req: Request, res: Response) {
 		const user = req.user;
-		res.render('add', { user, error: null, values: {} });
+		res.render('add', { user, error: null, values: {}, nonce: res.locals.nonce });
 	}
 
 	async addCustomer(req: Request, res: Response) {
@@ -31,7 +31,7 @@ export class CustomerController {
 			customer_address2: body.customer_address2,
 			customer_zipcode: body.customer_zipcode || undefined,
 			customer_position: body.customer_position,
-			customer_consent_status: false, // PDPA ยังไม่บันทึกจริง
+			customer_consent_status: body.customer_consent === 'on',
 			customer_recommender_id: body.referrer_citizen_id || '',
 			customer_record_by_user_id: req.user?.id || '', // ตรวจสอบ user id
 		};
@@ -104,7 +104,8 @@ export class CustomerController {
 		} catch (err: any) {
 			return res.status(400).render('add', {
 				error: err.message || 'Failed to add customer.',
-				values
+				values,
+				nonce: res.locals.nonce
 			});
 		}
 	}
@@ -202,7 +203,7 @@ export class CustomerController {
 				recommender = await customerService.findByCitizenId(customer.customer_recommender_id, req.user?.access_token);
 			}
 
-			res.render('edit', { user: req.user, customer, recommender, error: null });
+			res.render('edit', { user: req.user, customer, recommender, error: null, nonce: res.locals.nonce });
 		} catch (err) {
 			console.error('Error showing edit form:', err);
 			res.redirect('/homepage');
@@ -290,7 +291,8 @@ export class CustomerController {
 			return res.status(400).render('edit', {
 				user: req.user,
 				customer,
-				error: err.message || 'Failed to update customer.'
+				error: err.message || 'Failed to update customer.',
+				nonce: res.locals.nonce
 			});
 		}
 	}
