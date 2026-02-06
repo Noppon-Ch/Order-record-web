@@ -117,7 +117,11 @@ export const teamService = {
     },
 
     async getTeamByUserId(userId: string, accessToken?: string): Promise<{ team: Team, members: (TeamMember & { user_profile: any })[] } | null> {
-        const supabase = createClient(supabaseUrl, supabaseKey);
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
 
         // 1. Get the user's membership to find their team_id
         const { data: myMembership, error: myError } = await supabase

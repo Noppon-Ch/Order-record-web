@@ -62,19 +62,34 @@ export function setupPassport(session: any) {
     try {
       const userProfile = await getUserProfile(obj.id);
 
-      // Fetch team name if user is in an active team
+      // Fetch team name if user is in an active team using User's Token (RLS check)
       let teamName = undefined;
-      const { data: membership } = await supabase
-        .from('team_members')
-        .select('teams(team_name)')
-        .eq('user_id', obj.id)
-        .eq('status', 'active')
-        .maybeSingle();
 
-      if (membership?.teams) {
-        // Supabase types might be array or object depending on query
-        const teams = membership.teams as any;
-        teamName = Array.isArray(teams) ? teams[0]?.team_name : teams?.team_name;
+      if (obj.access_token) {
+        const scopedSupabase = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${obj.access_token}`,
+              },
+            },
+          }
+        );
+
+        const { data: membership } = await scopedSupabase
+          .from('team_members')
+          .select('teams(team_name)')
+          .eq('user_id', obj.id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (membership?.teams) {
+          // Supabase types might be array or object depending on query
+          const teams = membership.teams as any;
+          teamName = Array.isArray(teams) ? teams[0]?.team_name : teams?.team_name;
+        }
       }
 
       const user = userProfile

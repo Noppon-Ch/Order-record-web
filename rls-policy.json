@@ -2,7 +2,7 @@
     {
         "policy_name": "Public read access to active consent docs",
         "command": "r",
-        "roles": "public",
+        "roles": "0",
         "using_expression": "(is_active = true)",
         "with_check_expression": null,
         "schema_name": "public",
@@ -270,20 +270,20 @@
         "table_name": "teams"
     },
     {
-        "policy_name": "user_profiles_select_own",
-        "command": "r",
+        "policy_name": "user_profiles_update_own",
+        "command": "w",
         "roles": "16481",
-        "using_expression": "(( SELECT auth.uid() AS uid) = user_id)",
-        "with_check_expression": null,
+        "using_expression": "(auth.uid() = user_id)",
+        "with_check_expression": "(auth.uid() = user_id)",
         "schema_name": "public",
         "table_name": "user_profiles"
     },
     {
-        "policy_name": "user_profiles_update_own",
-        "command": "w",
+        "policy_name": "user_profiles_view_team_and_own",
+        "command": "r",
         "roles": "16481",
-        "using_expression": "(( SELECT auth.uid() AS uid) = user_id)",
-        "with_check_expression": "(( SELECT auth.uid() AS uid) = user_id)",
+        "using_expression": "((auth.uid() = user_id) OR (EXISTS ( SELECT 1\n   FROM (team_members tm_me\n     JOIN team_members tm_other ON ((tm_me.team_id = tm_other.team_id)))\n  WHERE ((tm_me.user_id = auth.uid()) AND (tm_other.user_id = user_profiles.user_id)))))",
+        "with_check_expression": null,
         "schema_name": "public",
         "table_name": "user_profiles"
     },
