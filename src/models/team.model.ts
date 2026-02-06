@@ -5,4 +5,5 @@ export interface Team {
     owner_user_id: string;
     created_at: Date;
     status: 'pending' | 'active' | 'inactive';
+    team_description?: string;
 }

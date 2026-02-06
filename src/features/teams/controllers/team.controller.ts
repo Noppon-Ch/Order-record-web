@@ -143,5 +143,37 @@ export const teamController = {
             console.error('Error leaving team:', error);
             res.status(500).json({ success: false, message: error.message });
         }
+    },
+
+    async updateTeamName(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            const { teamId, teamName } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+            if (!teamId || !teamName) return res.status(400).json({ success: false, message: 'Team ID and Team Name are required' });
+
+            await teamService.updateTeamName(userId, teamId, teamName, (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Team name updated successfully' });
+        } catch (error: any) {
+            console.error('Error updating team name:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    async updateTeamDescription(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            const { teamId, description } = req.body;
+
+            if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+            if (!teamId) return res.status(400).json({ success: false, message: 'Team ID is required' });
+
+            await teamService.updateTeamDescription(userId, teamId, description || '', (req.user as any)?.access_token);
+            res.json({ success: true, message: 'Team description updated successfully' });
+        } catch (error: any) {
+            console.error('Error updating team description:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
     }
 };

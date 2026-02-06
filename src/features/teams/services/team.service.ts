@@ -432,6 +432,60 @@ export const teamService = {
         return data;
     },
 
+    async updateTeamName(userId: string, teamId: string, newName: string, accessToken?: string): Promise<void> {
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
+
+        if (!newName || newName.trim().length === 0) {
+            throw new Error('Team name cannot be empty');
+        }
+
+        // 1. Verify user is a leader/owner of this team (Manual check for better error message, though RLS handles security)
+        // We can just rely on RLS, if update fails it means permission denied or record not found.
+        // But let's be explicit to avoid "row not found" confusion if it's just a permission issue.
+        const { data: member, error: memberError } = await supabase
+            .from('team_members')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('team_id', teamId)
+            .eq('status', 'active')
+            .single();
+
+        // Also check if owner by querying team directly? 
+        // Actually, the RLS policy covers "owner_user_id = auth.uid()".
+        // If the user uses the ANON key with their token, RLS is active.
+
+        // Let's just try to update. If it returns count 0, either team doesn't exist or permission denied.
+        const { error, data } = await supabase
+            .from('teams')
+            .update({ team_name: newName })
+            .eq('team_id', teamId)
+            .select();
+
+        if (error) throw new Error(`Failed to update team name: ${error.message}`);
+        if (!data || data.length === 0) throw new Error('Failed to update team name. You might not have permission or the team does not exist.');
+    },
+
+    async updateTeamDescription(userId: string, teamId: string, description: string, accessToken?: string): Promise<void> {
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
+
+        const { error, data } = await supabase
+            .from('teams')
+            .update({ team_description: description })
+            .eq('team_id', teamId)
+            .select();
+
+        if (error) throw new Error(`Failed to update team description: ${error.message}`);
+        if (!data || data.length === 0) throw new Error('Failed to update team description. You might not have permission or the team does not exist.');
+    },
+
     async leaveTeam(userId: string, accessToken?: string): Promise<void> {
         const supabase = accessToken
             ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {

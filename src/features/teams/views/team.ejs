@@ -37,6 +37,10 @@
                                     </svg>
                                 </div>
                                 <h2 class="text-xl font-bold text-gray-900">ข้อมูลทีม</h2>
+                                <span
+                                    class="ml-3 inline-flex px-3 py-1 rounded-full text-xs font-medium capitalize <%= team.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' %>">
+                                    <%= team.status %>
+                                </span>
                             </div>
                             <% if (team.owner_user_id !==user.id) { %>
                                 <button type="button" id="leaveTeamBtn"
@@ -55,8 +59,54 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อทีม</label>
-                                    <input type="text" value="<%= team.team_name %>" readonly
-                                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-default">
+                                    <div class="flex">
+                                        <% let canEditTeam=false; if (team && user) { /* Check if owner */ if
+                                            (team.owner_user_id===user.id) canEditTeam=true; /* Check if active leader
+                                            */ if (myMembership && myMembership.role==='leader' &&
+                                            myMembership.status==='active' ) canEditTeam=true; } %>
+                                            <input type="text" id="teamNameInput" value="<%= team.team_name %>" readonly
+                                                data-original-value="<%= team.team_name %>"
+                                                data-team-id="<%= team.team_id %>"
+                                                class="flex-grow px-4 py-2 bg-gray-50 border border-gray-200 <%= canEditTeam ? 'rounded-l-lg' : 'rounded-lg' %> text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors cursor-default">
+
+                                            <% if (canEditTeam) { %>
+                                                <!-- Edit Button -->
+                                                <button type="button" id="editTeamNameBtn"
+                                                    class="px-4 py-2 bg-gray-100 border border-l-0 border-gray-200 rounded-r-lg text-gray-600 hover:bg-gray-200 transition-colors"
+                                                    title="แก้ไขชื่อทีม">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </button>
+
+                                                <!-- Actions Container -->
+                                                <div id="editTeamNameActions" class="hidden flex">
+                                                    <!-- Save Button -->
+                                                    <button type="button" id="saveTeamNameBtn"
+                                                        class="px-3 py-2 bg-green-50 border border-l-0 border-green-200 text-green-600 hover:bg-green-100 transition-colors"
+                                                        title="บันทึก">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                    <!-- Cancel Button -->
+                                                    <button type="button" id="cancelEditTeamNameBtn"
+                                                        class="px-3 py-2 bg-red-50 border border-l-0 border-red-200 rounded-r-lg text-red-600 hover:bg-red-100 transition-colors"
+                                                        title="ยกเลิก">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <% } %>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">รหัสทีม (Team
@@ -75,19 +125,50 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">สถานะทีม</label>
-                                    <span
-                                        class="inline-flex px-3 py-1 rounded-full text-sm font-medium capitalize
-                                        <%= team.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700' %>">
-                                        <%= team.status %>
-                                    </span>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">วันที่สร้าง</label>
-                                    <input type="text"
-                                        value="<%= new Date(team.created_at).toLocaleDateString('th-TH') %>" readonly
-                                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-default">
+                                <div class="md:col-span-2">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 mb-2">ข้อความถึงสมาชิกทีม</label>
+                                    <div class="flex">
+                                        <textarea id="teamDescriptionInput" readonly
+                                            data-original-value="<%= team.team_description || '' %>" rows="1"
+                                            class="flex-grow px-4 py-2 bg-gray-50 border border-gray-200 <%= canEditTeam ? 'rounded-l-lg' : 'rounded-lg' %> text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors cursor-default resize-none overflow-hidden"><%= team.team_description || '' %></textarea>
+
+                                        <% if (canEditTeam) { %>
+                                            <div class="flex flex-col">
+                                                <button type="button" id="editDescriptionBtn"
+                                                    class="h-full px-4 bg-gray-100 border border-l-0 border-gray-200 rounded-r-lg text-gray-600 hover:bg-gray-200 transition-colors flex items-center justify-center"
+                                                    title="แก้ไขคำอธิบาย">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
+                                                </button>
+
+                                                <div id="editDescriptionActions" class="hidden flex flex-col h-full">
+                                                    <button type="button" id="saveDescriptionBtn"
+                                                        class="h-1/2 px-3 bg-green-50 border border-l-0 border-b border-green-200 text-green-600 hover:bg-green-100 transition-colors flex items-center justify-center"
+                                                        title="บันทึก">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </button>
+                                                    <button type="button" id="cancelEditDescriptionBtn"
+                                                        class="h-1/2 px-3 bg-red-50 border border-l-0 border-red-200 rounded-br-lg text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center"
+                                                        title="ยกเลิก">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -972,6 +1053,177 @@
                         }
                     }
                 });
+
+                // --- Edit Team Name Logic ---
+                const editTeamNameBtn = document.getElementById('editTeamNameBtn');
+                const saveTeamNameBtn = document.getElementById('saveTeamNameBtn');
+                const cancelEditTeamNameBtn = document.getElementById('cancelEditTeamNameBtn');
+                const editTeamNameActions = document.getElementById('editTeamNameActions');
+                const teamNameInput = document.getElementById('teamNameInput');
+
+                if (editTeamNameBtn && teamNameInput) {
+                    editTeamNameBtn.addEventListener('click', () => {
+                        teamNameInput.removeAttribute('readonly');
+                        teamNameInput.classList.remove('bg-gray-50', 'cursor-default');
+                        teamNameInput.classList.add('bg-white');
+                        teamNameInput.focus();
+
+                        editTeamNameBtn.classList.add('hidden');
+                        editTeamNameActions.classList.remove('hidden');
+                    });
+
+                    cancelEditTeamNameBtn.addEventListener('click', () => {
+                        teamNameInput.value = teamNameInput.getAttribute('data-original-value');
+                        teamNameInput.setAttribute('readonly', 'true');
+                        teamNameInput.classList.add('bg-gray-50', 'cursor-default');
+                        teamNameInput.classList.remove('bg-white');
+
+                        editTeamNameBtn.classList.remove('hidden');
+                        editTeamNameActions.classList.add('hidden');
+                    });
+                }
+
+                // --- Edit Team Description Logic ---
+                const editDescriptionBtn = document.getElementById('editDescriptionBtn');
+                const saveDescriptionBtn = document.getElementById('saveDescriptionBtn');
+                const cancelEditDescriptionBtn = document.getElementById('cancelEditDescriptionBtn');
+                const editDescriptionActions = document.getElementById('editDescriptionActions');
+                const teamDescriptionInput = document.getElementById('teamDescriptionInput');
+
+                const autoResizeDescription = () => {
+                    if (teamDescriptionInput) {
+                        teamDescriptionInput.style.height = 'auto';
+                        teamDescriptionInput.style.height = teamDescriptionInput.scrollHeight + 'px';
+                    }
+                };
+
+                if (teamDescriptionInput) {
+                    // Initial resize
+                    autoResizeDescription();
+                    // Resize on input
+                    teamDescriptionInput.addEventListener('input', autoResizeDescription);
+                    // Resize on window resize
+                    window.addEventListener('resize', autoResizeDescription);
+                }
+
+                if (editDescriptionBtn && teamDescriptionInput) {
+                    editDescriptionBtn.addEventListener('click', () => {
+                        teamDescriptionInput.removeAttribute('readonly');
+                        teamDescriptionInput.classList.remove('bg-gray-50', 'cursor-default');
+                        teamDescriptionInput.classList.add('bg-white');
+                        teamDescriptionInput.focus();
+
+                        editDescriptionBtn.classList.add('hidden');
+                        editDescriptionActions.classList.remove('hidden');
+                    });
+
+                    cancelEditDescriptionBtn.addEventListener('click', () => {
+                        teamDescriptionInput.value = teamDescriptionInput.getAttribute('data-original-value');
+                        teamDescriptionInput.setAttribute('readonly', 'true');
+                        teamDescriptionInput.classList.add('bg-gray-50', 'cursor-default');
+                        teamDescriptionInput.classList.remove('bg-white');
+
+                        editDescriptionBtn.classList.remove('hidden');
+                        editDescriptionActions.classList.add('hidden');
+
+                        autoResizeDescription();
+                    });
+
+                    saveDescriptionBtn.addEventListener('click', async () => {
+                        const newDescription = teamDescriptionInput.value.trim();
+                        const originalDescription = teamDescriptionInput.getAttribute('data-original-value');
+                        // Use the existing teamId (available from other input or ejs rendered if needed)
+                        // But wait, teamId is data-attribute on teamNameInput. Let's grab it from there safely or render it here.
+                        // I will grab it from existing teamNameInput for consistent pattern
+                        const teamIdInput = document.getElementById('teamNameInput');
+                        const teamId = teamIdInput ? teamIdInput.getAttribute('data-team-id') : null;
+
+                        if (!teamId) return;
+
+                        if (newDescription === originalDescription) {
+                            cancelEditDescriptionBtn.click();
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/teams/update-description', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ teamId, description: newDescription })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ!',
+                                    text: 'บันทึกคำอธิบายเรียบร้อยแล้ว',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: error.message || 'Failed to update description'
+                            });
+                        }
+                    });
+                }
+                // --- Save Team Name Logic ---
+                if (saveTeamNameBtn) {
+                    saveTeamNameBtn.addEventListener('click', async () => {
+                        const newName = teamNameInput.value.trim();
+                        const originalName = teamNameInput.getAttribute('data-original-value');
+                        const teamId = teamNameInput.getAttribute('data-team-id');
+
+                        if (!newName) {
+                            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาระบุชื่อทีม' });
+                            return;
+                        }
+
+                        if (newName === originalName) {
+                            cancelEditTeamNameBtn.click();
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/teams/update-name', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ teamId, teamName: newName })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ!',
+                                    text: 'เปลี่ยนชื่อทีมเรียบร้อยแล้ว',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(result.message);
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: error.message || 'Failed to update team name'
+                            });
+                        }
+                    });
+                }
             });
         </script>
 </body>

@@ -14,6 +14,8 @@ router.post('/approve', teamController.approveMember);
 router.post('/remove', teamController.removeMember);
 router.post('/update-role', teamController.updateMemberRole);
 router.post('/leave', teamController.leaveTeam);
+router.post('/update-name', teamController.updateTeamName);
+router.post('/update-description', teamController.updateTeamDescription);
 router.get('/search', teamController.searchTeams);
 
 export default router;
