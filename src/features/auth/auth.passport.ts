@@ -61,7 +61,26 @@ export function setupPassport(session: any) {
   passport.deserializeUser(async (obj: { id: string, access_token?: string }, done) => {
     try {
       const userProfile = await getUserProfile(obj.id);
-      const user = userProfile ? { ...userProfile, id: obj.id, access_token: obj.access_token } : { id: obj.id, access_token: obj.access_token };
+
+      // Fetch team name if user is in an active team
+      let teamName = undefined;
+      const { data: membership } = await supabase
+        .from('team_members')
+        .select('teams(team_name)')
+        .eq('user_id', obj.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (membership?.teams) {
+        // Supabase types might be array or object depending on query
+        const teams = membership.teams as any;
+        teamName = Array.isArray(teams) ? teams[0]?.team_name : teams?.team_name;
+      }
+
+      const user = userProfile
+        ? { ...userProfile, id: obj.id, access_token: obj.access_token, team_name: teamName }
+        : { id: obj.id, access_token: obj.access_token, team_name: teamName };
+
       done(null, user);
     } catch (error) {
       console.error('Error deserializing user:', error);

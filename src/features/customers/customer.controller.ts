@@ -6,7 +6,12 @@ import type { CreateCustomerDTO } from './customer.types.js';
 export class CustomerController {
 	async showAddForm(req: Request, res: Response) {
 		const user = req.user;
-		res.render('add', { user, error: null, values: {}, nonce: res.locals.nonce });
+		res.render('add-new-customer', { user, error: null, values: {}, nonce: res.locals.nonce });
+	}
+
+	async showAddOldCustomerForm(req: Request, res: Response) {
+		const user = req.user;
+		res.render('add-old-customer', { user, error: null, values: {}, nonce: res.locals.nonce });
 	}
 
 	async addCustomer(req: Request, res: Response) {
@@ -102,7 +107,98 @@ export class CustomerController {
 
 			return res.redirect(`/customer/add/finish/${createdCustomer.customer_id}`);
 		} catch (err: any) {
-			return res.status(400).render('add', {
+			return res.status(400).render('add-new-customer', {
+				error: err.message || 'Failed to add customer.',
+				values,
+				nonce: res.locals.nonce
+			});
+		}
+	}
+
+	async addOldCustomer(req: Request, res: Response) {
+		const body = req.body;
+
+		// Map only the fields provided in the old customer form
+		// Set sensible defaults/nulls for missing required fields
+		const values: CreateCustomerDTO = {
+			customer_citizen_id: body.customer_citizen_id,
+			customer_fname_th: body.customer_fname_th,
+			customer_lname_th: body.customer_lname_th,
+			// Defaults for fields not present in old customer form
+			customer_fname_en: undefined,
+			customer_lname_en: undefined,
+			customer_gender: undefined,
+			customer_nationality: 'ไทย',
+			customer_tax_id: undefined,
+			customer_phone: undefined,
+			customer_birthdate: undefined,
+			customer_registerdate: body.customer_reg_date,
+			customer_address1: undefined,
+			customer_address2: undefined,
+			customer_zipcode: undefined,
+			customer_position: body.customer_position,
+			customer_consent_status: body.customer_consent === 'on',
+			customer_recommender_id: body.referrer_citizen_id || '',
+			customer_record_by_user_id: req.user?.id || '',
+		};
+
+		console.log('AddOldCustomer values:', values);
+
+		try {
+			const userId = req.user?.id || '';
+			const userTeam = await teamService.getTeamByUserId(userId);
+			let teamId = undefined;
+
+			// Add team info
+			if (userTeam?.team) {
+				const memberRecord = userTeam.members.find(m => m.user_id === userId);
+				if (memberRecord && memberRecord.status === 'active') {
+					teamId = userTeam.team.team_id;
+					values.customer_record_by_team_id = teamId;
+				}
+			}
+
+			const userContext = { userId, ...(teamId ? { teamId } : {}) };
+
+			// Handle Recommender Creation (Similar logic to existing)
+			if (body.referrer_citizen_id) {
+				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token, userContext);
+				if (!existingRecommender) {
+					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
+					const fname = nameParts[0] || '';
+					const lname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+					const dummyRecommender: CreateCustomerDTO = {
+						customer_citizen_id: body.referrer_citizen_id,
+						customer_fname_th: fname,
+						customer_lname_th: lname,
+						customer_recommender_id: '1000000000000',
+						customer_position: 'SAG',
+						customer_registerdate: new Date().toISOString().split('T')[0],
+						customer_record_by_user_id: req.user?.id || '',
+						customer_record_by_team_id: values.customer_record_by_team_id,
+						customer_nationality: 'ไทย',
+						customer_phone: '-',
+						customer_address1: '-',
+						customer_address2: '-',
+						customer_zipcode: '-',
+					};
+
+					try {
+						await customerService.createCustomer(dummyRecommender, req.user?.access_token);
+					} catch (dummyErr) {
+						console.error('Failed to create dummy recommender:', dummyErr);
+					}
+				}
+			}
+
+			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
+			if (!createdCustomer) throw new Error('Failed to create customer.');
+
+			return res.redirect(`/customer/add/finish/${createdCustomer.customer_id}`);
+		} catch (err: any) {
+			return res.status(400).render('add-old-customer', {
 				error: err.message || 'Failed to add customer.',
 				values,
 				nonce: res.locals.nonce
