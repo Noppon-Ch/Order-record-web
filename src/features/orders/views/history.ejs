@@ -41,37 +41,43 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        วันที่
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ประเภท
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ลูกค้า
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ตำแหน่ง
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ผู้แนะนำ
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ยอดรวม
-                                    </th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ยอดสุทธิ
-                                    </th>
-                                    <th scope="col" class="relative px-6 py-3">
-                                        <span class="sr-only">จัดการ</span>
-                                    </th>
+                                    <% if (['leader', 'co-leader' ].includes(userRole)) { %>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ผู้บันทึก
+                                        </th>
+                                        <% } %>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                วันที่
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ประเภท
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ลูกค้า
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ตำแหน่ง
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ผู้แนะนำ
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ยอดรวม
+                                            </th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ยอดสุทธิ
+                                            </th>
+                                            <th scope="col" class="relative px-6 py-3">
+                                                <span class="sr-only">จัดการ</span>
+                                            </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -79,78 +85,102 @@
                                     <% orders.forEach((order, index)=> { %>
                                         <tr class="<%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %> transform transition-transform duration-200 hover:scale-[1.02] hover:shadow-md hover:z-10 relative cursor-pointer"
                                             data-order-index="<%= index %>">
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
-                                                <%= new Date(order.order_date).toLocaleDateString('th-TH') %>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
-                                                <% if (order.order_type==='f_order' ) { %>
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">
-                                                        รอบแรก
-                                                    </span>
-                                                    <% } else if (order.order_type==='c_order' ) { %>
-                                                        <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-blue-100 text-blue-800">
-                                                            ต่อเนื่อง
-                                                        </span>
+                                            <% if (['leader', 'co-leader' ].includes(userRole)) { %>
+                                                <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
+                                                    <% if (order.recorder) { %>
+                                                        <div class="flex items-center">
+                                                            <div
+                                                                class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold mr-2 text-xs">
+                                                                <%= order.recorder.user_full_name ?
+                                                                    order.recorder.user_full_name.charAt(0).toUpperCase()
+                                                                    : '?' %>
+                                                            </div>
+                                                            <span>
+                                                                <%= order.recorder.user_full_name || 'ไม่ระบุ' %>
+                                                            </span>
+                                                        </div>
                                                         <% } else { %>
-                                                            <span class="text-gray-500">-</span>
+                                                            <span class="text-gray-400">-</span>
                                                             <% } %>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
-                                                <% if (order.customers) { %>
-                                                    <%= order.customers.customer_fname_th %>
-                                                        <%= order.customers.customer_lname_th %>
+                                                </td>
+                                                <% } %>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
+                                                        <%= new Date(order.order_date).toLocaleDateString('th-TH') %>
+                                                    </td>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
+                                                        <% if (order.order_type==='f_order' ) { %>
+                                                            <span
+                                                                class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">
+                                                                รอบแรก
+                                                            </span>
+                                                            <% } else if (order.order_type==='c_order' ) { %>
+                                                                <span
+                                                                    class="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-blue-100 text-blue-800">
+                                                                    ต่อเนื่อง
+                                                                </span>
+                                                                <% } else { %>
+                                                                    <span class="text-gray-500">-</span>
+                                                                    <% } %>
+                                                    </td>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900">
+                                                        <% if (order.customers) { %>
+                                                            <%= order.customers.customer_fname_th %>
+                                                                <%= order.customers.customer_lname_th %>
+                                                                    <% } else { %>
+                                                                        <span class="text-gray-400">ไม่ระบุ</span>
+                                                                        <% } %>
+                                                    </td>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
+                                                        <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700'
+                                                            , 'AG' : 'bg-green-200 text-green-700' , 'SFAG'
+                                                            : 'bg-yellow-300 text-yellow-800' , 'SAG'
+                                                            : 'bg-red-200 text-red-800' , 'ESAG'
+                                                            : 'bg-red-200 text-red-800' }; const pos=(order.position
+                                                            || '' ).toUpperCase(); const badgeClass=positionClasses[pos]
+                                                            || 'bg-gray-100 text-gray-800' ; %>
+                                                            <span
+                                                                class="px-2 inline-flex text-xs leading-5 font-medium rounded-full <%= badgeClass %>">
+                                                                <%= order.position || '-' %>
+                                                            </span>
+                                                    </td>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
+                                                        <% if (order.recommender) { %>
+                                                            <%= order.recommender.customer_fname_th %>
+                                                                <%= order.recommender.customer_lname_th %>
+                                                                    <% } else { %>
+                                                                        -
+                                                                        <% } %>
+                                                    </td>
+                                                    <td
+                                                        class="px-6 py-6 whitespace-nowrap text-sm text-gray-900 text-right">
+                                                        <%= (order.order_total_amount / 100).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2 }) %>
+                                                    </td>
+                                                    <td
+                                                        class="px-6 py-6 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                                                        <%= (order.order_final_price / 100).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2 }) %>
+                                                    </td>
+                                                    <td class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium space-x-2"
+                                                        data-no-row-click="true">
+                                                        <% if (order.order_type==='c_order' ) { %>
+                                                            <a href="/orders/<%= order.order_id %>/continue-pdf"
+                                                                target="_blank"
+                                                                class="text-indigo-600 hover:text-indigo-900 z-20 relative">PDF</a>
                                                             <% } else { %>
-                                                                <span class="text-gray-400">ไม่ระบุ</span>
+                                                                <a href="/orders/<%= order.order_id %>/pdf"
+                                                                    target="_blank"
+                                                                    class="text-indigo-600 hover:text-indigo-900 z-20 relative">PDF</a>
                                                                 <% } %>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
-                                                <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700' , 'AG'
-                                                    : 'bg-green-200 text-green-700' , 'SFAG'
-                                                    : 'bg-yellow-300 text-yellow-800' , 'SAG'
-                                                    : 'bg-red-200 text-red-800' , 'ESAG' : 'bg-red-200 text-red-800' };
-                                                    const pos=(order.position || '' ).toUpperCase(); const
-                                                    badgeClass=positionClasses[pos] || 'bg-gray-100 text-gray-800' ; %>
-                                                    <span
-                                                        class="px-2 inline-flex text-xs leading-5 font-medium rounded-full <%= badgeClass %>">
-                                                        <%= order.position || '-' %>
-                                                    </span>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-500">
-                                                <% if (order.recommender) { %>
-                                                    <%= order.recommender.customer_fname_th %>
-                                                        <%= order.recommender.customer_lname_th %>
-                                                            <% } else { %>
-                                                                -
-                                                                <% } %>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-sm text-gray-900 text-right">
-                                                <%= (order.order_total_amount / 100).toLocaleString('en-US', {
-                                                    minimumFractionDigits: 2 }) %>
-                                            </td>
-                                            <td
-                                                class="px-6 py-6 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                                                <%= (order.order_final_price / 100).toLocaleString('en-US', {
-                                                    minimumFractionDigits: 2 }) %>
-                                            </td>
-                                            <td class="px-6 py-6 whitespace-nowrap text-right text-sm font-medium space-x-2"
-                                                data-no-row-click="true">
-                                                <% if (order.order_type==='c_order' ) { %>
-                                                    <a href="/orders/<%= order.order_id %>/continue-pdf" target="_blank"
-                                                        class="text-indigo-600 hover:text-indigo-900 z-20 relative">PDF</a>
-                                                    <% } else { %>
-                                                        <a href="/orders/<%= order.order_id %>/pdf" target="_blank"
-                                                            class="text-indigo-600 hover:text-indigo-900 z-20 relative">PDF</a>
-                                                        <% } %>
-                                                            <button data-delete-order="<%= order.order_id %>"
-                                                                class="text-red-600 hover:text-red-900 z-20 relative">ลบ</button>
-                                            </td>
+                                                                    <button data-delete-order="<%= order.order_id %>"
+                                                                        class="text-red-600 hover:text-red-900 z-20 relative">ลบ</button>
+                                                    </td>
                                         </tr>
                                         <% }) %>
                                             <% } else { %>
                                                 <tr>
-                                                    <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                                                    <td colspan="<%= ['leader', 'co-leader'].includes(userRole) ? 9 : 8 %>"
+                                                        class="px-6 py-10 text-center text-gray-500">
                                                         ไม่พบรายการใบสั่งซื้อ
                                                     </td>
                                                 </tr>

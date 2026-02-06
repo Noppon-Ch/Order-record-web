@@ -102,7 +102,7 @@ export class OrderService {
         return order;
     }
 
-    async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string) {
+    async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string, filters?: { userId?: string, teamId?: string | null }) {
         console.log('[OrderService] Fetching orders with query:', query);
 
         // Use authenticated client to leverage RLS policies for security
@@ -131,8 +131,20 @@ export class OrderService {
             .range(from, to)
             .order('order_date', { ascending: false });
 
-        // RLS policies now handle team scoping automatically based on the authenticated user.
-        // No manual queryBuilder.eq(...) for security needed here.
+        // Apply Logic Filters
+        if (filters) {
+            if (filters.userId) {
+                queryBuilder = queryBuilder.eq('order_record_by_user_id', filters.userId);
+            }
+
+            if (filters.teamId !== undefined) {
+                if (filters.teamId === null) {
+                    queryBuilder = queryBuilder.is('order_record_by_team_id', null);
+                } else {
+                    queryBuilder = queryBuilder.eq('order_record_by_team_id', filters.teamId);
+                }
+            }
+        }
 
         // Apply filters if query exists
         if (query) {
@@ -148,14 +160,33 @@ export class OrderService {
 
         // Filter only 'f_order' or relevant types if needed, but for history usually all.
 
-        const { data, error, count } = await queryBuilder;
+        const { data: orders, error, count } = await queryBuilder;
 
         if (error) {
             console.error('[OrderService] Error fetching orders:', error);
             throw new Error(`Failed to fetch orders: ${error.message}`);
         }
 
-        return { data, count };
+        // Fetch Recorder Profiles manually (since no direct FK to user_profiles)
+        if (orders && orders.length > 0) {
+            const userIds = [...new Set(orders.map(o => o.order_record_by_user_id).filter(id => id))];
+            if (userIds.length > 0) {
+                // Use the same client to fetch profiles
+                const { data: profiles, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .select('user_id, user_full_name')
+                    .in('user_id', userIds);
+
+                if (!profileError && profiles) {
+                    orders.forEach(order => {
+                        const profile = profiles.find(p => p.user_id === order.order_record_by_user_id);
+                        (order as any).recorder = profile || null;
+                    });
+                }
+            }
+        }
+
+        return { data: orders, count };
     }
 
 

@@ -157,15 +157,57 @@ export class OrderController {
             const page = parseInt(req.query.page as string) || 1;
             const query = req.query.q as string || '';
             const accessToken = (req.user as any)?.access_token;
+            const userId = (req.user as any)?.id;
 
-            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken);
+            // Determine if user is in a team (Active) to switch display mode
+            let filterTeamId: string | null = null; // Default: Not in team (or pending) -> Filter by NULL team_id
+            let filterUserId: string | undefined = userId; // Default: Filter by current user
+            let userRole: string | null = null;
+
+            // Check team status
+            // Note: This fetches full members list, might be heavy if team is huge, 
+            // but for MVP/SME scale it's fine.
+            const userTeamData = await teamService.getTeamByUserId(userId);
+
+            if (userTeamData && userTeamData.team) {
+                // Check if *this* user is active in the team
+                const myMembership = userTeamData.members.find(m => m.user_id === userId);
+                if (myMembership && myMembership.status === 'active') {
+                    // Context: User IS active in a team
+                    filterTeamId = userTeamData.team.team_id;
+                    userRole = myMembership.role;
+
+                    // Check Role
+                    if (['leader', 'co-leader'].includes(myMembership.role)) {
+                        // Leaders/Co-leaders can see ALL orders in the team
+                        // So we REMOVE the userId filter
+                        filterUserId = undefined;
+                        // Note: Ensure RLS allows this (it should if policies are correct)
+                    } else {
+                        // Members see only THEIR OWN orders in the team
+                        filterUserId = userId;
+                    }
+                }
+            }
+
+            // If user is not active in team (filterTeamId stays null), filterUserId stays userId.
+
+            const filters: { userId?: string, teamId?: string | null } = {
+                teamId: filterTeamId
+            };
+            if (filterUserId) {
+                filters.userId = filterUserId;
+            }
+
+            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken, filters);
 
             res.render('history', {
                 orders: orders || [],
                 currentPage: page,
                 totalPages: Math.ceil((count || 0) / 10),
                 query,
-                user: req.user
+                user: req.user,
+                userRole: userRole
             });
         } catch (error) {
             console.error('[OrderController] Error showing history page:', error);
