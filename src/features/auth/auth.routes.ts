@@ -32,10 +32,10 @@ router.get('/google/callback',
 
             // --- Debug: Check Team Data Immediately After Login ---
             if (user?.id) {
-                console.log(`[Auth] Login success for user: ${user.id} (Intent: ${state})`);
+                // console.log(`[Auth] Login success for user: ${user.id} (Intent: ${state})`);
                 // @ts-ignore
                 const teamData = await teamService.getTeamByUserId(user.id, user.access_token);
-                console.log('[Auth] Initial Team Check:', JSON.stringify(teamData, null, 2));
+                // console.log('[Auth] Initial Team Check:', JSON.stringify(teamData, null, 2));
             }
             // ----------------------------------------------------
 

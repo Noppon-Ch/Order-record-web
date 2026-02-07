@@ -5,19 +5,19 @@ import path from 'path';
 async function inspectPdf(filePath: string) {
     try {
         const absolutePath = path.resolve(filePath);
-        console.log(`\n--- Inspecting: ${path.basename(filePath)} ---`);
+        // console.log(`\n--- Inspecting: ${path.basename(filePath)} ---`);
         const pdfBytes = await fs.readFile(absolutePath);
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const form = pdfDoc.getForm();
         const fields = form.getFields();
 
         if (fields.length === 0) {
-            console.log('No form fields found.');
+            // console.log('No form fields found.');
         } else {
             fields.forEach(field => {
                 const type = field.constructor.name;
                 const name = field.getName();
-                console.log(`- [${type}] ${name}`);
+                // console.log(`- [${type}] ${name}`);
             });
         }
     } catch (error) {

@@ -7,10 +7,10 @@ export const teamController = {
             const userId = req.user?.id;
             if (!userId) return res.redirect('/login');
 
-            console.log('[TeamController] getTeamPage userId:', userId);
+            // console.log('[TeamController] getTeamPage userId:', userId);
             const accessToken = (req.user as any)?.access_token;
             const teamData = await teamService.getTeamByUserId(userId, accessToken);
-            console.log('[TeamController] teamData:', JSON.stringify(teamData, null, 2));
+            // console.log('[TeamController] teamData:', JSON.stringify(teamData, null, 2));
 
             // If user has a team, extract their personal membership info
             let myMembership = null;

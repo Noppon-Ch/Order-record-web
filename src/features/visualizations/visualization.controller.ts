@@ -11,13 +11,13 @@ export class VisualizationController {
             const month = req.query.month ? parseInt(req.query.month as string) : currentMonth;
 
 
-            console.log(`[VisualizationController] Requesting summary for Year: ${year}, Month: ${month}`);
-            console.log(`[VisualizationController] User:`, req.user);
+            // console.log(`[VisualizationController] Requesting summary for Year: ${year}, Month: ${month}`);
+            // console.log(`[VisualizationController] User:`, req.user);
 
             // Get formatted data from service
             const scoreData = await visualizationService.getScoreSummary(year, month, (req.user as any)?.access_token);
 
-            console.log(`[VisualizationController] Service returned ${scoreData.length} records.`);
+            // console.log(`[VisualizationController] Service returned ${scoreData.length} records.`);
 
             res.render('summary', {
                 user: req.user,
@@ -46,10 +46,10 @@ export class VisualizationController {
             const year = req.query.year ? parseInt(req.query.year as string) : currentYear;
             const month = req.query.month ? parseInt(req.query.month as string) : currentMonth;
 
-            console.log(`[VisualizationController] Requesting Org Chart for Year: ${year}, Month: ${month}`);
+            // console.log(`[VisualizationController] Requesting Org Chart for Year: ${year}, Month: ${month}`);
 
             const scoreData = await visualizationService.getScoreSummary(year, month, (req.user as any)?.access_token);
-            console.log(`[VisualizationController] Org Chart: Service returned ${scoreData.length} records.`);
+            // console.log(`[VisualizationController] Org Chart: Service returned ${scoreData.length} records.`);
 
             res.render('organization-chart', {
                 user: req.user,

@@ -20,7 +20,7 @@ export async function getUserProfile(userId: string, accessToken?: string) {
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
-    console.log('[Supabase] getUserProfile result:', { userId, data, error });
+    // console.log('[Supabase] getUserProfile result:', { userId, data, error });
     if (error) throw error;
     return data;
 }
@@ -32,7 +32,7 @@ export async function updateUserProfile(userId: string, updateData: any, accessT
         .update(updateData)
         .eq('user_id', userId)
         .select();
-    console.log('[Supabase] updateUserProfile result:', { userId, updateData, data, error });
+    // console.log('[Supabase] updateUserProfile result:', { userId, updateData, data, error });
     if (error) throw error;
     return data;
 }

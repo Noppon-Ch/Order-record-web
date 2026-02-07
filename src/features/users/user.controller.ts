@@ -5,13 +5,13 @@ import { teamService } from '../teams/services/team.service.js';
 export async function renderUserSetting(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.user;
-        console.log('[User] renderUserSetting user:', user);
+        // console.log('[User] renderUserSetting user:', user);
         if (!user) return res.redirect('/login');
 
-        console.log('[User] renderUserSetting access_token:', user.access_token);
+        // console.log('[User] renderUserSetting access_token:', user.access_token);
         // Fetch latest profile data to ensure view is up-to-date
         const profile = await getUserProfile(user.id, user.access_token);
-        console.log('[User] renderUserSetting profile:', profile);
+        // console.log('[User] renderUserSetting profile:', profile);
 
         const teamData = await teamService.getTeamByUserId(user.id, user.access_token);
         let userTeam = null;
@@ -39,12 +39,12 @@ export async function renderUserSetting(req: Request, res: Response, next: NextF
 export async function updateUserSetting(req: Request, res: Response, next: NextFunction) {
     try {
         const user = req.user;
-        console.log('[User] updateUserSetting user:', user);
+        // console.log('[User] updateUserSetting user:', user);
         if (!user) return res.status(401).send('Unauthorized');
 
-        console.log('[User] updateUserSetting access_token:', user.access_token);
+        // console.log('[User] updateUserSetting access_token:', user.access_token);
         // Log form body for debugging
-        console.log('[User] updateUserSetting form body:', req.body);
+        // console.log('[User] updateUserSetting form body:', req.body);
 
         // Filter empty string to undefined
         const clean = (v: any) => v === '' ? null : v;
@@ -63,16 +63,16 @@ export async function updateUserSetting(req: Request, res: Response, next: NextF
             user_payment_bank: clean(user_payment_bank),
             user_payment_id: clean(user_payment_id)
         };
-        console.log('[User] updateUserSetting updatePayload:', updatePayload);
+        // console.log('[User] updateUserSetting updatePayload:', updatePayload);
 
-        console.log('[User] DEBUG: updateUserSetting PRE-UPDATE payload:', JSON.stringify(updatePayload, null, 2));
+        // console.log('[User] DEBUG: updateUserSetting PRE-UPDATE payload:', JSON.stringify(updatePayload, null, 2));
 
         const result = await updateUserProfile(
             user.id,
             updatePayload,
             user.access_token
         );
-        console.log('[User] DEBUG: updateUserSetting POST-UPDATE result:', JSON.stringify(result, null, 2));
+        // console.log('[User] DEBUG: updateUserSetting POST-UPDATE result:', JSON.stringify(result, null, 2));
 
         res.redirect('/user/setting?success=true');
     } catch (err) {

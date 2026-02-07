@@ -213,7 +213,7 @@ export const teamService = {
         // 3. PREPARE CLONING: fetch data BEFORE status update because RLS relies on member being 'pending'
         let clonesToInsert: any[] = [];
         if (newStatus === 'active') {
-            console.log('[TeamService] Member approving. Fetching data for cloning...');
+            // console.log('[TeamService] Member approving. Fetching data for cloning...');
 
             // A. Fetch existing private customers
             const { data: customersToClone, error: fetchError } = await supabase
@@ -225,7 +225,7 @@ export const teamService = {
             if (fetchError) {
                 console.error('[TeamService] Error fetching customers to clone:', fetchError);
             } else {
-                console.log(`[TeamService] Found ${customersToClone?.length || 0} private customers to clone.`);
+                // console.log(`[TeamService] Found ${customersToClone?.length || 0} private customers to clone.`);
             }
 
             if (customersToClone && customersToClone.length > 0) {
@@ -251,7 +251,7 @@ export const teamService = {
                         };
                     });
 
-                console.log(`[TeamService] Prepared ${clonesToInsert.length} clones.`);
+                // console.log(`[TeamService] Prepared ${clonesToInsert.length} clones.`);
             }
         }
 
@@ -272,7 +272,7 @@ export const teamService = {
             if (insertError) {
                 console.error('[TeamService] Error cloning customers to team:', insertError);
             } else {
-                console.log('[TeamService] Cloning completed successfully.');
+                // console.log('[TeamService] Cloning completed successfully.');
             }
         }
     },
@@ -321,7 +321,7 @@ export const teamService = {
         // 3. CLONE PROCESS: Before removing, clone their team customers back to private
         // "customer_record_by_user_id = member_id" AND "customer_record_by_team_id = team_id"
         // -> clone to "customer_record_by_team_id = NULL"
-        console.log(`[TeamService] Removing member ${memberToRemove.user_id}. Starting cloning process...`);
+        // console.log(`[TeamService] Removing member ${memberToRemove.user_id}. Starting cloning process...`);
 
         const { data: teamCustomers, error: fetchError } = await supabase
             .from('customers')
@@ -332,7 +332,7 @@ export const teamService = {
         if (fetchError) {
             console.error('[TeamService] Error fetching member customers to clone:', fetchError);
         } else if (teamCustomers && teamCustomers.length > 0) {
-            console.log(`[TeamService] Found ${teamCustomers.length} customers to clone back to private.`);
+            // console.log(`[TeamService] Found ${teamCustomers.length} customers to clone back to private.`);
 
             // Check duplicates in PRIVATE scope for this user
             const { data: existingPrivate, error: privateError } = await supabase
@@ -364,7 +364,7 @@ export const teamService = {
                 if (insertError) {
                     console.error('[TeamService] Error cloning customers back to private:', insertError);
                 } else {
-                    console.log(`[TeamService] Successfully cloned ${clones.length} customers back to private.`);
+                    // console.log(`[TeamService] Successfully cloned ${clones.length} customers back to private.`);
                 }
             }
         }

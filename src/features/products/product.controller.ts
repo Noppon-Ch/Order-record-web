@@ -7,13 +7,13 @@ export class ProductController {
     async search(req: Request, res: Response) {
         try {
             const query = req.query.q as string;
-            console.log('[ProductController] Product Search Controller - Query:', query);
+            // console.log('[ProductController] Product Search Controller - Query:', query);
 
             // Extract access token for RLS
             const accessToken = (req.user as any)?.access_token;
 
             const products = await productService.searchProducts(query, accessToken);
-            console.log('[ProductController] Products returned:', products?.length);
+            // console.log('[ProductController] Products returned:', products?.length);
 
             res.json(products);
         } catch (error) {
@@ -27,7 +27,7 @@ export class ProductController {
         try {
             const query = req.query.q as string || '';
             const accessToken = (req.user as any)?.access_token;
-            console.log('[ProductController] Debug Product Search - Query:', query);
+            // console.log('[ProductController] Debug Product Search - Query:', query);
 
             // Search with token
             const products = await productService.searchProducts(query, accessToken);
@@ -71,7 +71,7 @@ export class ProductController {
             const offset = (page - 1) * limit;
             const accessToken = (req.user as any)?.access_token;
 
-            console.log(`[ProductController] Listing products page:${page} query:${query}`);
+            // console.log(`[ProductController] Listing products page:${page} query:${query}`);
             const { products, total } = await productService.listProducts(query, limit, offset, accessToken);
 
             res.render('product_list', {

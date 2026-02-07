@@ -126,7 +126,7 @@ export class OrderController {
             const accessToken = (req.user as any)?.access_token;
             const userId = (req.user as any)?.id;
 
-            console.log('[OrderController] Creating order for user:', userId);
+            // console.log('[OrderController] Creating order for user:', userId);
 
             // Add recorder info
             const orderData = {

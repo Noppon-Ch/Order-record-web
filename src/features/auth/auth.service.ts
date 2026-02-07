@@ -79,7 +79,7 @@ export async function upsertUserProfileAfterOAuth(
   };
 
   // Log the profile data before sending to Supabase
-  console.log('[Supabase] Upserting user_profiles:', JSON.stringify(profile, null, 2));
+  // console.log('[Supabase] Upserting user_profiles:', JSON.stringify(profile, null, 2));
 
 
   // Upsert the profile into the user_profiles table
@@ -153,7 +153,7 @@ async function recordUserConsent(userId: string, consentType: string, version: s
   if (insertError) {
     console.error('[Supabase] Error inserting consent record:', insertError);
   } else {
-    console.log(`[Supabase] Recorded consent ${consentType} v${version} for user ${userId}`);
+    // console.log(`[Supabase] Recorded consent ${consentType} v${version} for user ${userId}`);
   }
 }
 

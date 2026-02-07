@@ -16,8 +16,8 @@ export class CustomerController {
 
 	async addCustomer(req: Request, res: Response) {
 		// Log user and accessToken for debugging
-		console.log('req.user:', req.user);
-		console.log('req.user.access_token:', req.user?.access_token);
+		// console.log('req.user:', req.user);
+		// console.log('req.user.access_token:', req.user?.access_token);
 		// Map form fields to DB fields, allow zipcode and consent to be null
 		const body = req.body;
 		const values: CreateCustomerDTO = {
@@ -42,7 +42,7 @@ export class CustomerController {
 		};
 
 		// Log values before insert
-		console.log('AddCustomer values:', values);
+		// console.log('AddCustomer values:', values);
 		try {
 			const userId = req.user?.id || '';
 			const userTeam = await teamService.getTeamByUserId(userId);
@@ -63,7 +63,7 @@ export class CustomerController {
 			if (body.referrer_citizen_id) {
 				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token, userContext);
 				if (!existingRecommender) {
-					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+					// console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
 
 					// Split name
 					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
@@ -88,7 +88,7 @@ export class CustomerController {
 
 					try {
 						await customerService.createCustomer(dummyRecommender, req.user?.access_token);
-						console.log('Dummy recommender created successfully');
+						// console.log('Dummy recommender created successfully');
 					} catch (dummyErr) {
 						console.error('Failed to create dummy recommender:', dummyErr);
 						// We proceed even if this fails, as the main insert might still work (unless there's a hard FK constraint I missed)
@@ -132,7 +132,7 @@ export class CustomerController {
 			customer_tax_id: undefined,
 			customer_phone: undefined,
 			customer_birthdate: undefined,
-			customer_registerdate: body.customer_reg_date,
+			customer_registerdate: undefined,
 			customer_address1: undefined,
 			customer_address2: undefined,
 			customer_zipcode: undefined,
@@ -142,7 +142,7 @@ export class CustomerController {
 			customer_record_by_user_id: req.user?.id || '',
 		};
 
-		console.log('AddOldCustomer values:', values);
+		// console.log('AddOldCustomer values:', values);
 
 		try {
 			const userId = req.user?.id || '';
@@ -164,7 +164,7 @@ export class CustomerController {
 			if (body.referrer_citizen_id) {
 				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token, userContext);
 				if (!existingRecommender) {
-					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+					// console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
 					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
 					const fname = nameParts[0] || '';
 					const lname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
@@ -347,7 +347,7 @@ export class CustomerController {
 			if (body.referrer_citizen_id) {
 				const existingRecommender = await customerService.findByCitizenId(body.referrer_citizen_id, req.user?.access_token);
 				if (!existingRecommender) {
-					console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
+					// console.log(`Recommender ${body.referrer_citizen_id} not found. Creating dummy record.`);
 
 					// Split name
 					const nameParts = (body.referrer_name || '').trim().split(/\s+/);
@@ -372,7 +372,7 @@ export class CustomerController {
 
 					try {
 						await customerService.createCustomer(dummyRecommender, req.user?.access_token);
-						console.log('Dummy recommender created successfully');
+						// console.log('Dummy recommender created successfully');
 					} catch (dummyErr) {
 						console.error('Failed to create dummy recommender:', dummyErr);
 					}

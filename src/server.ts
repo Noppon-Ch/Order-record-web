@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-console.log('SUPABASE_URL in server.ts:', process.env.SUPABASE_URL);
+// console.log('SUPABASE_URL in server.ts:', process.env.SUPABASE_URL);
 
 import app from './app.js'; // Import app จากไฟล์ app.ts
 

@@ -13,7 +13,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function checkProducts() {
-    console.log('--- Checking Products Table ---');
+    // console.log('--- Checking Products Table ---');
 
     // 1. Count
     const { count, error: countError } = await supabase
@@ -23,7 +23,7 @@ async function checkProducts() {
     if (countError) {
         console.error('Error counting products:', countError);
     } else {
-        console.log(`Total rows in 'products': ${count}`);
+        // console.log(`Total rows in 'products': ${count}`);
     }
 
     // 2. Fetch Sample
@@ -35,8 +35,8 @@ async function checkProducts() {
     if (error) {
         console.error('Error fetching sample:', error);
     } else {
-        console.log('Sample Data (First 5):');
-        console.log(JSON.stringify(data, null, 2));
+        // console.log('Sample Data (First 5):');
+        // console.log(JSON.stringify(data, null, 2));
     }
 }
 

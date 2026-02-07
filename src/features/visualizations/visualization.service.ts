@@ -23,7 +23,7 @@ export class VisualizationService {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
 
-        console.log(`[VisualizationService] 1. Fetching customers...`);
+        // console.log(`[VisualizationService] 1. Fetching customers...`);
 
         // 1. Fetch all customers
         // We need all customers to build the full tree
@@ -35,7 +35,7 @@ export class VisualizationService {
             console.error(`[VisualizationService] Error fetching customers:`, customerError);
             throw new Error(`Error fetching customers: ${customerError.message}`);
         }
-        console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
+        // console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
         if (!customers) return [];
 
         // 2. Fetch orders for the specific month/year
@@ -43,8 +43,8 @@ export class VisualizationService {
         const startDate = new Date(year, month - 1, 1).toISOString();
         const endDate = new Date(year, month, 0, 23, 59, 59).toISOString(); // Last day of month
 
-        console.log(`[VisualizationService] 2. Date Range: ${startDate} to ${endDate}`);
-        console.log(`[VisualizationService] Fetching orders...`);
+        // console.log(`[VisualizationService] 2. Date Range: ${startDate} to ${endDate}`);
+        // console.log(`[VisualizationService] Fetching orders...`);
 
         const { data: orders, error: orderError } = await supabase
             .from('orders')
@@ -57,7 +57,7 @@ export class VisualizationService {
             throw new Error(`Error fetching orders: ${orderError.message}`);
         }
 
-        console.log(`[VisualizationService] Fetched ${orders?.length || 0} orders.`);
+        // console.log(`[VisualizationService] Fetched ${orders?.length || 0} orders.`);
 
 
         // 3. Aggregate Orders by Customer
@@ -70,7 +70,7 @@ export class VisualizationService {
             customerScores.set(order.order_customer_id, currentScore + points);
         });
 
-        console.log(`[VisualizationService] 3. Aggregated scores for ${customerScores.size} unique customers.`);
+        // console.log(`[VisualizationService] 3. Aggregated scores for ${customerScores.size} unique customers.`);
 
         // 4. Build Tree
         const customerMap = new Map<string, ScoreNode>();
@@ -131,7 +131,7 @@ export class VisualizationService {
 
 
 
-        console.log(`[VisualizationService] 5. Returning ${flattenedList.length} flattened nodes.`);
+        // console.log(`[VisualizationService] 5. Returning ${flattenedList.length} flattened nodes.`);
 
         return flattenedList;
     }

@@ -16,7 +16,7 @@ export class OrderService {
     async createOrder(params: CreateOrderParams, accessToken?: string) {
         const { order, items } = params;
 
-        console.log('[OrderService] Creating Supabase client');
+        // console.log('[OrderService] Creating Supabase client');
         // Use normal client for creation to respect RLS on insert if needed, 
         // or service role if we want to bypass checks during creation (usually safe for backend created orders).
         // Let's stick to anon/access token for creation unless issues arise, 
@@ -55,7 +55,7 @@ export class OrderService {
         }
 
         const orderId = newOrder.order_id;
-        console.log('[OrderService] Order created:', orderId);
+        // console.log('[OrderService] Order created:', orderId);
 
         // 2. Insert Order Items
         if (items && items.length > 0) {
@@ -83,7 +83,7 @@ export class OrderService {
     }
 
     async getOrderById(orderId: string, accessToken?: string) {
-        console.log('[OrderService] Fetching order by ID:', orderId);
+        // console.log('[OrderService] Fetching order by ID:', orderId);
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
@@ -103,7 +103,7 @@ export class OrderService {
     }
 
     async getOrders(query: string = '', page: number = 1, pageSize: number = 10, accessToken?: string, filters?: { userId?: string, teamId?: string | null }) {
-        console.log('[OrderService] Fetching orders with query:', query);
+        // console.log('[OrderService] Fetching orders with query:', query);
 
         // Use authenticated client to leverage RLS policies for security
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
@@ -191,7 +191,7 @@ export class OrderService {
 
 
     async deleteOrder(orderId: string, accessToken?: string) {
-        console.log('[OrderService] Deleting order:', orderId);
+        // console.log('[OrderService] Deleting order:', orderId);
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
