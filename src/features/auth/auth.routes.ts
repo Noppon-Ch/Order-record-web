@@ -8,19 +8,19 @@ const router = Router();
 // --- Google Login Flow ---
 // 1. User กดลิงก์นี้เพื่อเริ่ม Login (Intent: Login)
 router.get('/google', passport.authenticate('google', {
-    scope: ['profile', 'email'],
+    scope: ['profile', 'email', 'openid'],
     state: 'login'
 }));
 
 // Route สำหรับ Registerโดยเฉพาะ (Intent: Register)
 router.get('/google/register', passport.authenticate('google', {
-    scope: ['profile', 'email'],
+    scope: ['profile', 'email', 'openid'],
     state: 'register'
 }));
 
 // 2. Google ส่ง User กลับมาที่นี่ (Callback)
 router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/' }),
+    passport.authenticate('google', { failureRedirect: '/login?error=auth_failed' }),
     async (req, res, next) => {
         try {
             // @ts-ignore
@@ -41,6 +41,7 @@ router.get('/google/callback',
 
             res.redirect('/homepage');
         } catch (err) {
+            console.error('[Auth Callback] Error:', err);
             // If error is "User not found" (from strict login check), redirect to register
             if (err instanceof Error && err.message === 'User not found. Please register first.') {
                 return res.redirect('/register?error=needs_registration');

@@ -166,9 +166,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     .single();
 
   if (error) {
-    console.error('[Supabase] Error fetching user profile:', error);
+    if (error.code !== 'PGRST116') {
+      console.error(`[Supabase] Error fetching user profile for ${userId}:`, error);
+    }
     return null;
   }
 
+  // console.log(`[Supabase] Profile found for user ${userId}`);
   return data;
 }

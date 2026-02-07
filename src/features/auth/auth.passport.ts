@@ -15,7 +15,7 @@ export function setupPassport(session: any) {
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const supabaseAnon = createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!);
 
   // --- Google Strategy ---
   passport.use(new GoogleStrategy(
@@ -35,13 +35,17 @@ export function setupPassport(session: any) {
     ) => {
       const idToken = params.id_token;
       if (!idToken) {
+        console.error('[Passport] ID Token is missing in Google OAuth response. Scopes:', req.query.scope);
         return done(new Error('Failed to get ID token from Google.'), false);
       }
-      const { data, error } = await supabase.auth.signInWithIdToken({
+      const { data, error } = await supabaseAnon.auth.signInWithIdToken({
         provider: 'google',
         token: idToken,
       });
-      if (error) return done(error, false);
+      if (error) {
+        console.error('[Supabase Auth] Login error:', error);
+        return done(error, false);
+      }
 
       // Upsert user profile logic moved to route handler (callback) to handle intents properly.
       // await upsertUserProfileAfterOAuth(data.user, 'google');

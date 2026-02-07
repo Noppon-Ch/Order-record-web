@@ -20,6 +20,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Required for session cookies to work behind proxies (like Render/Heroku)
+app.set('trust proxy', 1);
+
 
 // --- Passport & Session Setup ---
 // Middleware to parse application/x-www-form-urlencoded (for form POST)
