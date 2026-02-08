@@ -114,12 +114,17 @@ export class OrderService {
         const from = (page - 1) * pageSize;
         const to = from + pageSize - 1;
 
+        // If searching, we MUST use !inner to filter Orders by Customer fields
+        const customerRelation = query
+            ? 'customers:orders_order_customer_id_fkey!inner'
+            : 'customers:orders_order_customer_id_fkey';
+
         let queryBuilder = supabase
             .from('orders')
             .select(`
                 *,
                 order_items(*),
-                customers:orders_order_customer_id_fkey (
+                ${customerRelation} (
                     customer_fname_th,
                     customer_lname_th
                 ),
@@ -128,8 +133,8 @@ export class OrderService {
                     customer_lname_th
                 )
             `, { count: 'exact' })
-            .range(from, to)
-            .order('order_date', { ascending: false });
+            .order('order_date', { ascending: false })
+            .range(from, to);
 
         // Apply Logic Filters
         if (filters) {
@@ -148,14 +153,7 @@ export class OrderService {
 
         // Apply filters if query exists
         if (query) {
-            // Note: Searching on joined text column might be tricky in Supabase basic filtering
-            // For now, simpler filtering on order fields or exact matches.
-            // Or use Full Text Search if setup.
-            // Let's try to filter by customer name if possible, but standard 'ilike' on joined column needs specific syntax or not supported directly easily without embedding.
-            // For MVP, likely filtering by order_type or known ID. 
-            // If user searches name, we might need a separate RPC or more complex query.
-            // Let's implement basics first.
-            // Or filter by available text columns if any. 
+            queryBuilder = queryBuilder.or(`customer_fname_th.ilike.%${query}%,customer_lname_th.ilike.%${query}%`, { foreignTable: 'customers' });
         }
 
         // Filter only 'f_order' or relevant types if needed, but for history usually all.

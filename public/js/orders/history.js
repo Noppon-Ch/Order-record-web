@@ -12,13 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Open Modal for rows
-    document.querySelector('tbody').addEventListener('click', (e) => {
-        // Prevent if clicking on buttons/links
-        if (e.target.closest('a') || e.target.closest('button')) return;
+    // 2. Open Modal for rows (Desktop) or cards (Mobile)
+    document.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-order-index]');
+        if (!item) return;
 
-        const row = e.target.closest('tr[data-order-index]');
-        if (row) {
-            const index = row.dataset.orderIndex;
+        // Prevent if clicking on buttons/links or elements marked to ignore
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('[data-no-row-click="true"]')) return;
+
+        const index = item.dataset.orderIndex;
+        // Ensure ordersData is available and valid
+        if (ordersData && ordersData[index]) {
             openOrderModal(index, ordersData);
         }
     });
@@ -81,25 +85,52 @@ function openOrderModal(index, ordersData) {
         setText('modalOrderDate', new Date(order.order_date).toLocaleDateString('th-TH'));
         setText('modalCustomerName', `คุณ ${order.customers?.customer_fname_th || ''} ${order.customers?.customer_lname_th || ''}`);
 
-        // Set Items Table
+        // Set Items Table (Desktop) & List (Mobile)
         const tbody = document.getElementById('modalOrderItemsBody');
-        tbody.innerHTML = '';
+        const mobileList = document.getElementById('modalOrderItemsList');
+
+        if (tbody) tbody.innerHTML = '';
+        if (mobileList) mobileList.innerHTML = '';
 
         if (order.order_items && order.order_items.length > 0) {
             order.order_items.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.product_name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.product_color || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.product_size || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${(item.product_price / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${item.quantity}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium text-right">${((item.product_price * item.quantity) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                `;
-                tbody.appendChild(tr);
+                const itemName = `${item.product_name} (${item.product_color || '-'} / ${item.product_size || '-'})`;
+                const price = (item.product_price / 100).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                const total = ((item.product_price * item.quantity) / 100).toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+                // Desktop Row
+                if (tbody) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.product_code || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${itemName}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${price}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${item.quantity}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium text-right">${total}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                // Mobile Card
+                if (mobileList) {
+                    const card = document.createElement('div');
+                    card.className = "bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-2";
+                    card.innerHTML = `
+                        <div class="text-sm font-bold text-gray-900 break-words mb-1">${itemName}</div>
+                        <div class="text-sm text-gray-600 flex justify-between items-center">
+                            <span>${item.product_code || '-'} : ${item.quantity} x ${price}</span>
+                        </div>
+                        <div class="text-sm font-medium text-blue-600 text-right border-t border-gray-200 pt-2 mt-1">
+                            ทั้งหมด: ${total}
+                        </div>
+                    `;
+                    mobileList.appendChild(card);
+                }
             });
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">ไม่พบสินค้าในรายการ</td></tr>';
+            const noDataMsg = '<div class="p-4 text-center text-gray-500">ไม่พบสินค้าในรายการ</div>';
+            if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">ไม่พบสินค้าในรายการ</td></tr>`;
+            if (mobileList) mobileList.innerHTML = noDataMsg;
         }
 
         // Show Modal

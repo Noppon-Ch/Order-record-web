@@ -199,12 +199,13 @@ export class OrderController {
                 filters.userId = filterUserId;
             }
 
-            const { data: orders, count } = await orderService.getOrders(query, page, 10, accessToken, filters);
+            const itemsPerPage = 10;
+            const { data: orders, count } = await orderService.getOrders(query, page, itemsPerPage, accessToken, filters);
 
             res.render('history', {
                 orders: orders || [],
                 currentPage: page,
-                totalPages: Math.ceil((count || 0) / 10),
+                totalPages: Math.ceil((count || 0) / itemsPerPage),
                 query,
                 user: req.user,
                 userRole: userRole

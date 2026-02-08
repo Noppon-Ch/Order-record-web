@@ -10,6 +10,7 @@ export interface ScoreNode {
     customer_position: string | null;
     recommender_id: string | null;
     customer_recommender_name?: string;
+    customer_registerdate?: string;
     tree_level: number;
     self_private_score: number;
     total_score: number;
@@ -29,7 +30,7 @@ export class VisualizationService {
         // We need all customers to build the full tree
         const { data: customers, error: customerError } = await supabase
             .from('customers')
-            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_position, customer_recommender_id');
+            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_position, customer_recommender_id, customer_registerdate');
 
         if (customerError) {
             console.error(`[VisualizationService] Error fetching customers:`, customerError);
@@ -83,6 +84,7 @@ export class VisualizationService {
                 customer_name: `${c.customer_fname_th || ''} ${c.customer_lname_th || ''}`.trim(),
                 customer_position: c.customer_position || '-',
                 recommender_id: c.customer_recommender_id,
+                customer_registerdate: c.customer_registerdate,
                 tree_level: 1, // Default to 1
                 self_private_score: customerScores.get(c.customer_id) || 0,
                 total_score: 0, // Will calculate later

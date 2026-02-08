@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         renderChart(scoreData);
     }
+
+    // 4. Handle Resize (Orientation Change)
+    window.addEventListener('resize', () => {
+        if (scoreData && scoreData.length > 0) {
+            renderChart(scoreData);
+        }
+    });
 });
 
 function initTogglePanel() {
@@ -120,13 +127,15 @@ function renderChart(data) {
         const svg = d3.select(container)
             .append("svg")
             .attr("width", width)
-            .attr("height", height)
-            .call(d3.zoom().on("zoom", (event) => {
-                g.attr("transform", event.transform);
-            }));
+            .attr("height", height);
 
         const g = svg.append("g")
             .attr("transform", `translate(80,${height / 2})`);
+
+        svg.call(d3.zoom().on("zoom", (event) => {
+            g.attr("transform", event.transform);
+        }))
+            .call(d3.zoom().transform, d3.zoomIdentity.translate(80, height / 2));
 
         update(root);
 

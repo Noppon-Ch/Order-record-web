@@ -1,12 +1,36 @@
 <%- include('partials/app-header') %>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="px-4 sm:px-0 mb-6 flex justify-between items-center">
+        <div class="px-4 sm:px-0 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">รายชื่อลูกค้า</h1>
                 <p class="mt-1 text-sm text-gray-600">พบลูกค้าทั้งหมด: <%= customers.length %> ราย
                 </p>
             </div>
-            <div class="flex gap-2">
+            <!-- Mobile: ปุ่มอยู่ใต้ข้อความ พบลูกค้าทั้งหมด -->
+            <div class="flex flex-col gap-2 mt-4 sm:hidden">
+                <a href="/customer/add-new-customer"
+                    class="w-full justify-center inline-flex items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    เพิ่มลูกค้าใหม่
+                </a>
+                <a href="/customer/add-old-customer"
+                    class="w-full justify-center inline-flex items-center px-4 py-3 border border-blue-600 rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    เพิ่มลูกค้าเก่า
+                </a>
+            </div>
+            <!-- PC: ปุ่มอยู่ขวา -->
+            <div class="hidden sm:flex gap-2 justify-end items-center mt-4">
                 <a href="/customer/add-new-customer"
                     class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -32,17 +56,20 @@
 
         <!-- Search Box -->
         <div class="mb-6 px-4 sm:px-0">
-            <form action="/customer/list" method="GET" class="relative rounded-md shadow-sm max-w-lg">
-                <input type="text" name="search" id="search"
-                    class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
-                    placeholder="ค้นหาด้วยชื่อ, เลขบัตรประชาชน..." value="<%= searchQuery %>">
-                <div class="absolute inset-y-0 right-0 flex items-center">
-                    <button type="submit"
-                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 h-full">
-                        ค้นหา
-                    </button>
-                </div>
-            </form>
+            <div class="sm:flex sm:justify-end">
+                <form action="/customer/list" method="GET"
+                    class="relative rounded-md shadow-sm max-w-lg w-full sm:max-w-lg sm:w-full">
+                    <input type="text" name="search" id="search"
+                        class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 pr-12 sm:text-sm border-gray-300 rounded-md py-3"
+                        placeholder="ค้นหาด้วยชื่อ, เลขบัตรประชาชน..." value="<%= searchQuery %>">
+                    <div class="absolute inset-y-0 right-0 flex items-center">
+                        <button type="submit"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 h-full">
+                            ค้นหา
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="flex flex-col">
@@ -53,23 +80,23 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                                         วันที่สมัคร
                                     </th>
                                     <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ชื่อ-นามสกุล
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full sm:w-auto">
+                                        ชื่อ-นามสกุล <span class="sm:hidden">(ตำแหน่ง)</span>
                                     </th>
                                     <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                                         ตำแหน่ง
                                     </th>
                                     <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                                         ผู้แนะนำ
                                     </th>
                                     <th scope="col"
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-full sm:w-auto">
                                         จัดการ
                                     </th>
                                 </tr>
@@ -82,98 +109,90 @@
                                         </td>
                                     </tr>
                                     <% } else { %>
-                                        <% customers.forEach(customer=> { %>
-                                            <tr class="hover:bg-gray-50 transition-colors">
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">
-                                                        <% let displayDate='-' ; let isNew=false; if
-                                                            (customer.customer_registerdate) { const regDate=new
-                                                            Date(customer.customer_registerdate); if
-                                                            (!isNaN(regDate.getTime())) {
-                                                            displayDate=regDate.toLocaleDateString('th-TH', {
-                                                            year: 'numeric' , month: 'short' , day: 'numeric' }); const
-                                                            now=new Date(); const monthDiff=(now.getFullYear() -
-                                                            regDate.getFullYear()) * 12 + (now.getMonth() -
-                                                            regDate.getMonth()); if (monthDiff>= 0 && monthDiff <= 1) {
-                                                                isNew=true; } } } %>
-                                                                <%= displayDate %>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        <%= customer.customer_fname_th %>
-                                                            <%= customer.customer_lname_th %>
-                                                                <% if (isNew) { %>
-                                                                    <span
-                                                                        class="text-red-500 text-xs ml-1">(ใหม่)</span>
-                                                                    <% } %>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700' , 'AG'
-                                                        : 'bg-green-200 text-green-700' , 'SFAG'
-                                                        : 'bg-yellow-300 text-yellow-800' , 'SAG'
-                                                        : 'bg-red-200 text-red-800' , 'ESAG' : 'bg-red-200 text-red-800'
-                                                        }; const pos=(customer.customer_position || '' ).toUpperCase();
-                                                        const badgeClass=positionClasses[pos]
-                                                        || 'bg-gray-100 text-gray-800' ; %>
+                                        <% const positionClasses={ 'BM' : 'bg-blue-200 text-blue-700' , 'AG'
+                                            : 'bg-green-200 text-green-700' , 'SFAG' : 'bg-yellow-300 text-yellow-800'
+                                            , 'SAG' : 'bg-red-200 text-red-800' , 'ESAG' : 'bg-red-200 text-red-800' };
+                                            %>
+                                            <% customers.forEach(customer=> { %>
+                                                <tr class="hover:bg-gray-50 transition-colors">
+                                                    <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                                        <div class="text-sm text-gray-500">
+                                                            <% let displayDate='-' ; let isNew=false; if
+                                                                (customer.customer_registerdate) { const regDate=new
+                                                                Date(customer.customer_registerdate); if
+                                                                (!isNaN(regDate.getTime())) {
+                                                                displayDate=regDate.toLocaleDateString('th-TH', {
+                                                                year: 'numeric' , month: 'short' , day: 'numeric' });
+                                                                const now=new Date(); const monthDiff=(now.getFullYear()
+                                                                - regDate.getFullYear()) * 12 + (now.getMonth() -
+                                                                regDate.getMonth()); if (monthDiff>= 0 && monthDiff <=
+                                                                    1) { isNew=true; } } } %>
+                                                                    <%= displayDate %>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap w-full sm:w-auto">
+                                                        <div
+                                                            class="text-sm font-medium text-gray-900 flex flex-col sm:flex-row sm:items-center">
+                                                            <span>
+                                                                <%= customer.customer_fname_th %>
+                                                                    <%= customer.customer_lname_th %>
+                                                                        <% if (isNew) { %>
+                                                                            <span
+                                                                                class="text-red-500 text-xs ml-1">(ใหม่)</span>
+                                                                            <% } %>
+                                                            </span>
+                                                            <!-- Mobile: ตำแหน่ง badge ในชื่อ-นามสกุล -->
+                                                            <span class="mt-1 sm:mt-0 sm:ml-2 sm:hidden">
+                                                                <span
+                                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= positionClasses[(customer.customer_position || '').toUpperCase()] || 'bg-gray-100 text-gray-800' %>">
+                                                                    <%= customer.customer_position %>
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <!-- PC: ตำแหน่งแยกคอลัมน์ -->
+                                                    <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                                                         <span
-                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= badgeClass %>">
+                                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= positionClasses[(customer.customer_position || '').toUpperCase()] || 'bg-gray-100 text-gray-800' %>">
                                                             <%= customer.customer_position %>
                                                         </span>
-                                                </td>
-
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">
-                                                        <%= customer.recommender_name || '-' %>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <div class="relative inline-block text-left"
-                                                        x-data="{ open: false }">
-                                                        <button data-dropdown-toggle="<%= customer.customer_id %>"
-                                                            type="button"
-                                                            class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
-                                                            id="options-menu-<%= customer.customer_id %>"
-                                                            aria-expanded="true" aria-haspopup="true">
-                                                            เลือกรายการ
-                                                            <svg class="-mr-1 ml-2 h-5 w-5"
-                                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                                fill="currentColor" aria-hidden="true">
-                                                                <path fill-rule="evenodd"
-                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                    clip-rule="evenodd" />
-                                                            </svg>
-                                                        </button>
-
-                                                        <div id="dropdown-<%= customer.customer_id %>"
-                                                            class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                                                            role="menu" aria-orientation="vertical"
-                                                            aria-labelledby="options-menu-<%= customer.customer_id %>">
-                                                            <div class="py-1" role="none">
-                                                                <% if ((customer.customer_position || ''
-                                                                    ).toUpperCase()==='BM' ) { %>
-                                                                    <a href="/orders/first?customerId=<%= customer.customer_id %>"
-                                                                        class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                        role="menuitem">
-                                                                        <span class="mr-3 text-blue-500">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                class="h-5 w-5" fill="none"
-                                                                                viewBox="0 0 24 24"
-                                                                                stroke="currentColor">
-                                                                                <path stroke-linecap="round"
-                                                                                    stroke-linejoin="round"
-                                                                                    stroke-width="2"
-                                                                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                                                            </svg>
-                                                                        </span>
-                                                                        ใบสั่งซื้อรอบแรก
-                                                                    </a>
-                                                                    <% } %>
-                                                                        <a href="/orders/continue?customerId=<%= customer.customer_id %>"
+                                                    </td>
+                                                    <!-- PC: ผู้แนะนำแยกคอลัมน์ -->
+                                                    <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                                                        <div class="text-sm text-gray-500">
+                                                            <%= customer.recommender_name || '-' %>
+                                                        </div>
+                                                    </td>
+                                                    <td
+                                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-full sm:w-auto">
+                                                        <div class="relative inline-block text-left"
+                                                            x-data="{ open: false }">
+                                                            <button data-dropdown-toggle="<%= customer.customer_id %>"
+                                                                type="button"
+                                                                class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500"
+                                                                id="options-menu-<%= customer.customer_id %>"
+                                                                aria-expanded="true" aria-haspopup="true">
+                                                                เลือกรายการ
+                                                                <svg class="-mr-1 ml-2 h-5 w-5"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    viewBox="0 0 20 20" fill="currentColor"
+                                                                    aria-hidden="true">
+                                                                    <path fill-rule="evenodd"
+                                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                        clip-rule="evenodd" />
+                                                                </svg>
+                                                            </button>
+                                                            <div id="dropdown-<%= customer.customer_id %>"
+                                                                class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                                                                role="menu" aria-orientation="vertical"
+                                                                aria-labelledby="options-menu-<%= customer.customer_id %>">
+                                                                <div class="py-1" role="none">
+                                                                    <% if ((customer.customer_position || ''
+                                                                        ).toUpperCase()==='BM' ) { %>
+                                                                        <a href="/orders/first?customerId=<%= customer.customer_id %>"
                                                                             class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                                                                             role="menuitem">
-                                                                            <span class="mr-3 text-indigo-500">
+                                                                            <span class="mr-3 text-blue-500">
                                                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                                                     class="h-5 w-5" fill="none"
                                                                                     viewBox="0 0 24 24"
@@ -181,79 +200,98 @@
                                                                                     <path stroke-linecap="round"
                                                                                         stroke-linejoin="round"
                                                                                         stroke-width="2"
-                                                                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                                                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                                                                 </svg>
                                                                             </span>
-                                                                            ใบสั่งซื้อต่อเนื่อง
+                                                                            ใบสั่งซื้อรอบแรก
                                                                         </a>
-                                                                        <a href="/customer/<%= customer.customer_id %>/pdf"
-                                                                            target="_blank"
-                                                                            class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                            role="menuitem">
-                                                                            <span class="mr-3 text-red-500">
-                                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                    class="h-5 w-5" fill="none"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    stroke="currentColor">
-                                                                                    <path stroke-linecap="round"
-                                                                                        stroke-linejoin="round"
-                                                                                        stroke-width="2"
-                                                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                                                </svg>
-                                                                            </span>
-                                                                            PDF
-                                                                        </a>
-                                                                        <div class="border-t border-gray-100"></div>
-                                                                        <a href="/customer/edit/<%= customer.customer_id %>"
-                                                                            class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                                                                            role="menuitem">
-                                                                            <span class="mr-3 text-yellow-500">
-                                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                    class="h-5 w-5" fill="none"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    stroke="currentColor">
-                                                                                    <path stroke-linecap="round"
-                                                                                        stroke-linejoin="round"
-                                                                                        stroke-width="2"
-                                                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                                                </svg>
-                                                                            </span>
-                                                                            แก้ไข
-                                                                        </a>
-                                                                        <% const
-                                                                            isTeamRecord=!!customer.customer_record_by_team_id;
-                                                                            const currentRole=typeof userTeamRole
-                                                                            !=='undefined' ? userTeamRole : null; const
-                                                                            canDelete=(currentRole===null &&
-                                                                            !isTeamRecord) || ['leader', 'co-leader'
-                                                                            ].includes(currentRole); %>
-                                                                            <% if (canDelete) { %>
-                                                                                <a href="#"
-                                                                                    data-delete-id="<%= customer.customer_id %>"
-                                                                                    data-delete-name="<%= customer.customer_fname_th %>"
-                                                                                    class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900"
-                                                                                    role="menuitem">
-                                                                                    <span class="mr-3 text-red-500">
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                            class="h-5 w-5" fill="none"
-                                                                                            viewBox="0 0 24 24"
-                                                                                            stroke="currentColor">
-                                                                                            <path stroke-linecap="round"
-                                                                                                stroke-linejoin="round"
-                                                                                                stroke-width="2"
-                                                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                                        </svg>
-                                                                                    </span>
-                                                                                    ลบ
-                                                                                </a>
-                                                                                <% } %>
+                                                                        <% } %>
+                                                                            <a href="/orders/continue?customerId=<%= customer.customer_id %>"
+                                                                                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                                role="menuitem">
+                                                                                <span class="mr-3 text-indigo-500">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                        class="h-5 w-5" fill="none"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        stroke="currentColor">
+                                                                                        <path stroke-linecap="round"
+                                                                                            stroke-linejoin="round"
+                                                                                            stroke-width="2"
+                                                                                            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                                                    </svg>
+                                                                                </span>
+                                                                                ใบสั่งซื้อต่อเนื่อง
+                                                                            </a>
+                                                                            <a href="/customer/<%= customer.customer_id %>/pdf"
+                                                                                target="_blank"
+                                                                                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                                role="menuitem">
+                                                                                <span class="mr-3 text-red-500">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                        class="h-5 w-5" fill="none"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        stroke="currentColor">
+                                                                                        <path stroke-linecap="round"
+                                                                                            stroke-linejoin="round"
+                                                                                            stroke-width="2"
+                                                                                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 2H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                                                    </svg>
+                                                                                </span>
+                                                                                PDF
+                                                                            </a>
+                                                                            <div class="border-t border-gray-100"></div>
+                                                                            <a href="/customer/edit/<%= customer.customer_id %>"
+                                                                                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                                                                role="menuitem">
+                                                                                <span class="mr-3 text-yellow-500">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                        class="h-5 w-5" fill="none"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        stroke="currentColor">
+                                                                                        <path stroke-linecap="round"
+                                                                                            stroke-linejoin="round"
+                                                                                            stroke-width="2"
+                                                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                                                    </svg>
+                                                                                </span>
+                                                                                แก้ไข
+                                                                            </a>
+                                                                            <% const
+                                                                                isTeamRecord=!!customer.customer_record_by_team_id;
+                                                                                const currentRole=typeof userTeamRole
+                                                                                !=='undefined' ? userTeamRole : null;
+                                                                                const canDelete=(currentRole===null &&
+                                                                                !isTeamRecord) || ['leader', 'co-leader'
+                                                                                ].includes(currentRole); %>
+                                                                                <% if (canDelete) { %>
+                                                                                    <a href="#"
+                                                                                        data-delete-id="<%= customer.customer_id %>"
+                                                                                        data-delete-name="<%= customer.customer_fname_th %>"
+                                                                                        class="group flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900"
+                                                                                        role="menuitem">
+                                                                                        <span class="mr-3 text-red-500">
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                                                class="h-5 w-5"
+                                                                                                fill="none"
+                                                                                                viewBox="0 0 24 24"
+                                                                                                stroke="currentColor">
+                                                                                                <path
+                                                                                                    stroke-linecap="round"
+                                                                                                    stroke-linejoin="round"
+                                                                                                    stroke-width="2"
+                                                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                            </svg>
+                                                                                        </span>
+                                                                                        ลบ
+                                                                                    </a>
+                                                                                    <% } %>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <% }) %>
-                                                <% } %>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                                    <% } %>
                             </tbody>
                         </table>
                     </div>

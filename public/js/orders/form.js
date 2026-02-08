@@ -69,6 +69,23 @@ function setupTableDelegation() {
         if (removeBtn) {
             removeProductRow(removeBtn);
         }
+
+        // Quantity +/- Buttons (Mobile)
+        const qtyBtn = e.target.closest('.quantity-btn');
+        if (qtyBtn) {
+            const row = qtyBtn.closest('tr');
+            const input = row.querySelector('input[name="quantity[]"]');
+            let val = parseInt(input.value) || 0;
+
+            if (qtyBtn.classList.contains('plus')) {
+                val++;
+            } else if (qtyBtn.classList.contains('minus')) {
+                if (val > 1) val--;
+            }
+
+            input.value = val;
+            calculateRow(row);
+        }
     });
 
     tbody.addEventListener('input', (e) => {
@@ -219,28 +236,50 @@ function addProductRow() {
     const tr = document.createElement('tr');
 
     // Note: Removed inline event handlers. They are handled by delegation in setupTableDelegation()
+    tr.className = "flex flex-col sm:table-row mb-6 sm:mb-0 bg-white shadow rounded-lg sm:shadow-none sm:rounded-none border border-gray-300 sm:border-none p-4 sm:p-0 space-y-3 sm:space-y-0";
+
     tr.innerHTML = `
-        <td class="px-3 py-4 whitespace-nowrap relative">
-            <input type="text" name="product_code[]" class="product-code-input shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-1 border uppercase" 
-                placeholder="Code" autocomplete="off">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap relative block sm:table-cell">
+            <div class="flex flex-col sm:block">
+                <label class="sm:hidden text-xs font-semibold text-gray-500 mb-1">รหัสสินค้า</label>
+                <input type="text" name="product_code[]" class="product-code-input shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 sm:p-1 border uppercase" 
+                    placeholder="Code" autocomplete="off">
+            </div>
         </td>
-        <td class="px-3 py-4 whitespace-nowrap">
-            <input type="number" name="quantity[]" value="1" min="1" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-center">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap block sm:table-cell">
+            <div class="flex flex-col sm:block">
+                <label class="sm:hidden text-xs font-semibold text-gray-500 mb-1">จำนวน</label>
+                <div class="flex items-center">
+                    <button type="button" class="quantity-btn minus sm:hidden bg-gray-200 text-gray-600 hover:bg-gray-300 rounded-l-md px-3 py-2 border border-r-0 border-gray-300 shadow-sm">-</button>
+                    <input type="number" name="quantity[]" value="1" min="1" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-none sm:rounded-md p-2 sm:p-1 border text-center">
+                    <button type="button" class="quantity-btn plus sm:hidden bg-gray-200 text-gray-600 hover:bg-gray-300 rounded-r-md px-3 py-2 border border-l-0 border-gray-300 shadow-sm">+</button>
+                </div>
+            </div>
         </td>
-        <td class="px-3 py-4 whitespace-nowrap">
-            <input type="text" name="product_name[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-gray-500">
-            <input type="hidden" name="product_real_name[]">
-            <input type="hidden" name="product_color[]">
-            <input type="hidden" name="product_size[]">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap block sm:table-cell">
+            <div class="flex flex-col sm:block">
+                <label class="sm:hidden text-xs font-semibold text-gray-500 mb-1">ชื่อสินค้า (สี/ขนาด)</label>
+                <input type="text" name="product_name[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-2 sm:p-1 border text-gray-500">
+                <input type="hidden" name="product_real_name[]">
+                <input type="hidden" name="product_color[]">
+                <input type="hidden" name="product_size[]">
+            </div>
         </td>
-        <td class="px-3 py-4 whitespace-nowrap">
-            <input type="number" name="price[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-right text-gray-500">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap block sm:table-cell">
+            <div class="flex flex-col sm:block">
+                <label class="sm:hidden text-xs font-semibold text-gray-500 mb-1">ราคาต่อหน่วย</label>
+                <input type="number" name="price[]" readonly class="shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-2 sm:p-1 border text-right text-gray-500">
+            </div>
         </td>
-        <td class="px-3 py-4 whitespace-nowrap">
-            <input type="text" name="total[]" readonly class="row-total shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-1 border text-right font-medium">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap block sm:table-cell">
+            <div class="flex flex-col sm:block">
+                <label class="sm:hidden text-xs font-semibold text-gray-500 mb-1">รวม</label>
+                <input type="text" name="total[]" readonly class="row-total shadow-sm bg-gray-50 block w-full sm:text-sm border-gray-300 rounded-md p-2 sm:p-1 border text-right font-medium">
+            </div>
         </td>
-        <td class="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button type="button" class="remove-product-btn text-red-600 hover:text-red-900">
+        <td class="p-0 sm:px-3 sm:py-4 whitespace-nowrap text-right text-sm font-medium block sm:table-cell mt-2 sm:mt-0">
+            <button type="button" class="remove-product-btn w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none sm:bg-transparent sm:text-red-600 sm:hover:text-red-900 sm:shadow-none sm:p-0">
+                <span class="sm:hidden mr-2">ลบรายการ</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                 </svg>
