@@ -92,6 +92,9 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Landing page route
 app.get('/', (req, res) => {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return res.redirect('/homepage');
+  }
   res.render('index');
 });
 
@@ -101,6 +104,9 @@ app.get('/login', renderLoginPage);
 
 // Register page route
 app.get('/register', (req, res) => {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return res.redirect('/homepage');
+  }
   res.render(path.resolve(process.cwd(), 'src', 'features', 'auth', 'views', 'register.ejs'));
 });
 

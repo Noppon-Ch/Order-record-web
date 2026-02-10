@@ -1,7 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 
 // Render login page
+// Render login page
 export const renderLoginPage = (req: Request, res: Response) => {
+	if (req.isAuthenticated && req.isAuthenticated()) {
+		return res.redirect('/homepage');
+	}
 	res.render('login');
 };
 
