@@ -206,6 +206,7 @@ export class OrderController {
                 orders: orders || [],
                 currentPage: page,
                 totalPages: Math.ceil((count || 0) / itemsPerPage),
+                totalItems: count || 0,
                 query,
                 user: req.user,
                 userRole: userRole

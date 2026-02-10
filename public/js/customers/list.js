@@ -94,3 +94,71 @@ async function deleteCustomer(customerId, customerName) {
         }
     }
 }
+
+// Customer Modal Handling added via update
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('customerInfoModal');
+    const modalName = document.getElementById('modalCustomerName');
+    const modalPhone = document.getElementById('modalCustomerPhone');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const copyBtn = document.getElementById('copyPhoneBtn');
+
+    // Row Click Delegation
+    document.querySelector('tbody')?.addEventListener('click', (e) => {
+        // Find closest row
+        const row = e.target.closest('.customer-row');
+        if (!row) return;
+
+        // Ignore clicks on buttons, links, or dropdown toggles inside the row
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('[data-dropdown-toggle]')) {
+            return;
+        }
+
+        const name = row.dataset.customerName;
+        const phone = row.dataset.customerPhone;
+
+        if (modalName) modalName.textContent = name;
+        if (modalPhone) modalPhone.value = phone || '-';
+
+        if (modal) modal.classList.remove('hidden');
+    });
+
+    // Close Modal
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            if (modal) modal.classList.add('hidden');
+        });
+    }
+
+    // Close on background click
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            // Check if click is on the background overlay (which is the parent div typically if structure allows, or specifically targeted)
+            // The structure is fixed overlay covering screen. The content is centered.
+            // If e.target is the modal container itself (providing it has padding and user clicked outside the inner panel)
+            // However, looking at structure:
+            // #customerInfoModal > div.fixed...bg-gray-500 (backdrop)
+            // #customerInfoModal > div.fixed...z-10... (scroll container) > div.flex... > div.relative...bg-white (panel)
+
+            // Check if click is outside the modal panel (on the background)
+            // The modal panel has .relative.transform.overflow-hidden
+            const modalPanel = e.target.closest('.relative.transform.overflow-hidden');
+            if (!modalPanel) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Copy Phone
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            if (modalPhone) {
+                modalPhone.select();
+                modalPhone.setSelectionRange(0, 99999); // Mobile
+                navigator.clipboard.writeText(modalPhone.value).catch(err => {
+                    console.error('Failed to copy', err);
+                });
+            }
+        });
+    }
+});

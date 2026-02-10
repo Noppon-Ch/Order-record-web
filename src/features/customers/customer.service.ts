@@ -169,8 +169,7 @@ export class CustomerService {
 
         let query = supabase
             .from('customers')
-            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id, customer_registerdate')
-            .range(offset, offset + limit - 1);
+            .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_phone, customer_position, customer_recommender_id, customer_registerdate', { count: 'exact' });
 
         // Team Scoping
         if (userContext?.teamId) {
@@ -186,9 +185,10 @@ export class CustomerService {
         }
 
         // Order by created_at desc to show newest first
-        query = query.order('customer_created_at', { ascending: false });
+        query = query.order('customer_created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
-        const { data: customers, error } = await query;
+        const { data: customers, error, count } = await query;
 
         if (error) {
             console.error('Error fetching customers:', error);
@@ -196,7 +196,7 @@ export class CustomerService {
         }
 
         if (!customers || customers.length === 0) {
-            return [];
+            return { customers: [], total: 0 };
         }
 
         // Fetch recommender names
@@ -205,6 +205,8 @@ export class CustomerService {
             .filter((id: string) => id && id.length > 0);
 
         const uniqueRecommenderIds = [...new Set(recommenderIds)];
+
+        let resultCustomers = customers;
 
         if (uniqueRecommenderIds.length > 0) {
             const { data: recommenders, error: recError } = await supabase
@@ -219,17 +221,24 @@ export class CustomerService {
                 });
 
                 // Attach names
-                return customers.map((c: any) => ({
+                resultCustomers = customers.map((c: any) => ({
                     ...c,
                     recommender_name: recommenderMap.get(c.customer_recommender_id) || '-'
                 }));
+            } else {
+                resultCustomers = customers.map((c: any) => ({
+                    ...c,
+                    recommender_name: '-'
+                }));
             }
+        } else {
+            resultCustomers = customers.map((c: any) => ({
+                ...c,
+                recommender_name: '-'
+            }));
         }
 
-        return customers.map((c: any) => ({
-            ...c,
-            recommender_name: '-'
-        }));
+        return { customers: resultCustomers, total: count || 0 };
     }
 
     async deleteCustomer(customerId: string, accessToken?: string) {

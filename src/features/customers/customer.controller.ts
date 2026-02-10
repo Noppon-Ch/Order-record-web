@@ -417,12 +417,15 @@ export class CustomerController {
 				}
 			}
 
-			const customers = await customerService.findAll(limit, offset, search, req.user?.access_token, userContext);
+			const { customers, total } = await customerService.findAll(limit, offset, search, req.user?.access_token, userContext);
+			const totalPages = Math.ceil(total / limit);
 
 			res.render('list', {
 				user: req.user,
 				customers,
 				currentPage: page,
+				totalPages,
+				totalItems: total,
 				searchQuery: search || '',
 				userTeamRole
 			});
