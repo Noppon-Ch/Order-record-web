@@ -26,7 +26,8 @@
                 <% if (team) { %>
                     <!-- Team Information Form -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                        <div class="flex items-center justify-between mb-6">
+                        <div
+                            class="flex flex-col items-start sm:flex-row sm:items-center justify-between mb-6 gap-4 sm:gap-0">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
@@ -44,7 +45,7 @@
                             </div>
                             <% if (team.owner_user_id !==user.id) { %>
                                 <button type="button" id="leaveTeamBtn"
-                                    class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center gap-2">
+                                    class="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
@@ -222,18 +223,27 @@
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ชื่อ - สกุล</th>
                                     <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ตำแหน่ง</th>
                                     <% const myRole=myMembership.role; const myStatus=myMembership.status; if
                                         ((myRole==='leader' || myRole==='co-leader' ) && myStatus==='active' ) { %>
                                         <th scope="col"
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="hidden sm:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             จัดการ</th>
                                         <% } %>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <% members.forEach(member=> { %>
+                                <% members.forEach(member=> {
+                                    const targetIsLeader = member.role === 'leader';
+                                    const amILeader = myMembership.role === 'leader';
+                                    const amICoLeader = myMembership.role === 'co-leader';
+                                    let canShowManage = false;
+                                    if (!targetIsLeader) {
+                                    if (amILeader) { canShowManage = true; }
+                                    else if (amICoLeader && member.status === 'pending') { canShowManage = true; }
+                                    }
+                                    %>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
@@ -252,7 +262,7 @@
                                                             </div>
                                                             <% } %>
                                                 </div>
-                                                <div class="ml-4">
+                                                <div class="ml-4 flex-grow">
                                                     <div class="text-sm font-medium text-gray-900">
                                                         <%= member.user_profile ? member.user_profile.user_full_name
                                                             : 'Unknown User' %>
@@ -269,28 +279,94 @@
                                                     <div class="text-sm text-gray-500">
                                                         <%= member.user_profile ? member.user_profile.user_email : '' %>
                                                     </div>
+
+                                                    <!-- Mobile View: Position + Actions -->
+                                                    <div class="mt-2 sm:hidden flex flex-col items-start gap-2">
+                                                        <span
+                                                            class="px-2 py-1 text-xs font-semibold rounded-full <%= member.role === 'leader' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' %>">
+                                                            <%= member.role.charAt(0).toUpperCase() +
+                                                                member.role.slice(1) %>
+                                                        </span>
+
+                                                        <% if ((amILeader || amICoLeader) &&
+                                                            myMembership.status==='active' && canShowManage) { %>
+                                                            <div class="relative inline-block text-left">
+                                                                <button type="button"
+                                                                    class="manage-dropdown-btn inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-2 py-1 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                                                                    data-member-id="<%= member.id %>"
+                                                                    data-dropdown-target="dropdown-mobile-<%= member.id %>">
+                                                                    จัดการ
+                                                                    <svg class="-mr-1 ml-1 h-4 w-4"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 20 20" fill="currentColor">
+                                                                        <path fill-rule="evenodd"
+                                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                                            clip-rule="evenodd" />
+                                                                    </svg>
+                                                                </button>
+                                                                <!-- Mobile Dropdown -->
+                                                                <div class="hidden origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                                                                    id="dropdown-mobile-<%= member.id %>">
+                                                                    <div class="py-1 flex flex-col" role="menu">
+                                                                        <% if (member.status==='pending' ) { %>
+                                                                            <button type="button"
+                                                                                class="approve-member-btn block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                                                                                data-member-id="<%= member.id %>">1.
+                                                                                อนุมัติ (Approve)</button>
+                                                                            <% if (amILeader) { %>
+                                                                                <button type="button"
+                                                                                    class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                                                                    data-member-id="<%= member.id %>">2.
+                                                                                    ปฏิเสธ (Reject)</button>
+                                                                                <% } %>
+                                                                                    <% } else if
+                                                                                        (member.status==='active' &&
+                                                                                        amILeader) { %>
+                                                                                        <div
+                                                                                            class="px-4 py-2 text-xs text-gray-500 font-semibold">
+                                                                                            3. ปรับตำแหน่ง</div>
+                                                                                        <button type="button"
+                                                                                            class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                                                            data-member-id="<%= member.id %>"
+                                                                                            data-role="co-leader">-
+                                                                                            Co-leader</button>
+                                                                                        <button type="button"
+                                                                                            class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                                                            data-member-id="<%= member.id %>"
+                                                                                            data-role="member">-
+                                                                                            Member</button>
+                                                                                        <div
+                                                                                            class="border-t border-gray-100 my-1">
+                                                                                        </div>
+                                                                                        <button type="button"
+                                                                                            class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                                                                            data-member-id="<%= member.id %>">4.
+                                                                                            ลบออกจากทีม</button>
+                                                                                        <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <% } %>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                                             <span
                                                 class="px-2 py-1 text-xs font-semibold rounded-full
                                                 <%= member.role === 'leader' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600' %>">
                                                 <%= member.role.charAt(0).toUpperCase() + member.role.slice(1) %>
                                             </span>
                                         </td>
-                                        <% const targetIsLeader=member.role==='leader' ; const
-                                            amILeader=myMembership.role==='leader' ; const
-                                            amICoLeader=myMembership.role==='co-leader' ; let canShowManage=false; if
-                                            (!targetIsLeader) { if (amILeader) { canShowManage=true; } else if
-                                            (amICoLeader && member.status==='pending' ) { canShowManage=true; } } if
-                                            ((amILeader || amICoLeader) && myMembership.status==='active' ) { %>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <% if ((amILeader || amICoLeader) && myMembership.status==='active' ) { %>
+                                            <td
+                                                class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <% if (canShowManage) { %>
                                                     <div class="relative inline-block text-left">
                                                         <button type="button"
                                                             class="manage-dropdown-btn inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-                                                            data-member-id="<%= member.id %>">
+                                                            data-member-id="<%= member.id %>"
+                                                            data-dropdown-target="dropdown-desktop-<%= member.id %>">
                                                             จัดการ
                                                             <svg class="-mr-1 ml-2 h-5 w-5"
                                                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -302,7 +378,7 @@
                                                         </button>
 
                                                         <div class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                                                            id="dropdown-<%= member.id %>">
+                                                            id="dropdown-desktop-<%= member.id %>">
                                                             <div class="py-1 flex flex-col" role="menu"
                                                                 aria-orientation="vertical"
                                                                 aria-labelledby="options-menu">
@@ -826,8 +902,8 @@
                     });
                 }
 
-                function toggleDropdown(id, button) {
-                    const dropdown = document.getElementById('dropdown-' + id);
+                function toggleDropdown(targetId, button) {
+                    const dropdown = document.getElementById(targetId);
                     if (!dropdown) return;
 
                     const isHidden = dropdown.classList.contains('hidden');
@@ -880,9 +956,14 @@
                     const toggleBtn = e.target.closest('.manage-dropdown-btn');
                     if (toggleBtn) {
                         e.stopPropagation();
-                        // Get ID from data-member-id
-                        const id = toggleBtn.getAttribute('data-member-id');
-                        toggleDropdown(id, toggleBtn);
+                        // Get Target ID
+                        let targetId = toggleBtn.getAttribute('data-dropdown-target');
+                        if (!targetId) {
+                            // Fallback for legacy
+                            const id = toggleBtn.getAttribute('data-member-id');
+                            if (id) targetId = 'dropdown-' + id;
+                        }
+                        if (targetId) toggleDropdown(targetId, toggleBtn);
                         return;
                     }
 
