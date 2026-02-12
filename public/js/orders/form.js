@@ -526,7 +526,6 @@ async function handleFormSubmit(e) {
         const result = await response.json();
 
         if (response.ok) {
-            alert('Order saved successfully!');
             const orderId = result.orderId;
             window.location.href = `/orders/finish?orderId=${orderId}`;
         } else {

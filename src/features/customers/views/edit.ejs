@@ -143,8 +143,8 @@
                 <label for="customer_tax_id"
                     class="block text-sm font-medium text-gray-700">เลขประจำตัวผู้เสียภาษี</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_tax_id" id="customer_tax_id" pattern="\d{13}" maxlength="13"
-                        inputmode="numeric" value="${customer.customer_tax_id || ''}"
+                    <input type="text" name="customer_tax_id" id="customer_tax_id" maxlength="13" inputmode="numeric"
+                        value="${(customer.customer_tax_id || '').trim()}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                         placeholder="13 หลัก">
                 </div>
