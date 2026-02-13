@@ -18,12 +18,12 @@ export class VisualizationController {
 
             const userId = (req.user as any)?.id || '';
             const accessToken = (req.user as any)?.access_token;
-            console.log(`[VisualizationController] User ID: ${userId}`);
-            console.log(`[VisualizationController] Access Token Present: ${!!accessToken}`);
+            // console.log(`[VisualizationController] User ID: ${userId}`);
+            // console.log(`[VisualizationController] Access Token Present: ${!!accessToken}`);
 
             // Align with CustomerController: Do not pass accessToken to teamService
             const userTeam = await teamService.getTeamByUserId(userId);
-            console.log(`[VisualizationController] Team Found:`, userTeam ? 'Yes' : 'No');
+            // console.log(`[VisualizationController] Team Found:`, userTeam ? 'Yes' : 'No');
 
             const userContext: { userId: string, teamId?: string } = {
                 userId: userId

@@ -79,20 +79,54 @@ export class ContinueOrderPdfController {
             let userPaymentBankName = '';
             let userPaymentRefNumber = '';
 
-            if (userId) {
+            if (order.order_record_by_user_id) {
+                try {
+                    const recorderProfile = await getUserProfile(order.order_record_by_user_id, accessToken);
+                    // console.log('[ContinueOrderPdf] Recorder profile fetched:', JSON.stringify(recorderProfile, null, 2));
+
+                    if (recorderProfile) {
+                        // Map potential fields
+                        userPhone = recorderProfile.user_phone || '';
+                        username = recorderProfile.user_full_name || recorderProfile.username || '';
+
+                        // Direct fields from user_profiles matching setting.ejs names
+                        // user_payment_channel, user_payment_bank, user_payment_id
+                        if (recorderProfile.user_payment_channel) {
+                            userPaymentChannel = recorderProfile.user_payment_channel;
+                        }
+                        if (recorderProfile.user_payment_bank) {
+                            userPaymentBankName = recorderProfile.user_payment_bank;
+                        }
+                        if (recorderProfile.user_payment_id) {
+                            userPaymentRefNumber = recorderProfile.user_payment_id;
+                        }
+
+                        // Fallback to legacy payment_preference JSON if new columns are empty
+                        if (!userPaymentChannel && !userPaymentBankName && !userPaymentRefNumber) {
+                            if (recorderProfile.payment_preference) {
+                                userPayment = recorderProfile.payment_preference;
+                            } else if (recorderProfile.paymentPreference) {
+                                userPayment = recorderProfile.paymentPreference;
+                            }
+
+                            if (userPayment) {
+                                userPaymentChannel = userPayment.channel || '';
+                                userPaymentBankName = userPayment.bankName || userPayment.bank_name || '';
+                                userPaymentRefNumber = userPayment.refNumber || userPayment.ref_number || '';
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching user profile for PDF:", err);
+                }
+            } else if (userId) {
+                // Fallback to logged in user if record_by is missing (though unlikely for valid order)
                 try {
                     const loggedInUser = await getUserProfile(userId, accessToken);
                     if (loggedInUser) {
-                        // Assuming Supabase user_profiles table has snake_case columns
-                        // Need to verify column names. If they don't exist, these will be undefined.
-                        // Snippet used: userPhone, username, paymentPreference
-
-                        // Map potential fields
                         userPhone = loggedInUser.user_phone || loggedInUser.phone || loggedInUser.userPhone || '';
-                        username = loggedInUser.username || loggedInUser.display_name || '';
+                        username = loggedInUser.user_full_name || loggedInUser.username || loggedInUser.display_name || '';
 
-                        // Payment preference - assuming it might be a JSON column or separate columns
-                        // Snippet expected: paymentPreference: { channel, bankName, refNumber }
                         if (loggedInUser.payment_preference) {
                             userPayment = loggedInUser.payment_preference;
                         } else if (loggedInUser.paymentPreference) {
@@ -106,7 +140,7 @@ export class ContinueOrderPdfController {
                         }
                     }
                 } catch (err) {
-                    console.error("Error fetching user profile for PDF:", err);
+                    console.error("Error fetching logged in user profile for PDF:", err);
                 }
             }
 
@@ -267,18 +301,26 @@ export class ContinueOrderPdfController {
 
 
             // payment section
-            const paymentMap: Record<string, { x: number }> = {
-                counter: { x: 18.1 },
-                atm: { x: 84.8 },
-                mobile_app: { x: 146.0 },
-                k_biz: { x: 240.9 },
+            const paymentMap: Record<string, { x: number, y: number }> = {
+                bank_counter: { x: 18.6, y: 196.5 },
+                atm: { x: 85.3, y: 196.5 },
+                mobile_banking: { x: 146.5, y: 196.5 },
+                kbiz: { x: 241.4, y: 196.5 },
             }
+            // Normalize userPaymentChannel to match keys if necessary (e.g. from mobile_app to mobile_banking)
+            // Or assume user profile stores valid keys. 
+            // Previous code used 'mobile_app', user request says 'mobile_banking'.
+            // Let's assume the DB stores what the user selects, we might need mapping if they differ.
+            // For now, use the keys requested.
+
             const paymentChannel = paymentMap[userPaymentChannel];
             if (paymentChannel) {
-                addText('P', paymentChannel.x, 198.0, checkmarkFontSize, textColor, true);
+                // Use 'P' (uppercase) for checkmark in WINGDNG2
+                addText('P', paymentChannel.x, paymentChannel.y, checkmarkFontSize, textColor, true);
             }
-            addText(userPaymentBankName || '', 54.7, 204.5);
-            addText(userPaymentRefNumber || '', 166.5, 204.5);
+
+            addText(userPaymentBankName || '', 52.3, 204.5);
+            addText(userPaymentRefNumber || '', 163.3, 204.5);
 
 
 
@@ -490,11 +532,21 @@ export class ContinueOrderPdfController {
             });
 
             // Save PDF and send response
+            // Save PDF and send response
             const pdfBytes = await pdfDoc.save();
             res.setHeader('Content-Type', 'application/pdf');
-            const buyerIdStr = buyerDetails?.customer_citizen_id || 'unknown';
-            const dateStr = order.order_date ? new Date(order.order_date).toISOString().split('T')[0] : 'date';
-            res.setHeader('Content-Disposition', `attachment; filename="order_${dateStr}_${buyerIdStr}.pdf"`);
+
+            // Filename: "ใบสั่งซื้อต่อเนื่อง" + customer_name + date
+            const safeDate = order.order_date ? new Date(order.order_date).toISOString().split('T')[0] : 'unknown_date';
+            const customerNameParts = [];
+            if (buyerDetails?.customer_fname_th) customerNameParts.push(buyerDetails.customer_fname_th);
+            if (buyerDetails?.customer_lname_th) customerNameParts.push(buyerDetails.customer_lname_th);
+            const customerName = customerNameParts.length > 0 ? customerNameParts.join('_') : (buyerDetails?.customer_citizen_id || 'unknown_customer');
+
+            const filename = `ใบสั่งซื้อต่อเนื่อง_${customerName}_${safeDate}.pdf`;
+            const encodedFilename = encodeURIComponent(filename);
+
+            res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
             res.send(Buffer.from(pdfBytes));
 
         } catch (error) {

@@ -35,16 +35,16 @@ export class VisualizationService {
         if (userContext?.teamId) {
             customerQuery = customerQuery.eq('customer_record_by_team_id', userContext.teamId);
         } else if (userContext?.userId) {
-            console.log(`[VisualizationService] Filtering by private User ID: ${userContext.userId}`);
+            // console.log(`[VisualizationService] Filtering by private User ID: ${userContext.userId}`);
             // Fix: Filter by EITHER (user_id match AND team_id is null) OR (user_id match AND team_id match is empty string if applicable? No.
             // Strict private record: 
             customerQuery = customerQuery.eq('customer_record_by_user_id', userContext.userId)
                 .is('customer_record_by_team_id', null);
         } else {
-            console.log(`[VisualizationService] Warning: No user context for filtering!`);
+            // console.log(`[VisualizationService] Warning: No user context for filtering!`);
         }
 
-        console.log(`[VisualizationService] Access Token Length: ${accessToken ? accessToken.length : 'undefined'}`);
+        // console.log(`[VisualizationService] Access Token Length: ${accessToken ? accessToken.length : 'undefined'}`);
 
         const { data: customers, error: customerError } = await customerQuery;
 
@@ -52,7 +52,7 @@ export class VisualizationService {
             console.error(`[VisualizationService] Error fetching customers:`, customerError);
             throw new Error(`Error fetching customers: ${customerError.message}`);
         }
-        console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
+        // console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
         if (!customers || customers.length === 0) return [];
 
         // 2. Fetch orders for the specific month/year

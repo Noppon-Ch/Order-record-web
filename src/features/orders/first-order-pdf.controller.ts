@@ -1,3 +1,5 @@
+import { getUserProfile } from '../users/user.service.js';
+
 import type { Request, Response } from 'express';
 import { PDFDocument, rgb } from 'pdf-lib';
 // @ts-ignore
@@ -354,23 +356,24 @@ export class FirstOrderPdfController {
 
             // User info (Recorder)
             // We need to fetch User who recorded. `order_record_by_user_id`
-            // Assuming we have service or just ignore for now if complicated?
-            // Code requests it:
-            /*
-            if (req.loggedInUser && req.loggedInUser._id) { ... }
-            */
-            // We can rely on req.user from auth middleware
-            // Or better, fetch the user who *recorded* it from order.order_record_by_user_id? 
-            // The request says "loggedinUser", so maybe the person downloading who is staff?
-            // "username" and "userPhone".
-            // Let's use current logged in user.
-            const user = req.user as any;
-            // We might need to fetch full user profile if not in token.
-            // Token usually has username/email. Phone might be in profile.
-            // Let's just print username for now.
+            let recorderName = '-';
+            let recorderPhone = '-';
 
-            addText(user?.username || '-', 228.9, 247.4);
-            addText('-', 228.9, 261.4); // Phone
+            if (order.order_record_by_user_id) {
+                try {
+                    const recorderProfile = await getUserProfile(order.order_record_by_user_id, accessToken);
+                    if (recorderProfile) {
+                        recorderName = recorderProfile.user_full_name || recorderProfile.username || '-';
+                        recorderPhone = recorderProfile.user_phone || '-';
+                    }
+                } catch (error) {
+                    console.error("Error fetching recorder profile:", error);
+                }
+            }
+
+            // Draw recorder info
+            addText(recorderName, 228.9, 247.4);
+            addText(recorderPhone, 228.9, 261.4); // Phone
 
             // Shipping Addr
             // Use shipping address from logic or customer address?
@@ -383,7 +386,14 @@ export class FirstOrderPdfController {
 
             const pdfBytes = await pdfDoc.save();
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="order_${orderId}.pdf"`);
+
+            // Filename: "ใบสั่งซื้อรอบแรก" + customer_name + date
+            const safeDate = order.order_date ? new Date(order.order_date).toISOString().split('T')[0] : 'unknown_date';
+            const customerName = buyerFullNameTH ? buyerFullNameTH.replace(/\s+/g, '_') : 'unknown_customer';
+            const filename = `ใบสั่งซื้อรอบแรก_${customerName}_${safeDate}.pdf`;
+            const encodedFilename = encodeURIComponent(filename);
+
+            res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
             res.send(Buffer.from(pdfBytes));
 
         } catch (error) {
