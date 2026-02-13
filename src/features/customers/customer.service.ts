@@ -4,14 +4,18 @@ import type { CreateCustomerDTO } from './customer.types.js';
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+// const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
+// REMOVING ADMIN KEY USAGE AS REQUESTED
+// const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey;
 
 
 export class CustomerService {
     async findByCitizenId(customer_citizen_id: string, accessToken?: string, userContext?: { userId?: string, teamId?: string }) {
         if (!customer_citizen_id) return null;
-        // Use service role to look up citizens, applying manual scoping to handle duplicates (Private vs Team)
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        // Use authenticated client
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
 
         let query = supabase
             .from('customers')
@@ -90,8 +94,9 @@ export class CustomerService {
 
     async searchCustomers(query: string, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
         if (!query) return [];
-        // Use service role key to bypass RLS and allow scoped searching
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
 
         let queryBuilder = supabase
             .from('customers')
@@ -164,8 +169,9 @@ export class CustomerService {
     }
 
     async findAll(limit: number = 20, offset: number = 0, search?: string, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
-        // Use service role key to bypass potential RLS recursion issues
-        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
 
         let query = supabase
             .from('customers')

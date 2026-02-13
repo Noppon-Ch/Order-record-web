@@ -19,7 +19,7 @@ export interface ScoreNode {
 
 export class VisualizationService {
 
-    async getScoreSummary(year: number, month: number, accessToken?: string) {
+    async getScoreSummary(year: number, month: number, accessToken?: string, userContext?: { userId: string, teamId?: string }) {
         const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
             global: { headers: { Authorization: `Bearer ${accessToken}` } }
         } : undefined);
@@ -28,16 +28,32 @@ export class VisualizationService {
 
         // 1. Fetch all customers
         // We need all customers to build the full tree
-        const { data: customers, error: customerError } = await supabase
+        let customerQuery = supabase
             .from('customers')
             .select('customer_id, customer_citizen_id, customer_fname_th, customer_lname_th, customer_position, customer_recommender_id, customer_registerdate');
+
+        if (userContext?.teamId) {
+            customerQuery = customerQuery.eq('customer_record_by_team_id', userContext.teamId);
+        } else if (userContext?.userId) {
+            console.log(`[VisualizationService] Filtering by private User ID: ${userContext.userId}`);
+            // Fix: Filter by EITHER (user_id match AND team_id is null) OR (user_id match AND team_id match is empty string if applicable? No.
+            // Strict private record: 
+            customerQuery = customerQuery.eq('customer_record_by_user_id', userContext.userId)
+                .is('customer_record_by_team_id', null);
+        } else {
+            console.log(`[VisualizationService] Warning: No user context for filtering!`);
+        }
+
+        console.log(`[VisualizationService] Access Token Length: ${accessToken ? accessToken.length : 'undefined'}`);
+
+        const { data: customers, error: customerError } = await customerQuery;
 
         if (customerError) {
             console.error(`[VisualizationService] Error fetching customers:`, customerError);
             throw new Error(`Error fetching customers: ${customerError.message}`);
         }
-        // console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
-        if (!customers) return [];
+        console.log(`[VisualizationService] Fetched ${customers?.length || 0} customers.`);
+        if (!customers || customers.length === 0) return [];
 
         // 2. Fetch orders for the specific month/year
         // Calculate date range
@@ -47,11 +63,20 @@ export class VisualizationService {
         // console.log(`[VisualizationService] 2. Date Range: ${startDate} to ${endDate}`);
         // console.log(`[VisualizationService] Fetching orders...`);
 
-        const { data: orders, error: orderError } = await supabase
+        let orderQuery = supabase
             .from('orders')
             .select('order_customer_id, order_total_amount')
             .gte('order_date', startDate)
             .lte('order_date', endDate);
+
+        if (userContext?.teamId) {
+            orderQuery = orderQuery.eq('order_record_by_team_id', userContext.teamId);
+        } else if (userContext?.userId) {
+            orderQuery = orderQuery.eq('order_record_by_user_id', userContext.userId)
+                .is('order_record_by_team_id', null);
+        }
+
+        const { data: orders, error: orderError } = await orderQuery;
 
         if (orderError) {
             console.error(`[VisualizationService] Error fetching orders:`, orderError);
@@ -95,15 +120,22 @@ export class VisualizationService {
         const rootNodes: ScoreNode[] = [];
 
         // Link parent-child
+        // Key fix: If the parent (recommender) is NOT in the fetched list (e.g. parent is outside the team or not in private list), 
+        // treat this node as a root node for the visualization context.
         customerMap.forEach(node => {
-            if (node.recommender_id && customerMap.has(node.recommender_id)) {
+            const recommenderId = node.recommender_id; // This is citizen ID
+
+            if (recommenderId && customerMap.has(recommenderId)) {
                 // Has valid parent in the list
-                const parent = customerMap.get(node.recommender_id)!;
+                const parent = customerMap.get(recommenderId)!;
                 parent.children.push(node);
                 node.customer_recommender_name = parent.customer_name;
             } else {
-                // No parent, or parent not found -> Root node
+                // No parent, or parent not found in this scope -> Root node
                 rootNodes.push(node);
+                // Also, if recommender_id exists but not found in map, it means parent is outside scope.
+                // We should probably show recommender name from DB if available (VisualizationService fetch didn't join self for name).
+                // But for now, node remains valid root.
             }
         });
 
@@ -111,12 +143,14 @@ export class VisualizationService {
         const calculateScoresAndLevels = (node: ScoreNode, level: number): number => {
             node.tree_level = level;
 
-            let childrenScore = 0;
+            // Initialize total score with self score
+            let subTreeScore = 0;
+
             node.children.forEach(child => {
-                childrenScore += calculateScoresAndLevels(child, level + 1);
+                subTreeScore += calculateScoresAndLevels(child, level + 1);
             });
 
-            node.total_score = node.self_private_score + childrenScore;
+            node.total_score = node.self_private_score + subTreeScore;
             return node.total_score;
         };
 

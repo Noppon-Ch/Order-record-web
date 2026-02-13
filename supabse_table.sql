@@ -117,9 +117,11 @@ CREATE TABLE public.team_members (
   role text NOT NULL DEFAULT 'member'::text,
   status text DEFAULT 'active'::text,
   joined_at timestamp with time zone DEFAULT now(),
+  customer_id_of_user uuid,
   CONSTRAINT team_members_pkey PRIMARY KEY (id),
   CONSTRAINT team_members_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(team_id),
-  CONSTRAINT team_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT team_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
+  CONSTRAINT team_members_team_user_id_ref_uuid_fkey FOREIGN KEY (customer_id_of_user) REFERENCES public.customers(customer_id)
 );
 CREATE TABLE public.teams (
   team_id uuid NOT NULL DEFAULT gen_random_uuid(),

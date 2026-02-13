@@ -76,7 +76,7 @@ export class CustomerController {
 						customer_lname_th: lname,
 						customer_recommender_id: '1000000000000', // Root recommender
 						customer_position: 'SAG', // Default position
-						customer_registerdate: new Date().toISOString().split('T')[0], // Today
+						customer_registerdate: '-',
 						customer_record_by_user_id: req.user?.id || '',
 						customer_record_by_team_id: values.customer_record_by_team_id,
 						customer_nationality: 'ไทย', // Default
@@ -175,14 +175,14 @@ export class CustomerController {
 						customer_lname_th: lname,
 						customer_recommender_id: '1000000000000',
 						customer_position: 'SAG',
-						customer_registerdate: new Date().toISOString().split('T')[0],
+						customer_registerdate: undefined,
 						customer_record_by_user_id: req.user?.id || '',
 						customer_record_by_team_id: values.customer_record_by_team_id,
 						customer_nationality: 'ไทย',
-						customer_phone: '-',
-						customer_address1: '-',
-						customer_address2: '-',
-						customer_zipcode: '-',
+						customer_phone: undefined,
+						customer_address1: undefined,
+						customer_address2: undefined,
+						customer_zipcode: undefined,
 					};
 
 					try {

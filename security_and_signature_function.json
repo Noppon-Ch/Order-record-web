@@ -1,0 +1,802 @@
+[
+    {
+        "schema_name": "auth",
+        "function_name": "email",
+        "owner": "supabase_auth_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION auth.email()\n RETURNS text\n LANGUAGE sql\n STABLE\nAS $function$\n  select \n  coalesce(\n    nullif(current_setting('request.jwt.claim.email', true), ''),\n    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'email')\n  )::text\n$function$\n"
+    },
+    {
+        "schema_name": "auth",
+        "function_name": "jwt",
+        "owner": "supabase_auth_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION auth.jwt()\n RETURNS jsonb\n LANGUAGE sql\n STABLE\nAS $function$\n  select \n    coalesce(\n        nullif(current_setting('request.jwt.claim', true), ''),\n        nullif(current_setting('request.jwt.claims', true), '')\n    )::jsonb\n$function$\n"
+    },
+    {
+        "schema_name": "auth",
+        "function_name": "role",
+        "owner": "supabase_auth_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION auth.role()\n RETURNS text\n LANGUAGE sql\n STABLE\nAS $function$\n  select \n  coalesce(\n    nullif(current_setting('request.jwt.claim.role', true), ''),\n    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role')\n  )::text\n$function$\n"
+    },
+    {
+        "schema_name": "auth",
+        "function_name": "uid",
+        "owner": "supabase_auth_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION auth.uid()\n RETURNS uuid\n LANGUAGE sql\n STABLE\nAS $function$\n  select \n  coalesce(\n    nullif(current_setting('request.jwt.claim.sub', true), ''),\n    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')\n  )::uuid\n$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "armor",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "armor",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text[], text[]",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.armor(bytea, text[], text[])\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_armor$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "crypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.crypt(text, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_crypt$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "dearmor",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.dearmor(text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_dearmor$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.decrypt(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_decrypt$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "decrypt_iv",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.decrypt_iv(bytea, bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_decrypt_iv$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "digest",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.digest(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_digest$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "digest",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.digest(text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_digest$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "encrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.encrypt(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_encrypt$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "encrypt_iv",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.encrypt_iv(bytea, bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_encrypt_iv$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "gen_random_bytes",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "integer",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.gen_random_bytes(integer)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_random_bytes$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "gen_random_uuid",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.gen_random_uuid()\n RETURNS uuid\n LANGUAGE c\n PARALLEL SAFE\nAS '$libdir/pgcrypto', $function$pg_random_uuid$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "gen_salt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "gen_salt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, integer",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.gen_salt(text, integer)\n RETURNS text\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_gen_salt_rounds$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "grant_pg_cron_access",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.grant_pg_cron_access()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  IF EXISTS (\n    SELECT\n    FROM pg_event_trigger_ddl_commands() AS ev\n    JOIN pg_extension AS ext\n    ON ev.objid = ext.oid\n    WHERE ext.extname = 'pg_cron'\n  )\n  THEN\n    grant usage on schema cron to postgres with grant option;\n\n    alter default privileges in schema cron grant all on tables to postgres with grant option;\n    alter default privileges in schema cron grant all on functions to postgres with grant option;\n    alter default privileges in schema cron grant all on sequences to postgres with grant option;\n\n    alter default privileges for user supabase_admin in schema cron grant all\n        on sequences to postgres with grant option;\n    alter default privileges for user supabase_admin in schema cron grant all\n        on tables to postgres with grant option;\n    alter default privileges for user supabase_admin in schema cron grant all\n        on functions to postgres with grant option;\n\n    grant all privileges on all tables in schema cron to postgres with grant option;\n    revoke all on table cron.job from postgres;\n    grant select on table cron.job to postgres with grant option;\n  END IF;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "grant_pg_graphql_access",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.grant_pg_graphql_access()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    func_is_graphql_resolve bool;\nBEGIN\n    func_is_graphql_resolve = (\n        SELECT n.proname = 'resolve'\n        FROM pg_event_trigger_ddl_commands() AS ev\n        LEFT JOIN pg_catalog.pg_proc AS n\n        ON ev.objid = n.oid\n    );\n\n    IF func_is_graphql_resolve\n    THEN\n        -- Update public wrapper to pass all arguments through to the pg_graphql resolve func\n        DROP FUNCTION IF EXISTS graphql_public.graphql;\n        create or replace function graphql_public.graphql(\n            \"operationName\" text default null,\n            query text default null,\n            variables jsonb default null,\n            extensions jsonb default null\n        )\n            returns jsonb\n            language sql\n        as $$\n            select graphql.resolve(\n                query := query,\n                variables := coalesce(variables, '{}'),\n                \"operationName\" := \"operationName\",\n                extensions := extensions\n            );\n        $$;\n\n        -- This hook executes when `graphql.resolve` is created. That is not necessarily the last\n        -- function in the extension so we need to grant permissions on existing entities AND\n        -- update default permissions to any others that are created after `graphql.resolve`\n        grant usage on schema graphql to postgres, anon, authenticated, service_role;\n        grant select on all tables in schema graphql to postgres, anon, authenticated, service_role;\n        grant execute on all functions in schema graphql to postgres, anon, authenticated, service_role;\n        grant all on all sequences in schema graphql to postgres, anon, authenticated, service_role;\n        alter default privileges in schema graphql grant all on tables to postgres, anon, authenticated, service_role;\n        alter default privileges in schema graphql grant all on functions to postgres, anon, authenticated, service_role;\n        alter default privileges in schema graphql grant all on sequences to postgres, anon, authenticated, service_role;\n\n        -- Allow postgres role to allow granting usage on graphql and graphql_public schemas to custom roles\n        grant usage on schema graphql_public to postgres with grant option;\n        grant usage on schema graphql to postgres with grant option;\n    END IF;\n\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "grant_pg_net_access",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.grant_pg_net_access()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  IF EXISTS (\n    SELECT 1\n    FROM pg_event_trigger_ddl_commands() AS ev\n    JOIN pg_extension AS ext\n    ON ev.objid = ext.oid\n    WHERE ext.extname = 'pg_net'\n  )\n  THEN\n    IF NOT EXISTS (\n      SELECT 1\n      FROM pg_roles\n      WHERE rolname = 'supabase_functions_admin'\n    )\n    THEN\n      CREATE USER supabase_functions_admin NOINHERIT CREATEROLE LOGIN NOREPLICATION;\n    END IF;\n\n    GRANT USAGE ON SCHEMA net TO supabase_functions_admin, postgres, anon, authenticated, service_role;\n\n    IF EXISTS (\n      SELECT FROM pg_extension\n      WHERE extname = 'pg_net'\n      -- all versions in use on existing projects as of 2025-02-20\n      -- version 0.12.0 onwards don't need these applied\n      AND extversion IN ('0.2', '0.6', '0.7', '0.7.1', '0.8', '0.10.0', '0.11.0')\n    ) THEN\n      ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;\n      ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;\n\n      ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;\n      ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;\n\n      REVOKE ALL ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;\n      REVOKE ALL ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;\n\n      GRANT EXECUTE ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;\n      GRANT EXECUTE ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;\n    END IF;\n  END IF;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "hmac",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.hmac(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_hmac$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "hmac",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.hmac(text, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pg_hmac$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pg_stat_statements",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "showtext boolean, OUT userid oid, OUT dbid oid, OUT toplevel boolean, OUT queryid bigint, OUT query text, OUT plans bigint, OUT total_plan_time double precision, OUT min_plan_time double precision, OUT max_plan_time double precision, OUT mean_plan_time double precision, OUT stddev_plan_time double precision, OUT calls bigint, OUT total_exec_time double precision, OUT min_exec_time double precision, OUT max_exec_time double precision, OUT mean_exec_time double precision, OUT stddev_exec_time double precision, OUT rows bigint, OUT shared_blks_hit bigint, OUT shared_blks_read bigint, OUT shared_blks_dirtied bigint, OUT shared_blks_written bigint, OUT local_blks_hit bigint, OUT local_blks_read bigint, OUT local_blks_dirtied bigint, OUT local_blks_written bigint, OUT temp_blks_read bigint, OUT temp_blks_written bigint, OUT shared_blk_read_time double precision, OUT shared_blk_write_time double precision, OUT local_blk_read_time double precision, OUT local_blk_write_time double precision, OUT temp_blk_read_time double precision, OUT temp_blk_write_time double precision, OUT wal_records bigint, OUT wal_fpi bigint, OUT wal_bytes numeric, OUT jit_functions bigint, OUT jit_generation_time double precision, OUT jit_inlining_count bigint, OUT jit_inlining_time double precision, OUT jit_optimization_count bigint, OUT jit_optimization_time double precision, OUT jit_emission_count bigint, OUT jit_emission_time double precision, OUT jit_deform_count bigint, OUT jit_deform_time double precision, OUT stats_since timestamp with time zone, OUT minmax_stats_since timestamp with time zone",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pg_stat_statements(showtext boolean, OUT userid oid, OUT dbid oid, OUT toplevel boolean, OUT queryid bigint, OUT query text, OUT plans bigint, OUT total_plan_time double precision, OUT min_plan_time double precision, OUT max_plan_time double precision, OUT mean_plan_time double precision, OUT stddev_plan_time double precision, OUT calls bigint, OUT total_exec_time double precision, OUT min_exec_time double precision, OUT max_exec_time double precision, OUT mean_exec_time double precision, OUT stddev_exec_time double precision, OUT rows bigint, OUT shared_blks_hit bigint, OUT shared_blks_read bigint, OUT shared_blks_dirtied bigint, OUT shared_blks_written bigint, OUT local_blks_hit bigint, OUT local_blks_read bigint, OUT local_blks_dirtied bigint, OUT local_blks_written bigint, OUT temp_blks_read bigint, OUT temp_blks_written bigint, OUT shared_blk_read_time double precision, OUT shared_blk_write_time double precision, OUT local_blk_read_time double precision, OUT local_blk_write_time double precision, OUT temp_blk_read_time double precision, OUT temp_blk_write_time double precision, OUT wal_records bigint, OUT wal_fpi bigint, OUT wal_bytes numeric, OUT jit_functions bigint, OUT jit_generation_time double precision, OUT jit_inlining_count bigint, OUT jit_inlining_time double precision, OUT jit_optimization_count bigint, OUT jit_optimization_time double precision, OUT jit_emission_count bigint, OUT jit_emission_time double precision, OUT jit_deform_count bigint, OUT jit_deform_time double precision, OUT stats_since timestamp with time zone, OUT minmax_stats_since timestamp with time zone)\n RETURNS SETOF record\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pg_stat_statements', $function$pg_stat_statements_1_11$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pg_stat_statements_info",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "OUT dealloc bigint, OUT stats_reset timestamp with time zone",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pg_stat_statements_info(OUT dealloc bigint, OUT stats_reset timestamp with time zone)\n RETURNS record\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pg_stat_statements', $function$pg_stat_statements_info$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pg_stat_statements_reset",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "userid oid DEFAULT 0, dbid oid DEFAULT 0, queryid bigint DEFAULT 0, minmax_only boolean DEFAULT false",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pg_stat_statements_reset(userid oid DEFAULT 0, dbid oid DEFAULT 0, queryid bigint DEFAULT 0, minmax_only boolean DEFAULT false)\n RETURNS timestamp with time zone\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pg_stat_statements', $function$pg_stat_statements_reset_1_11$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_armor_headers",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, OUT key text, OUT value text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_armor_headers(text, OUT key text, OUT value text)\n RETURNS SETOF record\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_armor_headers$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_key_id",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_key_id(bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_key_id_w$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt(bytea, bytea, text, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_decrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_decrypt_bytea(bytea, bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_decrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_encrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_encrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt(text, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_encrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_pub_encrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_pub_encrypt_bytea(bytea, bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_pub_encrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt(bytea, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_decrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt(bytea, text, text)\n RETURNS text\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_decrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_decrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_decrypt_bytea(bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_decrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_encrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_encrypt",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "text, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt(text, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_text$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_encrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgp_sym_encrypt_bytea",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bytea, text, text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgp_sym_encrypt_bytea(bytea, text, text)\n RETURNS bytea\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/pgcrypto', $function$pgp_sym_encrypt_bytea$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgrst_ddl_watch",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgrst_ddl_watch()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  cmd record;\nBEGIN\n  FOR cmd IN SELECT * FROM pg_event_trigger_ddl_commands()\n  LOOP\n    IF cmd.command_tag IN (\n      'CREATE SCHEMA', 'ALTER SCHEMA'\n    , 'CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO', 'ALTER TABLE'\n    , 'CREATE FOREIGN TABLE', 'ALTER FOREIGN TABLE'\n    , 'CREATE VIEW', 'ALTER VIEW'\n    , 'CREATE MATERIALIZED VIEW', 'ALTER MATERIALIZED VIEW'\n    , 'CREATE FUNCTION', 'ALTER FUNCTION'\n    , 'CREATE TRIGGER'\n    , 'CREATE TYPE', 'ALTER TYPE'\n    , 'CREATE RULE'\n    , 'COMMENT'\n    )\n    -- don't notify in case of CREATE TEMP table or other objects created on pg_temp\n    AND cmd.schema_name is distinct from 'pg_temp'\n    THEN\n      NOTIFY pgrst, 'reload schema';\n    END IF;\n  END LOOP;\nEND; $function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "pgrst_drop_watch",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.pgrst_drop_watch()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  obj record;\nBEGIN\n  FOR obj IN SELECT * FROM pg_event_trigger_dropped_objects()\n  LOOP\n    IF obj.object_type IN (\n      'schema'\n    , 'table'\n    , 'foreign table'\n    , 'view'\n    , 'materialized view'\n    , 'function'\n    , 'trigger'\n    , 'type'\n    , 'rule'\n    )\n    AND obj.is_temporary IS false -- no pg_temp objects\n    THEN\n      NOTIFY pgrst, 'reload schema';\n    END IF;\n  END LOOP;\nEND; $function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "set_graphql_placeholder",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.set_graphql_placeholder()\n RETURNS event_trigger\n LANGUAGE plpgsql\nAS $function$\n    DECLARE\n    graphql_is_dropped bool;\n    BEGIN\n    graphql_is_dropped = (\n        SELECT ev.schema_name = 'graphql_public'\n        FROM pg_event_trigger_dropped_objects() AS ev\n        WHERE ev.schema_name = 'graphql_public'\n    );\n\n    IF graphql_is_dropped\n    THEN\n        create or replace function graphql_public.graphql(\n            \"operationName\" text default null,\n            query text default null,\n            variables jsonb default null,\n            extensions jsonb default null\n        )\n            returns jsonb\n            language plpgsql\n        as $$\n            DECLARE\n                server_version float;\n            BEGIN\n                server_version = (SELECT (SPLIT_PART((select version()), ' ', 2))::float);\n\n                IF server_version >= 14 THEN\n                    RETURN jsonb_build_object(\n                        'errors', jsonb_build_array(\n                            jsonb_build_object(\n                                'message', 'pg_graphql extension is not enabled.'\n                            )\n                        )\n                    );\n                ELSE\n                    RETURN jsonb_build_object(\n                        'errors', jsonb_build_array(\n                            jsonb_build_object(\n                                'message', 'pg_graphql is only available on projects running Postgres 14 onwards.'\n                            )\n                        )\n                    );\n                END IF;\n            END;\n        $$;\n    END IF;\n\n    END;\n$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_generate_v1",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_generate_v1()\n RETURNS uuid\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_generate_v1$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_generate_v1mc",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_generate_v1mc()\n RETURNS uuid\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_generate_v1mc$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_generate_v3",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "namespace uuid, name text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_generate_v3(namespace uuid, name text)\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_generate_v3$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_generate_v4",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_generate_v4()\n RETURNS uuid\n LANGUAGE c\n PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_generate_v4$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_generate_v5",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "namespace uuid, name text",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_generate_v5(namespace uuid, name text)\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_generate_v5$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_nil",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_nil()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_nil$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_ns_dns",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_ns_dns()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_ns_dns$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_ns_oid",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_ns_oid()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_ns_oid$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_ns_url",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_ns_url()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_ns_url$function$\n"
+    },
+    {
+        "schema_name": "extensions",
+        "function_name": "uuid_ns_x500",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION extensions.uuid_ns_x500()\n RETURNS uuid\n LANGUAGE c\n IMMUTABLE PARALLEL SAFE STRICT\nAS '$libdir/uuid-ossp', $function$uuid_ns_x500$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "_internal_resolve",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "query text, variables jsonb DEFAULT '{}'::jsonb, \"operationName\" text DEFAULT NULL::text, extensions jsonb DEFAULT NULL::jsonb",
+        "definition": "CREATE OR REPLACE FUNCTION graphql._internal_resolve(query text, variables jsonb DEFAULT '{}'::jsonb, \"operationName\" text DEFAULT NULL::text, extensions jsonb DEFAULT NULL::jsonb)\n RETURNS jsonb\n LANGUAGE c\nAS '$libdir/pg_graphql', $function$resolve_wrapper$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "comment_directive",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "comment_ text",
+        "definition": "CREATE OR REPLACE FUNCTION graphql.comment_directive(comment_ text)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n    /*\n    comment on column public.account.name is '@graphql.name: myField'\n    */\n    select\n        coalesce(\n            (\n                regexp_match(\n                    comment_,\n                    '@graphql\\((.+)\\)'\n                )\n            )[1]::jsonb,\n            jsonb_build_object()\n        )\n$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "exception",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "message text",
+        "definition": "CREATE OR REPLACE FUNCTION graphql.exception(message text)\n RETURNS text\n LANGUAGE plpgsql\nAS $function$\nbegin\n    raise exception using errcode='22000', message=message;\nend;\n$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "get_schema_version",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION graphql.get_schema_version()\n RETURNS integer\n LANGUAGE sql\n SECURITY DEFINER\nAS $function$\n    select last_value from graphql.seq_schema_version;\n$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "increment_schema_version",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION graphql.increment_schema_version()\n RETURNS event_trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nbegin\n    perform pg_catalog.nextval('graphql.seq_schema_version');\nend;\n$function$\n"
+    },
+    {
+        "schema_name": "graphql",
+        "function_name": "resolve",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "query text, variables jsonb DEFAULT '{}'::jsonb, \"operationName\" text DEFAULT NULL::text, extensions jsonb DEFAULT NULL::jsonb",
+        "definition": "CREATE OR REPLACE FUNCTION graphql.resolve(query text, variables jsonb DEFAULT '{}'::jsonb, \"operationName\" text DEFAULT NULL::text, extensions jsonb DEFAULT NULL::jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\nAS $function$\ndeclare\n    res jsonb;\n    message_text text;\nbegin\n  begin\n    select graphql._internal_resolve(\"query\" := \"query\",\n                                     \"variables\" := \"variables\",\n                                     \"operationName\" := \"operationName\",\n                                     \"extensions\" := \"extensions\") into res;\n    return res;\n  exception\n    when others then\n    get stacked diagnostics message_text = message_text;\n    return\n    jsonb_build_object('data', null,\n                       'errors', jsonb_build_array(jsonb_build_object('message', message_text)));\n  end;\nend;\n$function$\n"
+    },
+    {
+        "schema_name": "graphql_public",
+        "function_name": "graphql",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "\"operationName\" text DEFAULT NULL::text, query text DEFAULT NULL::text, variables jsonb DEFAULT NULL::jsonb, extensions jsonb DEFAULT NULL::jsonb",
+        "definition": "CREATE OR REPLACE FUNCTION graphql_public.graphql(\"operationName\" text DEFAULT NULL::text, query text DEFAULT NULL::text, variables jsonb DEFAULT NULL::jsonb, extensions jsonb DEFAULT NULL::jsonb)\n RETURNS jsonb\n LANGUAGE sql\nAS $function$\n            select graphql.resolve(\n                query := query,\n                variables := coalesce(variables, '{}'),\n                \"operationName\" := \"operationName\",\n                extensions := extensions\n            );\n        $function$\n"
+    },
+    {
+        "schema_name": "pgbouncer",
+        "function_name": "get_auth",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "p_usename text",
+        "definition": "CREATE OR REPLACE FUNCTION pgbouncer.get_auth(p_usename text)\n RETURNS TABLE(username text, password text)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  BEGIN\n      RAISE DEBUG 'PgBouncer auth request: %', p_usename;\n\n      RETURN QUERY\n      SELECT\n          rolname::text,\n          CASE WHEN rolvaliduntil < now()\n              THEN null\n              ELSE rolpassword::text\n          END\n      FROM pg_authid\n      WHERE rolname=$1 and rolcanlogin;\n  END;\n  $function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "approve_and_clone_in",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_user_id uuid, target_team_id uuid",
+        "definition": "CREATE OR REPLACE FUNCTION public.approve_and_clone_in(target_user_id uuid, target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  cust_rec RECORD;\r\n  ord_rec RECORD;\r\n  team_cust_id uuid;\r\n  new_ord_id uuid;\r\nBEGIN\r\n  -- A. อัปเดตสถานะสมาชิกเป็น Active\r\n  UPDATE public.team_members\r\n  SET status = 'active', joined_at = now()\r\n  WHERE user_id = target_user_id AND team_id = target_team_id;\r\n\r\n  -- B. Loop Clone Customers (จากส่วนตัว -> ทีม)\r\n  FOR cust_rec IN \r\n    SELECT * FROM public.customers \r\n    WHERE customer_record_by_user_id = target_user_id \r\n    AND customer_record_by_team_id IS NULL\r\n  LOOP\r\n    \r\n    -- B.1 เช็คว่าลูกค้าคนนี้มีในทีมแล้วหรือยัง? (ป้องกันซ้ำ)\r\n    SELECT customer_id INTO team_cust_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_citizen_id = cust_rec.customer_citizen_id;\r\n\r\n    -- B.2 ถ้ายังไม่มี ให้สร้างใหม่ (Clone Profile)\r\n    IF team_cust_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th, \r\n        customer_fname_en, customer_lname_en, customer_phone, \r\n        customer_address1, customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        cust_rec.customer_citizen_id, cust_rec.customer_fname_th, cust_rec.customer_lname_th,\r\n        cust_rec.customer_fname_en, cust_rec.customer_lname_en, cust_rec.customer_phone,\r\n        cust_rec.customer_address1, target_user_id, target_team_id\r\n      ) RETURNING customer_id INTO team_cust_id;\r\n    END IF;\r\n\r\n    -- C. Loop Clone Orders ของลูกค้าคนนั้น (จากส่วนตัว -> ทีม)\r\n    FOR ord_rec IN\r\n      SELECT * FROM public.orders\r\n      WHERE order_customer_id = cust_rec.customer_id\r\n      AND order_record_by_team_id IS NULL\r\n    LOOP\r\n      \r\n      -- C.1 สร้าง Order ใหม่ในนามทีม (ผูกกับ Customer ID ของทีมที่ได้จากข้อ B)\r\n      INSERT INTO public.orders (\r\n        order_customer_id, order_total_amount, order_date,\r\n        order_record_by_user_id, order_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_id, ord_rec.order_total_amount, ord_rec.order_date,\r\n        target_user_id, target_team_id\r\n      ) RETURNING order_id INTO new_ord_id;\r\n\r\n      -- C.2 Clone Order Items\r\n      INSERT INTO public.order_items (order_id, product_code, quantity, product_price)\r\n      SELECT new_ord_id, product_code, quantity, product_price\r\n      FROM public.order_items WHERE order_id = ord_rec.order_id;\r\n      \r\n    END LOOP; -- จบ Loop Order\r\n  END LOOP; -- จบ Loop Customer\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "deactivate_old_consents",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.deactivate_old_consents()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nBEGIN\r\n  -- ถ้าแถวใหม่ที่กำลังจะเข้า มีค่า is_active = true\r\n  IF NEW.is_active = true THEN\r\n    -- ให้ไปไล่ปิด (Update) แถวเก่าที่เป็น Type เดียวกัน ให้เป็น false\r\n    UPDATE public.consent_docs\r\n    SET is_active = false\r\n    WHERE consent_type = NEW.consent_type \r\n    AND consent_doc_id != NEW.consent_doc_id; -- ยกเว้นตัวมันเอง\r\n  END IF;\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_active_user_team",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "p_user_id uuid",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_active_user_team(p_user_id uuid)\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\n  SELECT team_id\n  FROM public.team_members\n  WHERE user_id = p_user_id\n    AND status = 'active'\n  LIMIT 1;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_current_user_customer_citizen_id",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_current_user_customer_citizen_id()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\r\n  SELECT c.customer_citizen_id \r\n  FROM public.team_members tm\r\n  JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\r\n  WHERE tm.user_id = auth.uid() \r\n  AND tm.status = 'active' \r\n  LIMIT 1;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_current_user_team_id",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_current_user_team_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\r\n  SELECT tm.team_id \r\n  FROM public.team_members tm \r\n  WHERE tm.user_id = auth.uid() \r\n  AND tm.status = 'active' \r\n  LIMIT 1;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_user_team_role",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "check_team_id uuid",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_user_team_role(check_team_id uuid)\n RETURNS text\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT role\r\n  FROM public.team_members\r\n  WHERE team_id = check_team_id\r\n    AND user_id = auth.uid()\r\n    AND status = 'active'\r\n  LIMIT 1;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_recommender_chain",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_customer_id uuid, source_customer_id uuid, max_depth integer DEFAULT 10",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_recommender_chain(target_customer_id uuid, source_customer_id uuid, max_depth integer DEFAULT 10)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  curr uuid := source_customer_id;\n  depth int := 0;\n  found boolean := false;\nBEGIN\n  IF target_customer_id IS NULL OR source_customer_id IS NULL THEN\n    RETURN FALSE;\n  END IF;\n  IF target_customer_id = source_customer_id THEN\n    RETURN TRUE;\n  END IF;\n  LOOP\n    EXIT WHEN curr IS NULL OR depth >= max_depth;\n    SELECT customer_recommender_id INTO curr FROM public.customers WHERE customer_id = curr;\n    depth := depth + 1;\n    IF curr = target_customer_id THEN\n      RETURN TRUE;\n    END IF;\n  END LOOP;\n  -- check downward chain using recursive CTE\n  WITH RECURSIVE downchain(c_id, d) AS (\n    SELECT customer_id, 0 FROM public.customers WHERE customer_id = source_customer_id\n    UNION ALL\n    SELECT c.customer_id, d+1 FROM public.customers c JOIN downchain ON c.customer_recommender_id = downchain.c_id WHERE d+1 <= max_depth\n  )\n  SELECT true INTO found FROM downchain WHERE c_id = target_customer_id LIMIT 1;\n\n  RETURN found;\nEXCEPTION WHEN others THEN\n  RETURN false;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_recommender_chain_trace",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "source_uuid uuid, max_depth integer DEFAULT 50",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_recommender_chain_trace(source_uuid uuid, max_depth integer DEFAULT 50)\n RETURNS TABLE(step integer, customer_id uuid, customer_citizen_id text, customer_recommender_id text, loop_detected boolean)\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  curr_uuid uuid := source_uuid;\n  curr_recommender_text text;\n  visited_uuids uuid[] := ARRAY[]::uuid[];\n  depth int := 0;\nBEGIN\n  IF curr_uuid IS NULL THEN\n    RETURN;\n  END IF;\n\n  LOOP\n    EXIT WHEN curr_uuid IS NULL OR depth >= max_depth;\n    -- detect loop\n    IF curr_uuid = ANY(visited_uuids) THEN\n      step := depth + 1;\n      customer_id := curr_uuid;\n      SELECT customer_citizen_id, customer_recommender_id INTO customer_citizen_id, customer_recommender_id FROM customers WHERE customer_id = curr_uuid;\n      loop_detected := true;\n      RETURN NEXT;\n      RETURN;\n    END IF;\n\n    visited_uuids := array_append(visited_uuids, curr_uuid);\n\n    SELECT customer_citizen_id, customer_recommender_id INTO customer_citizen_id, customer_recommender_id FROM customers WHERE customer_id = curr_uuid;\n\n    step := depth + 1;\n    customer_id := curr_uuid;\n    loop_detected := false;\n    RETURN NEXT;\n\n    -- get next\n    IF customer_recommender_id IS NULL THEN\n      RETURN;\n    END IF;\n\n    BEGIN\n      curr_uuid := customer_recommender_id::uuid;\n    EXCEPTION WHEN others THEN\n      SELECT customer_id INTO curr_uuid FROM customers WHERE customer_citizen_id = customer_recommender_id LIMIT 1;\n    END;\n\n    depth := depth + 1;\n  END LOOP;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_recommender_chain_v2",
+        "owner": "postgres",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "target_uuid uuid, source_uuid uuid, max_depth integer DEFAULT 10",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_recommender_chain_v2(target_uuid uuid, source_uuid uuid, max_depth integer DEFAULT 10)\n RETURNS boolean\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  curr_recommender_text text;\n  curr_uuid uuid;\n  depth int := 0;\nBEGIN\n  IF target_uuid IS NULL OR source_uuid IS NULL THEN\n    RETURN FALSE;\n  END IF;\n\n  curr_uuid := source_uuid;\n  LOOP\n    EXIT WHEN curr_uuid IS NULL OR depth >= max_depth;\n    SELECT customer_recommender_id INTO curr_recommender_text FROM customers WHERE customer_id = curr_uuid;\n    IF curr_recommender_text IS NULL THEN\n      RETURN FALSE;\n    END IF;\n    -- Try to parse as uuid first; if it's uuid and exists, use it; otherwise treat as citizen_id (text)\n    BEGIN\n      curr_uuid := curr_recommender_text::uuid;\n    EXCEPTION WHEN others THEN\n      SELECT customer_id INTO curr_uuid FROM customers WHERE customer_citizen_id = curr_recommender_text LIMIT 1;\n    END;\n\n    IF curr_uuid IS NULL THEN\n      RETURN FALSE;\n    END IF;\n\n    IF curr_uuid = target_uuid THEN\n      RETURN TRUE;\n    END IF;\n\n    depth := depth + 1;\n  END LOOP;\n  RETURN FALSE;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_user_downline",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_citizen_id text",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_user_downline(target_citizen_id text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\r\nWITH RECURSIVE downline(citizen_id, recommender_id) AS (\r\n  -- Base case: Current user\r\n  SELECT c.customer_citizen_id, c.customer_recommender_id \r\n  FROM public.customers c\r\n  WHERE c.customer_citizen_id = public.get_current_user_customer_citizen_id()\r\n  \r\n  UNION\r\n  \r\n  -- Recursive step: Find children (customers whose recommender is in the current set)\r\n  SELECT c.customer_citizen_id, c.customer_recommender_id \r\n  FROM public.customers c\r\n  JOIN downline d ON c.customer_recommender_id = d.citizen_id\r\n)\r\nSELECT true FROM downline WHERE citizen_id = target_citizen_id LIMIT 1;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_user_upline",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_citizen_id text",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_user_upline(target_citizen_id text)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\r\nWITH RECURSIVE upline(citizen_id, recommender_id) AS (\r\n  -- Base case: Current user\r\n  SELECT c.customer_citizen_id, c.customer_recommender_id \r\n  FROM public.customers c\r\n  WHERE c.customer_citizen_id = public.get_current_user_customer_citizen_id()\r\n  \r\n  UNION\r\n  \r\n  -- Recursive step: Find parents\r\n  SELECT c.customer_citizen_id, c.customer_recommender_id \r\n  FROM public.customers c\r\n  JOIN upline u ON c.customer_citizen_id = u.recommender_id\r\n)\r\nSELECT true FROM upline WHERE citizen_id = target_citizen_id LIMIT 1;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "leave_team_and_clone_out",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_team_id uuid",
+        "definition": "CREATE OR REPLACE FUNCTION public.leave_team_and_clone_out(target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  current_user_id uuid := auth.uid(); -- ใช้ ID ของคนที่เรียก Function\r\n  team_cust_rec RECORD;\r\n  personal_exist_id uuid;\r\nBEGIN\r\n  -- A. Loop ลูกค้าในทีม ที่ User นี้เป็นคนดูแล (record_by_user_id)\r\n  FOR team_cust_rec IN\r\n    SELECT * FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_record_by_user_id = current_user_id\r\n  LOOP\r\n    \r\n    -- A.1 เช็คว่าลูกค้าคนนี้ มีในฐานข้อมูลส่วนตัวหรือยัง?\r\n    SELECT customer_id INTO personal_exist_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_user_id = current_user_id\r\n      AND customer_record_by_team_id IS NULL\r\n      AND customer_citizen_id = team_cust_rec.customer_citizen_id;\r\n\r\n    -- A.2 ถ้ายังไม่มี -> Clone ออกมาเป็นส่วนตัว (ไม่เอา Order)\r\n    IF personal_exist_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th,\r\n        customer_phone, customer_address1, \r\n        customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_rec.customer_citizen_id, team_cust_rec.customer_fname_th, team_cust_rec.customer_lname_th,\r\n        team_cust_rec.customer_phone, team_cust_rec.customer_address1,\r\n        current_user_id, NULL -- Team เป็น NULL\r\n      );\r\n    END IF;\r\n  END LOOP;\r\n\r\n  -- B. เปลี่ยนสถานะสมาชิกเป็น 'left' (ตัดสิทธิ์เข้าถึงทีม)\r\n  UPDATE public.team_members\r\n  SET status = 'left'\r\n  WHERE user_id = current_user_id AND team_id = target_team_id;\r\n\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "rls_auto_enable",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.rls_auto_enable()\n RETURNS event_trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE\n  cmd record;\nBEGIN\n  FOR cmd IN\n    SELECT *\n    FROM pg_event_trigger_ddl_commands()\n    WHERE command_tag IN ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')\n      AND object_type IN ('table','partitioned table')\n  LOOP\n     IF cmd.schema_name IS NOT NULL AND cmd.schema_name IN ('public') AND cmd.schema_name NOT IN ('pg_catalog','information_schema') AND cmd.schema_name NOT LIKE 'pg_toast%' AND cmd.schema_name NOT LIKE 'pg_temp%' THEN\n      BEGIN\n        EXECUTE format('alter table if exists %s enable row level security', cmd.object_identity);\n        RAISE LOG 'rls_auto_enable: enabled RLS on %', cmd.object_identity;\n      EXCEPTION\n        WHEN OTHERS THEN\n          RAISE LOG 'rls_auto_enable: failed to enable RLS on %', cmd.object_identity;\n      END;\n     ELSE\n        RAISE LOG 'rls_auto_enable: skip % (either system schema or not in enforced list: %.)', cmd.object_identity, cmd.schema_name;\n     END IF;\n  END LOOP;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "apply_rls",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "wal jsonb, max_record_bytes integer DEFAULT (1024 * 1024)",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.apply_rls(wal jsonb, max_record_bytes integer DEFAULT (1024 * 1024))\n RETURNS SETOF realtime.wal_rls\n LANGUAGE plpgsql\nAS $function$\ndeclare\n-- Regclass of the table e.g. public.notes\nentity_ regclass = (quote_ident(wal ->> 'schema') || '.' || quote_ident(wal ->> 'table'))::regclass;\n\n-- I, U, D, T: insert, update ...\naction realtime.action = (\n    case wal ->> 'action'\n        when 'I' then 'INSERT'\n        when 'U' then 'UPDATE'\n        when 'D' then 'DELETE'\n        else 'ERROR'\n    end\n);\n\n-- Is row level security enabled for the table\nis_rls_enabled bool = relrowsecurity from pg_class where oid = entity_;\n\nsubscriptions realtime.subscription[] = array_agg(subs)\n    from\n        realtime.subscription subs\n    where\n        subs.entity = entity_\n        -- Filter by action early - only get subscriptions interested in this action\n        -- action_filter column can be: '*' (all), 'INSERT', 'UPDATE', or 'DELETE'\n        and (subs.action_filter = '*' or subs.action_filter = action::text);\n\n-- Subscription vars\nroles regrole[] = array_agg(distinct us.claims_role::text)\n    from\n        unnest(subscriptions) us;\n\nworking_role regrole;\nclaimed_role regrole;\nclaims jsonb;\n\nsubscription_id uuid;\nsubscription_has_access bool;\nvisible_to_subscription_ids uuid[] = '{}';\n\n-- structured info for wal's columns\ncolumns realtime.wal_column[];\n-- previous identity values for update/delete\nold_columns realtime.wal_column[];\n\nerror_record_exceeds_max_size boolean = octet_length(wal::text) > max_record_bytes;\n\n-- Primary jsonb output for record\noutput jsonb;\n\nbegin\nperform set_config('role', null, true);\n\ncolumns =\n    array_agg(\n        (\n            x->>'name',\n            x->>'type',\n            x->>'typeoid',\n            realtime.cast(\n                (x->'value') #>> '{}',\n                coalesce(\n                    (x->>'typeoid')::regtype, -- null when wal2json version <= 2.4\n                    (x->>'type')::regtype\n                )\n            ),\n            (pks ->> 'name') is not null,\n            true\n        )::realtime.wal_column\n    )\n    from\n        jsonb_array_elements(wal -> 'columns') x\n        left join jsonb_array_elements(wal -> 'pk') pks\n            on (x ->> 'name') = (pks ->> 'name');\n\nold_columns =\n    array_agg(\n        (\n            x->>'name',\n            x->>'type',\n            x->>'typeoid',\n            realtime.cast(\n                (x->'value') #>> '{}',\n                coalesce(\n                    (x->>'typeoid')::regtype, -- null when wal2json version <= 2.4\n                    (x->>'type')::regtype\n                )\n            ),\n            (pks ->> 'name') is not null,\n            true\n        )::realtime.wal_column\n    )\n    from\n        jsonb_array_elements(wal -> 'identity') x\n        left join jsonb_array_elements(wal -> 'pk') pks\n            on (x ->> 'name') = (pks ->> 'name');\n\nfor working_role in select * from unnest(roles) loop\n\n    -- Update `is_selectable` for columns and old_columns\n    columns =\n        array_agg(\n            (\n                c.name,\n                c.type_name,\n                c.type_oid,\n                c.value,\n                c.is_pkey,\n                pg_catalog.has_column_privilege(working_role, entity_, c.name, 'SELECT')\n            )::realtime.wal_column\n        )\n        from\n            unnest(columns) c;\n\n    old_columns =\n            array_agg(\n                (\n                    c.name,\n                    c.type_name,\n                    c.type_oid,\n                    c.value,\n                    c.is_pkey,\n                    pg_catalog.has_column_privilege(working_role, entity_, c.name, 'SELECT')\n                )::realtime.wal_column\n            )\n            from\n                unnest(old_columns) c;\n\n    if action <> 'DELETE' and count(1) = 0 from unnest(columns) c where c.is_pkey then\n        return next (\n            jsonb_build_object(\n                'schema', wal ->> 'schema',\n                'table', wal ->> 'table',\n                'type', action\n            ),\n            is_rls_enabled,\n            -- subscriptions is already filtered by entity\n            (select array_agg(s.subscription_id) from unnest(subscriptions) as s where claims_role = working_role),\n            array['Error 400: Bad Request, no primary key']\n        )::realtime.wal_rls;\n\n    -- The claims role does not have SELECT permission to the primary key of entity\n    elsif action <> 'DELETE' and sum(c.is_selectable::int) <> count(1) from unnest(columns) c where c.is_pkey then\n        return next (\n            jsonb_build_object(\n                'schema', wal ->> 'schema',\n                'table', wal ->> 'table',\n                'type', action\n            ),\n            is_rls_enabled,\n            (select array_agg(s.subscription_id) from unnest(subscriptions) as s where claims_role = working_role),\n            array['Error 401: Unauthorized']\n        )::realtime.wal_rls;\n\n    else\n        output = jsonb_build_object(\n            'schema', wal ->> 'schema',\n            'table', wal ->> 'table',\n            'type', action,\n            'commit_timestamp', to_char(\n                ((wal ->> 'timestamp')::timestamptz at time zone 'utc'),\n                'YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"'\n            ),\n            'columns', (\n                select\n                    jsonb_agg(\n                        jsonb_build_object(\n                            'name', pa.attname,\n                            'type', pt.typname\n                        )\n                        order by pa.attnum asc\n                    )\n                from\n                    pg_attribute pa\n                    join pg_type pt\n                        on pa.atttypid = pt.oid\n                where\n                    attrelid = entity_\n                    and attnum > 0\n                    and pg_catalog.has_column_privilege(working_role, entity_, pa.attname, 'SELECT')\n            )\n        )\n        -- Add \"record\" key for insert and update\n        || case\n            when action in ('INSERT', 'UPDATE') then\n                jsonb_build_object(\n                    'record',\n                    (\n                        select\n                            jsonb_object_agg(\n                                -- if unchanged toast, get column name and value from old record\n                                coalesce((c).name, (oc).name),\n                                case\n                                    when (c).name is null then (oc).value\n                                    else (c).value\n                                end\n                            )\n                        from\n                            unnest(columns) c\n                            full outer join unnest(old_columns) oc\n                                on (c).name = (oc).name\n                        where\n                            coalesce((c).is_selectable, (oc).is_selectable)\n                            and ( not error_record_exceeds_max_size or (octet_length((c).value::text) <= 64))\n                    )\n                )\n            else '{}'::jsonb\n        end\n        -- Add \"old_record\" key for update and delete\n        || case\n            when action = 'UPDATE' then\n                jsonb_build_object(\n                        'old_record',\n                        (\n                            select jsonb_object_agg((c).name, (c).value)\n                            from unnest(old_columns) c\n                            where\n                                (c).is_selectable\n                                and ( not error_record_exceeds_max_size or (octet_length((c).value::text) <= 64))\n                        )\n                    )\n            when action = 'DELETE' then\n                jsonb_build_object(\n                    'old_record',\n                    (\n                        select jsonb_object_agg((c).name, (c).value)\n                        from unnest(old_columns) c\n                        where\n                            (c).is_selectable\n                            and ( not error_record_exceeds_max_size or (octet_length((c).value::text) <= 64))\n                            and ( not is_rls_enabled or (c).is_pkey ) -- if RLS enabled, we can't secure deletes so filter to pkey\n                    )\n                )\n            else '{}'::jsonb\n        end;\n\n        -- Create the prepared statement\n        if is_rls_enabled and action <> 'DELETE' then\n            if (select 1 from pg_prepared_statements where name = 'walrus_rls_stmt' limit 1) > 0 then\n                deallocate walrus_rls_stmt;\n            end if;\n            execute realtime.build_prepared_statement_sql('walrus_rls_stmt', entity_, columns);\n        end if;\n\n        visible_to_subscription_ids = '{}';\n\n        for subscription_id, claims in (\n                select\n                    subs.subscription_id,\n                    subs.claims\n                from\n                    unnest(subscriptions) subs\n                where\n                    subs.entity = entity_\n                    and subs.claims_role = working_role\n                    and (\n                        realtime.is_visible_through_filters(columns, subs.filters)\n                        or (\n                          action = 'DELETE'\n                          and realtime.is_visible_through_filters(old_columns, subs.filters)\n                        )\n                    )\n        ) loop\n\n            if not is_rls_enabled or action = 'DELETE' then\n                visible_to_subscription_ids = visible_to_subscription_ids || subscription_id;\n            else\n                -- Check if RLS allows the role to see the record\n                perform\n                    -- Trim leading and trailing quotes from working_role because set_config\n                    -- doesn't recognize the role as valid if they are included\n                    set_config('role', trim(both '\"' from working_role::text), true),\n                    set_config('request.jwt.claims', claims::text, true);\n\n                execute 'execute walrus_rls_stmt' into subscription_has_access;\n\n                if subscription_has_access then\n                    visible_to_subscription_ids = visible_to_subscription_ids || subscription_id;\n                end if;\n            end if;\n        end loop;\n\n        perform set_config('role', null, true);\n\n        return next (\n            output,\n            is_rls_enabled,\n            visible_to_subscription_ids,\n            case\n                when error_record_exceeds_max_size then array['Error 413: Payload Too Large']\n                else '{}'\n            end\n        )::realtime.wal_rls;\n\n    end if;\nend loop;\n\nperform set_config('role', null, true);\nend;\n$function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "broadcast_changes",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text DEFAULT 'ROW'::text",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.broadcast_changes(topic_name text, event_name text, operation text, table_name text, table_schema text, new record, old record, level text DEFAULT 'ROW'::text)\n RETURNS void\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n    -- Declare a variable to hold the JSONB representation of the row\n    row_data jsonb := '{}'::jsonb;\nBEGIN\n    IF level = 'STATEMENT' THEN\n        RAISE EXCEPTION 'function can only be triggered for each row, not for each statement';\n    END IF;\n    -- Check the operation type and handle accordingly\n    IF operation = 'INSERT' OR operation = 'UPDATE' OR operation = 'DELETE' THEN\n        row_data := jsonb_build_object('old_record', OLD, 'record', NEW, 'operation', operation, 'table', table_name, 'schema', table_schema);\n        PERFORM realtime.send (row_data, event_name, topic_name);\n    ELSE\n        RAISE EXCEPTION 'Unexpected operation type: %', operation;\n    END IF;\nEXCEPTION\n    WHEN OTHERS THEN\n        RAISE EXCEPTION 'Failed to process the row: %', SQLERRM;\nEND;\n\n$function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "build_prepared_statement_sql",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "prepared_statement_name text, entity regclass, columns realtime.wal_column[]",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.build_prepared_statement_sql(prepared_statement_name text, entity regclass, columns realtime.wal_column[])\n RETURNS text\n LANGUAGE sql\nAS $function$\n      /*\n      Builds a sql string that, if executed, creates a prepared statement to\n      tests retrive a row from *entity* by its primary key columns.\n      Example\n          select realtime.build_prepared_statement_sql('public.notes', '{\"id\"}'::text[], '{\"bigint\"}'::text[])\n      */\n          select\n      'prepare ' || prepared_statement_name || ' as\n          select\n              exists(\n                  select\n                      1\n                  from\n                      ' || entity || '\n                  where\n                      ' || string_agg(quote_ident(pkc.name) || '=' || quote_nullable(pkc.value #>> '{}') , ' and ') || '\n              )'\n          from\n              unnest(columns) pkc\n          where\n              pkc.is_pkey\n          group by\n              entity\n      $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "cast",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "val text, type_ regtype",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.\"cast\"(val text, type_ regtype)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\n    declare\n      res jsonb;\n    begin\n      execute format('select to_jsonb(%L::'|| type_::text || ')', val)  into res;\n      return res;\n    end\n    $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "check_equality_op",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "op realtime.equality_op, type_ regtype, val_1 text, val_2 text",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.check_equality_op(op realtime.equality_op, type_ regtype, val_1 text, val_2 text)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\n      /*\n      Casts *val_1* and *val_2* as type *type_* and check the *op* condition for truthiness\n      */\n      declare\n          op_symbol text = (\n              case\n                  when op = 'eq' then '='\n                  when op = 'neq' then '!='\n                  when op = 'lt' then '<'\n                  when op = 'lte' then '<='\n                  when op = 'gt' then '>'\n                  when op = 'gte' then '>='\n                  when op = 'in' then '= any'\n                  else 'UNKNOWN OP'\n              end\n          );\n          res boolean;\n      begin\n          execute format(\n              'select %L::'|| type_::text || ' ' || op_symbol\n              || ' ( %L::'\n              || (\n                  case\n                      when op = 'in' then type_::text || '[]'\n                      else type_::text end\n              )\n              || ')', val_1, val_2) into res;\n          return res;\n      end;\n      $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "is_visible_through_filters",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "columns realtime.wal_column[], filters realtime.user_defined_filter[]",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.is_visible_through_filters(columns realtime.wal_column[], filters realtime.user_defined_filter[])\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n    /*\n    Should the record be visible (true) or filtered out (false) after *filters* are applied\n    */\n        select\n            -- Default to allowed when no filters present\n            $2 is null -- no filters. this should not happen because subscriptions has a default\n            or array_length($2, 1) is null -- array length of an empty array is null\n            or bool_and(\n                coalesce(\n                    realtime.check_equality_op(\n                        op:=f.op,\n                        type_:=coalesce(\n                            col.type_oid::regtype, -- null when wal2json version <= 2.4\n                            col.type_name::regtype\n                        ),\n                        -- cast jsonb to text\n                        val_1:=col.value #>> '{}',\n                        val_2:=f.value\n                    ),\n                    false -- if null, filter does not match\n                )\n            )\n        from\n            unnest(filters) f\n            join unnest(columns) col\n                on f.column_name = col.name;\n    $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "list_changes",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "publication name, slot_name name, max_changes integer, max_record_bytes integer",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.list_changes(publication name, slot_name name, max_changes integer, max_record_bytes integer)\n RETURNS SETOF realtime.wal_rls\n LANGUAGE sql\n SET log_min_messages TO 'fatal'\nAS $function$\n      with pub as (\n        select\n          concat_ws(\n            ',',\n            case when bool_or(pubinsert) then 'insert' else null end,\n            case when bool_or(pubupdate) then 'update' else null end,\n            case when bool_or(pubdelete) then 'delete' else null end\n          ) as w2j_actions,\n          coalesce(\n            string_agg(\n              realtime.quote_wal2json(format('%I.%I', schemaname, tablename)::regclass),\n              ','\n            ) filter (where ppt.tablename is not null and ppt.tablename not like '% %'),\n            ''\n          ) w2j_add_tables\n        from\n          pg_publication pp\n          left join pg_publication_tables ppt\n            on pp.pubname = ppt.pubname\n        where\n          pp.pubname = publication\n        group by\n          pp.pubname\n        limit 1\n      ),\n      w2j as (\n        select\n          x.*, pub.w2j_add_tables\n        from\n          pub,\n          pg_logical_slot_get_changes(\n            slot_name, null, max_changes,\n            'include-pk', 'true',\n            'include-transaction', 'false',\n            'include-timestamp', 'true',\n            'include-type-oids', 'true',\n            'format-version', '2',\n            'actions', pub.w2j_actions,\n            'add-tables', pub.w2j_add_tables\n          ) x\n      )\n      select\n        xyz.wal,\n        xyz.is_rls_enabled,\n        xyz.subscription_ids,\n        xyz.errors\n      from\n        w2j,\n        realtime.apply_rls(\n          wal := w2j.data::jsonb,\n          max_record_bytes := max_record_bytes\n        ) xyz(wal, is_rls_enabled, subscription_ids, errors)\n      where\n        w2j.w2j_add_tables <> ''\n        and xyz.subscription_ids[1] is not null\n    $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "quote_wal2json",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "entity regclass",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.quote_wal2json(entity regclass)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE STRICT\nAS $function$\n      select\n        (\n          select string_agg('' || ch,'')\n          from unnest(string_to_array(nsp.nspname::text, null)) with ordinality x(ch, idx)\n          where\n            not (x.idx = 1 and x.ch = '\"')\n            and not (\n              x.idx = array_length(string_to_array(nsp.nspname::text, null), 1)\n              and x.ch = '\"'\n            )\n        )\n        || '.'\n        || (\n          select string_agg('' || ch,'')\n          from unnest(string_to_array(pc.relname::text, null)) with ordinality x(ch, idx)\n          where\n            not (x.idx = 1 and x.ch = '\"')\n            and not (\n              x.idx = array_length(string_to_array(nsp.nspname::text, null), 1)\n              and x.ch = '\"'\n            )\n          )\n      from\n        pg_class pc\n        join pg_namespace nsp\n          on pc.relnamespace = nsp.oid\n      where\n        pc.oid = entity\n    $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "send",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "payload jsonb, event text, topic text, private boolean DEFAULT true",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.send(payload jsonb, event text, topic text, private boolean DEFAULT true)\n RETURNS void\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  generated_id uuid;\n  final_payload jsonb;\nBEGIN\n  BEGIN\n    -- Generate a new UUID for the id\n    generated_id := gen_random_uuid();\n\n    -- Check if payload has an 'id' key, if not, add the generated UUID\n    IF payload ? 'id' THEN\n      final_payload := payload;\n    ELSE\n      final_payload := jsonb_set(payload, '{id}', to_jsonb(generated_id));\n    END IF;\n\n    -- Set the topic configuration\n    EXECUTE format('SET LOCAL realtime.topic TO %L', topic);\n\n    -- Attempt to insert the message\n    INSERT INTO realtime.messages (id, payload, event, topic, private, extension)\n    VALUES (generated_id, final_payload, event, topic, private, 'broadcast');\n  EXCEPTION\n    WHEN OTHERS THEN\n      -- Capture and notify the error\n      RAISE WARNING 'ErrorSendingBroadcastMessage: %', SQLERRM;\n  END;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "subscription_check_filters",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.subscription_check_filters()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\n    /*\n    Validates that the user defined filters for a subscription:\n    - refer to valid columns that the claimed role may access\n    - values are coercable to the correct column type\n    */\n    declare\n        col_names text[] = coalesce(\n                array_agg(c.column_name order by c.ordinal_position),\n                '{}'::text[]\n            )\n            from\n                information_schema.columns c\n            where\n                format('%I.%I', c.table_schema, c.table_name)::regclass = new.entity\n                and pg_catalog.has_column_privilege(\n                    (new.claims ->> 'role'),\n                    format('%I.%I', c.table_schema, c.table_name)::regclass,\n                    c.column_name,\n                    'SELECT'\n                );\n        filter realtime.user_defined_filter;\n        col_type regtype;\n\n        in_val jsonb;\n    begin\n        for filter in select * from unnest(new.filters) loop\n            -- Filtered column is valid\n            if not filter.column_name = any(col_names) then\n                raise exception 'invalid column for filter %', filter.column_name;\n            end if;\n\n            -- Type is sanitized and safe for string interpolation\n            col_type = (\n                select atttypid::regtype\n                from pg_catalog.pg_attribute\n                where attrelid = new.entity\n                      and attname = filter.column_name\n            );\n            if col_type is null then\n                raise exception 'failed to lookup type for column %', filter.column_name;\n            end if;\n\n            -- Set maximum number of entries for in filter\n            if filter.op = 'in'::realtime.equality_op then\n                in_val = realtime.cast(filter.value, (col_type::text || '[]')::regtype);\n                if coalesce(jsonb_array_length(in_val), 0) > 100 then\n                    raise exception 'too many values for `in` filter. Maximum 100';\n                end if;\n            else\n                -- raises an exception if value is not coercable to type\n                perform realtime.cast(filter.value, col_type);\n            end if;\n\n        end loop;\n\n        -- Apply consistent order to filters so the unique constraint on\n        -- (subscription_id, entity, filters) can't be tricked by a different filter order\n        new.filters = coalesce(\n            array_agg(f order by f.column_name, f.op, f.value),\n            '{}'\n        ) from unnest(new.filters) f;\n\n        return new;\n    end;\n    $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "to_regrole",
+        "owner": "supabase_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "role_name text",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.to_regrole(role_name text)\n RETURNS regrole\n LANGUAGE sql\n IMMUTABLE\nAS $function$ select role_name::regrole $function$\n"
+    },
+    {
+        "schema_name": "realtime",
+        "function_name": "topic",
+        "owner": "supabase_realtime_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION realtime.topic()\n RETURNS text\n LANGUAGE sql\n STABLE\nAS $function$\nselect nullif(current_setting('realtime.topic', true), '')::text;\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "can_insert_object",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "bucketid text, name text, owner uuid, metadata jsonb",
+        "definition": "CREATE OR REPLACE FUNCTION storage.can_insert_object(bucketid text, name text, owner uuid, metadata jsonb)\n RETURNS void\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  INSERT INTO \"storage\".\"objects\" (\"bucket_id\", \"name\", \"owner\", \"metadata\") VALUES (bucketid, name, owner, metadata);\n  -- hack to rollback the successful insert\n  RAISE sqlstate 'PT200' using\n  message = 'ROLLBACK',\n  detail = 'rollback successful insert';\nEND\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "delete_leaf_prefixes",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "bucket_ids text[], names text[]",
+        "definition": "CREATE OR REPLACE FUNCTION storage.delete_leaf_prefixes(bucket_ids text[], names text[])\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n    v_rows_deleted integer;\nBEGIN\n    LOOP\n        WITH candidates AS (\n            SELECT DISTINCT\n                t.bucket_id,\n                unnest(storage.get_prefixes(t.name)) AS name\n            FROM unnest(bucket_ids, names) AS t(bucket_id, name)\n        ),\n        uniq AS (\n             SELECT\n                 bucket_id,\n                 name,\n                 storage.get_level(name) AS level\n             FROM candidates\n             WHERE name <> ''\n             GROUP BY bucket_id, name\n        ),\n        leaf AS (\n             SELECT\n                 p.bucket_id,\n                 p.name,\n                 p.level\n             FROM storage.prefixes AS p\n                  JOIN uniq AS u\n                       ON u.bucket_id = p.bucket_id\n                           AND u.name = p.name\n                           AND u.level = p.level\n             WHERE NOT EXISTS (\n                 SELECT 1\n                 FROM storage.objects AS o\n                 WHERE o.bucket_id = p.bucket_id\n                   AND o.level = p.level + 1\n                   AND o.name COLLATE \"C\" LIKE p.name || '/%'\n             )\n             AND NOT EXISTS (\n                 SELECT 1\n                 FROM storage.prefixes AS c\n                 WHERE c.bucket_id = p.bucket_id\n                   AND c.level = p.level + 1\n                   AND c.name COLLATE \"C\" LIKE p.name || '/%'\n             )\n        )\n        DELETE\n        FROM storage.prefixes AS p\n            USING leaf AS l\n        WHERE p.bucket_id = l.bucket_id\n          AND p.name = l.name\n          AND p.level = l.level;\n\n        GET DIAGNOSTICS v_rows_deleted = ROW_COUNT;\n        EXIT WHEN v_rows_deleted = 0;\n    END LOOP;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "enforce_bucket_name_length",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION storage.enforce_bucket_name_length()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nbegin\n    if length(new.name) > 100 then\n        raise exception 'bucket name \"%\" is too long (% characters). Max is 100.', new.name, length(new.name);\n    end if;\n    return new;\nend;\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "extension",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "name text",
+        "definition": "CREATE OR REPLACE FUNCTION storage.extension(name text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE\n    _parts text[];\n    _filename text;\nBEGIN\n    SELECT string_to_array(name, '/') INTO _parts;\n    SELECT _parts[array_length(_parts,1)] INTO _filename;\n    RETURN reverse(split_part(reverse(_filename), '.', 1));\nEND\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "filename",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "name text",
+        "definition": "CREATE OR REPLACE FUNCTION storage.filename(name text)\n RETURNS text\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n_parts text[];\nBEGIN\n\tselect string_to_array(name, '/') into _parts;\n\treturn _parts[array_length(_parts,1)];\nEND\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "foldername",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "name text",
+        "definition": "CREATE OR REPLACE FUNCTION storage.foldername(name text)\n RETURNS text[]\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE\n    _parts text[];\nBEGIN\n    -- Split on \"/\" to get path segments\n    SELECT string_to_array(name, '/') INTO _parts;\n    -- Return everything except the last segment\n    RETURN _parts[1 : array_length(_parts,1) - 1];\nEND\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "get_common_prefix",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "p_key text, p_prefix text, p_delimiter text",
+        "definition": "CREATE OR REPLACE FUNCTION storage.get_common_prefix(p_key text, p_prefix text, p_delimiter text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\nSELECT CASE\n    WHEN position(p_delimiter IN substring(p_key FROM length(p_prefix) + 1)) > 0\n    THEN left(p_key, length(p_prefix) + position(p_delimiter IN substring(p_key FROM length(p_prefix) + 1)))\n    ELSE NULL\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "storage",
+        "function_name": "get_level",
+        "owner": "supabase_storage_admin",
+        "security_type": "SECURITY INVOKER",
+        "arguments": "name text",
+        "definition": "CREATE OR REPLACE FUNCTION storage.get_level(name text)\n RETURNS integer\n LANGUAGE sql\n IMMUTABLE STRICT\nAS $function$\nSELECT array_length(string_to_array(\"name\", '/'), 1);\n$function$\n"
+    }
+]

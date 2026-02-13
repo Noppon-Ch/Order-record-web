@@ -36,6 +36,15 @@
         "table_name": "customers"
     },
     {
+        "policy_name": "customers_enhanced_visibility_policy",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "(((customer_record_by_team_id IS NULL) AND (EXISTS ( SELECT 1\n   FROM (team_members target_member\n     JOIN team_members leader_me ON ((target_member.team_id = leader_me.team_id)))\n  WHERE ((target_member.user_id = customers.customer_record_by_user_id) AND (target_member.status = ANY (ARRAY['pending'::text, 'active'::text])) AND (leader_me.user_id = auth.uid()) AND (leader_me.status = 'active'::text) AND (leader_me.role = ANY (ARRAY['leader'::text, 'co-leader'::text])))))) OR (EXISTS ( SELECT 1\n   FROM orders o\n  WHERE (((o.order_customer_id = customers.customer_id) OR (o.order_recommender_id = customers.customer_id) OR (o.order_assistant_id = customers.customer_id)) AND ((o.order_record_by_user_id = auth.uid()) OR ((o.order_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n           FROM team_members tm\n          WHERE ((tm.team_id = o.order_record_by_team_id) AND (tm.user_id = auth.uid()) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text])))))))))))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
         "policy_name": "customers_private_insert",
         "command": "a",
         "roles": "16481",
@@ -90,10 +99,19 @@
         "table_name": "customers"
     },
     {
+        "policy_name": "customers_team_member_hierarchy_select",
+        "command": "r",
+        "roles": "16481",
+        "using_expression": "(((auth.jwt() ->> 'user_role'::text) = 'member'::text) AND (customer_record_by_team_id = ( SELECT get_current_user_team_id() AS get_current_user_team_id)) AND ((customer_citizen_id = get_current_user_customer_citizen_id()) OR is_in_user_upline(customer_citizen_id) OR is_in_user_downline(customer_citizen_id)))",
+        "with_check_expression": null,
+        "schema_name": "public",
+        "table_name": "customers"
+    },
+    {
         "policy_name": "customers_team_select_all_roles",
         "command": "r",
         "roles": "16481",
-        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text, 'member'::text]))))))",
+        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
         "with_check_expression": null,
         "schema_name": "public",
         "table_name": "customers"
@@ -103,33 +121,6 @@
         "command": "w",
         "roles": "16481",
         "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text, 'member'::text]))))))",
-        "with_check_expression": null,
-        "schema_name": "public",
-        "table_name": "customers"
-    },
-    {
-        "policy_name": "leaders_create_private_customer_for_member",
-        "command": "a",
-        "roles": "0",
-        "using_expression": null,
-        "with_check_expression": "((customer_record_by_team_id IS NULL) AND (EXISTS ( SELECT 1\n   FROM (team_members target_member\n     JOIN team_members leader_me ON ((target_member.team_id = leader_me.team_id)))\n  WHERE ((target_member.user_id = customers.customer_record_by_user_id) AND (leader_me.user_id = auth.uid()) AND (leader_me.role = ANY (ARRAY['leader'::text, 'co-leader'::text])) AND (leader_me.status = 'active'::text)))))",
-        "schema_name": "public",
-        "table_name": "customers"
-    },
-    {
-        "policy_name": "leaders_view_member_private_customers",
-        "command": "r",
-        "roles": "16481",
-        "using_expression": "((customer_record_by_team_id IS NULL) AND (EXISTS ( SELECT 1\n   FROM (team_members target_member\n     JOIN team_members leader_me ON ((target_member.team_id = leader_me.team_id)))\n  WHERE ((target_member.user_id = customers.customer_record_by_user_id) AND (target_member.status = ANY (ARRAY['pending'::text, 'active'::text])) AND (leader_me.user_id = auth.uid()) AND (leader_me.status = 'active'::text) AND (leader_me.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
-        "with_check_expression": null,
-        "schema_name": "public",
-        "table_name": "customers"
-    },
-    {
-        "policy_name": "view_customers_referenced_in_visible_orders",
-        "command": "r",
-        "roles": "16481",
-        "using_expression": "(EXISTS ( SELECT 1\n   FROM orders o\n  WHERE (((o.order_customer_id = customers.customer_id) OR (o.order_recommender_id = customers.customer_id) OR (o.order_assistant_id = customers.customer_id)) AND ((o.order_record_by_user_id = auth.uid()) OR ((o.order_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n           FROM team_members tm\n          WHERE ((tm.team_id = o.order_record_by_team_id) AND (tm.user_id = auth.uid()) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))))))",
         "with_check_expression": null,
         "schema_name": "public",
         "table_name": "customers"
