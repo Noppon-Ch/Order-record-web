@@ -39,15 +39,37 @@ export const teamController = {
         }
     },
 
+    async getTeamMemberSettingPage(req: Request, res: Response) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) return res.redirect('/login');
+
+            const memberId = req.query.memberId as string;
+            if (!memberId) return res.redirect('/teams');
+
+            const member = await teamService.getMemberById(memberId, (req.user as any)?.access_token);
+
+            res.render('team-member-setting', {
+                user: req.user,
+                member,
+                error: null,
+                nonce: res.locals.nonce
+            });
+        } catch (error) {
+            console.error('Error fetching member setting page:', error);
+            res.redirect('/teams');
+        }
+    },
+
     async approveMember(req: Request, res: Response) {
         try {
             const userId = req.user?.id;
-            const { memberId } = req.body;
+            const { memberId, customerId } = req.body;
 
             if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
             if (!memberId) return res.status(400).json({ success: false, message: 'Member ID is required' });
 
-            await teamService.updateMemberStatus(userId, memberId, 'active', (req.user as any)?.access_token);
+            await teamService.updateMemberStatus(userId, memberId, 'active', (req.user as any)?.access_token, customerId);
             res.json({ success: true, message: 'Member approved successfully' });
         } catch (error: any) {
             console.error('Error approving member:', error);

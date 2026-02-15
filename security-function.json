@@ -541,7 +541,7 @@
         "owner": "postgres",
         "security_type": "SECURITY DEFINER",
         "arguments": "target_user_id uuid, target_team_id uuid",
-        "definition": "CREATE OR REPLACE FUNCTION public.approve_and_clone_in(target_user_id uuid, target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  cust_rec RECORD;\r\n  ord_rec RECORD;\r\n  team_cust_id uuid;\r\n  new_ord_id uuid;\r\nBEGIN\r\n  -- A. อัปเดตสถานะสมาชิกเป็น Active\r\n  UPDATE public.team_members\r\n  SET status = 'active', joined_at = now()\r\n  WHERE user_id = target_user_id AND team_id = target_team_id;\r\n\r\n  -- B. Loop Clone Customers (จากส่วนตัว -> ทีม)\r\n  FOR cust_rec IN \r\n    SELECT * FROM public.customers \r\n    WHERE customer_record_by_user_id = target_user_id \r\n    AND customer_record_by_team_id IS NULL\r\n  LOOP\r\n    \r\n    -- B.1 เช็คว่าลูกค้าคนนี้มีในทีมแล้วหรือยัง? (ป้องกันซ้ำ)\r\n    SELECT customer_id INTO team_cust_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_citizen_id = cust_rec.customer_citizen_id;\r\n\r\n    -- B.2 ถ้ายังไม่มี ให้สร้างใหม่ (Clone Profile)\r\n    IF team_cust_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th, \r\n        customer_fname_en, customer_lname_en, customer_phone, \r\n        customer_address1, customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        cust_rec.customer_citizen_id, cust_rec.customer_fname_th, cust_rec.customer_lname_th,\r\n        cust_rec.customer_fname_en, cust_rec.customer_lname_en, cust_rec.customer_phone,\r\n        cust_rec.customer_address1, target_user_id, target_team_id\r\n      ) RETURNING customer_id INTO team_cust_id;\r\n    END IF;\r\n\r\n    -- C. Loop Clone Orders ของลูกค้าคนนั้น (จากส่วนตัว -> ทีม)\r\n    FOR ord_rec IN\r\n      SELECT * FROM public.orders\r\n      WHERE order_customer_id = cust_rec.customer_id\r\n      AND order_record_by_team_id IS NULL\r\n    LOOP\r\n      \r\n      -- C.1 สร้าง Order ใหม่ในนามทีม (ผูกกับ Customer ID ของทีมที่ได้จากข้อ B)\r\n      INSERT INTO public.orders (\r\n        order_customer_id, order_total_amount, order_date,\r\n        order_record_by_user_id, order_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_id, ord_rec.order_total_amount, ord_rec.order_date,\r\n        target_user_id, target_team_id\r\n      ) RETURNING order_id INTO new_ord_id;\r\n\r\n      -- C.2 Clone Order Items\r\n      INSERT INTO public.order_items (order_id, product_code, quantity, product_price)\r\n      SELECT new_ord_id, product_code, quantity, product_price\r\n      FROM public.order_items WHERE order_id = ord_rec.order_id;\r\n      \r\n    END LOOP; -- จบ Loop Order\r\n  END LOOP; -- จบ Loop Customer\r\nEND;\r\n$function$\n"
+        "definition": "CREATE OR REPLACE FUNCTION public.approve_and_clone_in(target_user_id uuid, target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  cust_rec RECORD;\r\n  ord_rec RECORD;\r\n  team_cust_id uuid;\r\n  new_ord_id uuid;\r\nBEGIN\r\n  -- A. Update member status to Active\r\n  UPDATE public.team_members\r\n  SET status = 'active', joined_at = now()\r\n  WHERE user_id = target_user_id AND team_id = target_team_id;\r\n\r\n  -- B. Loop Clone Customers (Private -> Team)\r\n  FOR cust_rec IN \r\n    SELECT * FROM public.customers \r\n    WHERE customer_record_by_user_id = target_user_id \r\n    AND customer_record_by_team_id IS NULL\r\n  LOOP\r\n    \r\n    -- B.1 Check if customer already exists in team\r\n    SELECT customer_id INTO team_cust_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_citizen_id = cust_rec.customer_citizen_id;\r\n\r\n    -- B.2 If not exists, create new (Clone Profile)\r\n    IF team_cust_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th, \r\n        customer_fname_en, customer_lname_en, customer_phone, \r\n        customer_address1, customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        cust_rec.customer_citizen_id, cust_rec.customer_fname_th, cust_rec.customer_lname_th,\r\n        cust_rec.customer_fname_en, cust_rec.customer_lname_en, cust_rec.customer_phone,\r\n        cust_rec.customer_address1, target_user_id, target_team_id\r\n      ) RETURNING customer_id INTO team_cust_id;\r\n    END IF;\r\n\r\n    -- C. Loop Clone Orders of that customer (Private -> Team)\r\n    FOR ord_rec IN\r\n      SELECT * FROM public.orders\r\n      WHERE order_customer_id = cust_rec.customer_id\r\n      AND order_record_by_team_id IS NULL\r\n    LOOP\r\n      \r\n      -- C.1 Create new Order for Team\r\n      INSERT INTO public.orders (\r\n        order_customer_id, order_total_amount, order_date,\r\n        order_record_by_user_id, order_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_id, ord_rec.order_total_amount, ord_rec.order_date,\r\n        target_user_id, target_team_id\r\n      ) RETURNING order_id INTO new_ord_id;\r\n\r\n      -- C.2 Clone Order Items\r\n      INSERT INTO public.order_items (order_id, product_code, quantity, product_price)\r\n      SELECT new_ord_id, product_code, quantity, product_price\r\n      FROM public.order_items WHERE order_id = ord_rec.order_id;\r\n      \r\n    END LOOP; -- End Loop Order\r\n  END LOOP; -- End Loop Customer\r\nEND;\r\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -550,6 +550,14 @@
         "security_type": "SECURITY INVOKER",
         "arguments": "",
         "definition": "CREATE OR REPLACE FUNCTION public.deactivate_old_consents()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nBEGIN\r\n  -- ถ้าแถวใหม่ที่กำลังจะเข้า มีค่า is_active = true\r\n  IF NEW.is_active = true THEN\r\n    -- ให้ไปไล่ปิด (Update) แถวเก่าที่เป็น Type เดียวกัน ให้เป็น false\r\n    UPDATE public.consent_docs\r\n    SET is_active = false\r\n    WHERE consent_type = NEW.consent_type \r\n    AND consent_doc_id != NEW.consent_doc_id; -- ยกเว้นตัวมันเอง\r\n  END IF;\r\n  RETURN NEW;\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "debug_rls_hierarchy",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.debug_rls_hierarchy()\n RETURNS TABLE(current_user_id uuid, user_role_jwt text, found_seed_citizen_id text, found_seed_team_id uuid, hierarchy_ids_count integer, hierarchy_sample text[])\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  v_uid uuid := auth.uid();\r\n  v_role text := auth.jwt() ->> 'user_role';\r\n  v_seed_cit text;\r\n  v_seed_list text[];\r\n  v_tm_id uuid;\r\nBEGIN\r\n  -- 1. Try to find the seed user\r\n  SELECT c.customer_citizen_id, tm.team_id\r\n  INTO v_seed_cit, v_tm_id\r\n  FROM public.team_members tm\r\n  JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\r\n  WHERE tm.user_id = v_uid AND tm.status = 'active'\r\n  LIMIT 1;\r\n\r\n  -- 2. Call the hierarchy function\r\n  v_seed_list := public.get_member_hierarchy_ids();\r\n\r\n  RETURN QUERY SELECT \r\n    v_uid, \r\n    v_role, \r\n    v_seed_cit, \r\n    v_tm_id, \r\n    COALESCE(array_length(v_seed_list, 1), 0),\r\n    v_seed_list;\r\nEND;\r\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -565,7 +573,7 @@
         "owner": "postgres",
         "security_type": "SECURITY DEFINER",
         "arguments": "",
-        "definition": "CREATE OR REPLACE FUNCTION public.get_current_user_customer_citizen_id()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\r\n  SELECT c.customer_citizen_id \r\n  FROM public.team_members tm\r\n  JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\r\n  WHERE tm.user_id = auth.uid() \r\n  AND tm.status = 'active' \r\n  LIMIT 1;\r\n$function$\n"
+        "definition": "CREATE OR REPLACE FUNCTION public.get_current_user_customer_citizen_id()\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\n  SELECT c.customer_citizen_id \n  FROM public.team_members tm\n  JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\n  WHERE tm.user_id = auth.uid() \n  AND tm.status = 'active' \n  LIMIT 1;\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -577,19 +585,35 @@
     },
     {
         "schema_name": "public",
+        "function_name": "get_member_hierarchy_ids",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_member_hierarchy_ids()\n RETURNS text[]\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  current_uid uuid := auth.uid();\r\n  seed_cit_id text;\r\n  seed_tm_id uuid;\r\n  result_ids text[];\r\nBEGIN\r\n    SELECT c.customer_citizen_id, tm.team_id\r\n    INTO seed_cit_id, seed_tm_id\r\n    FROM public.team_members tm\r\n    JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\r\n    WHERE tm.user_id = current_uid AND tm.status = 'active'\r\n    LIMIT 1;\r\n\r\n    IF seed_cit_id IS NULL THEN\r\n        RETURN ARRAY[]::text[];\r\n    END IF;\r\n\r\n    WITH RECURSIVE \r\n    upline_cte AS (\r\n        SELECT customer_citizen_id, customer_recommender_id\r\n        FROM public.customers\r\n        WHERE customer_citizen_id = seed_cit_id \r\n          AND customer_record_by_team_id = seed_tm_id\r\n        \r\n        UNION\r\n        \r\n        SELECT c.customer_citizen_id, c.customer_recommender_id\r\n        FROM public.customers c\r\n        INNER JOIN upline_cte u ON c.customer_citizen_id = u.customer_recommender_id\r\n        WHERE c.customer_record_by_team_id = seed_tm_id\r\n    ),\r\n    downline_cte AS (\r\n        SELECT customer_citizen_id\r\n        FROM public.customers\r\n        WHERE customer_citizen_id = seed_cit_id\r\n          AND customer_record_by_team_id = seed_tm_id\r\n\r\n        UNION\r\n        \r\n        SELECT c.customer_citizen_id\r\n        FROM public.customers c\r\n        INNER JOIN downline_cte d ON c.customer_recommender_id = d.customer_citizen_id\r\n        WHERE c.customer_record_by_team_id = seed_tm_id\r\n    )\r\n    SELECT array_agg(DISTINCT customer_citizen_id)\r\n    INTO result_ids\r\n    FROM (\r\n        SELECT customer_citizen_id FROM upline_cte\r\n        UNION\r\n        SELECT customer_citizen_id FROM downline_cte\r\n    ) all_ids;\r\n\r\n    RETURN COALESCE(result_ids, ARRAY[]::text[]);\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_member_hierarchy_ids_v3",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_member_hierarchy_ids_v3()\n RETURNS text[]\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  current_uid uuid := auth.uid();\r\n  seed_cit_id text;\r\n  seed_tm_id uuid;\r\n  result_ids text[];\r\nBEGIN\r\n    -- Find Seed Data (Use LEFT JOIN to be safe)\r\n    SELECT c.customer_citizen_id, tm.team_id\r\n    INTO seed_cit_id, seed_tm_id\r\n    FROM public.team_members tm\r\n    LEFT JOIN public.customers c ON tm.customer_id_of_user = c.customer_id\r\n    WHERE tm.user_id = current_uid AND tm.status = 'active'\r\n    LIMIT 1;\r\n\r\n    -- If no citizen ID found, return empty\r\n    IF seed_cit_id IS NULL OR seed_tm_id IS NULL THEN\r\n        RETURN ARRAY[]::text[];\r\n    END IF;\r\n\r\n    -- CTE for Hierarchy\r\n    WITH RECURSIVE \r\n    upline_cte AS (\r\n        SELECT customer_citizen_id, customer_recommender_id\r\n        FROM public.customers\r\n        WHERE customer_citizen_id = seed_cit_id AND customer_record_by_team_id = seed_tm_id\r\n        UNION\r\n        SELECT c.customer_citizen_id, c.customer_recommender_id\r\n        FROM public.customers c\r\n        INNER JOIN upline_cte u ON c.customer_citizen_id = u.customer_recommender_id\r\n        WHERE c.customer_record_by_team_id = seed_tm_id\r\n    ),\r\n    downline_cte AS (\r\n        SELECT customer_citizen_id\r\n        FROM public.customers\r\n        WHERE customer_citizen_id = seed_cit_id AND customer_record_by_team_id = seed_tm_id\r\n        UNION\r\n        SELECT c.customer_citizen_id\r\n        FROM public.customers c\r\n        INNER JOIN downline_cte d ON c.customer_recommender_id = d.customer_citizen_id\r\n        WHERE c.customer_record_by_team_id = seed_tm_id\r\n    )\r\n    SELECT array_agg(DISTINCT customer_citizen_id)\r\n    INTO result_ids\r\n    FROM (\r\n        SELECT customer_citizen_id FROM upline_cte\r\n        UNION\r\n        SELECT customer_citizen_id FROM downline_cte\r\n    ) all_ids;\r\n\r\n    -- Always fallback to at least returning the seed_cit_id if array is null (to see self)\r\n    RETURN COALESCE(result_ids, ARRAY[seed_cit_id]::text[]);\r\nEND;\r\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "get_user_seed",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "",
+        "definition": "CREATE OR REPLACE FUNCTION public.get_user_seed()\n RETURNS TABLE(seed_citizen_id text, seed_team_id uuid)\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\n  SELECT\n    c.customer_citizen_id::text,\n    t.team_id::uuid\n  FROM user_profiles up\n  INNER JOIN team_members tm ON up.user_id = tm.user_id\n  INNER JOIN teams t ON tm.team_id = t.team_id\n  INNER JOIN customers c ON tm.customer_id_of_user = c.customer_id\n  WHERE tm.user_id = (SELECT auth.uid())\n    AND tm.role = 'member'\n    AND tm.status = 'active'\n  LIMIT 1;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
         "function_name": "get_user_team_role",
         "owner": "postgres",
         "security_type": "SECURITY DEFINER",
         "arguments": "check_team_id uuid",
-        "definition": "CREATE OR REPLACE FUNCTION public.get_user_team_role(check_team_id uuid)\n RETURNS text\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  SELECT role\r\n  FROM public.team_members\r\n  WHERE team_id = check_team_id\r\n    AND user_id = auth.uid()\r\n    AND status = 'active'\r\n  LIMIT 1;\r\n$function$\n"
-    },
-    {
-        "schema_name": "public",
-        "function_name": "is_in_recommender_chain",
-        "owner": "postgres",
-        "security_type": "SECURITY DEFINER",
-        "arguments": "target_customer_id uuid, source_customer_id uuid, max_depth integer DEFAULT 10",
-        "definition": "CREATE OR REPLACE FUNCTION public.is_in_recommender_chain(target_customer_id uuid, source_customer_id uuid, max_depth integer DEFAULT 10)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\nDECLARE\n  curr uuid := source_customer_id;\n  depth int := 0;\n  found boolean := false;\nBEGIN\n  IF target_customer_id IS NULL OR source_customer_id IS NULL THEN\n    RETURN FALSE;\n  END IF;\n  IF target_customer_id = source_customer_id THEN\n    RETURN TRUE;\n  END IF;\n  LOOP\n    EXIT WHEN curr IS NULL OR depth >= max_depth;\n    SELECT customer_recommender_id INTO curr FROM public.customers WHERE customer_id = curr;\n    depth := depth + 1;\n    IF curr = target_customer_id THEN\n      RETURN TRUE;\n    END IF;\n  END LOOP;\n  -- check downward chain using recursive CTE\n  WITH RECURSIVE downchain(c_id, d) AS (\n    SELECT customer_id, 0 FROM public.customers WHERE customer_id = source_customer_id\n    UNION ALL\n    SELECT c.customer_id, d+1 FROM public.customers c JOIN downchain ON c.customer_recommender_id = downchain.c_id WHERE d+1 <= max_depth\n  )\n  SELECT true INTO found FROM downchain WHERE c_id = target_customer_id LIMIT 1;\n\n  RETURN found;\nEXCEPTION WHEN others THEN\n  RETURN false;\nEND;\n$function$\n"
+        "definition": "CREATE OR REPLACE FUNCTION public.get_user_team_role(check_team_id uuid)\n RETURNS text\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  SELECT role\n  FROM public.team_members\n  WHERE team_id = check_team_id\n    AND user_id = auth.uid()\n    AND status = 'active'\n  LIMIT 1;\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -606,6 +630,14 @@
         "security_type": "SECURITY INVOKER",
         "arguments": "target_uuid uuid, source_uuid uuid, max_depth integer DEFAULT 10",
         "definition": "CREATE OR REPLACE FUNCTION public.is_in_recommender_chain_v2(target_uuid uuid, source_uuid uuid, max_depth integer DEFAULT 10)\n RETURNS boolean\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n  curr_recommender_text text;\n  curr_uuid uuid;\n  depth int := 0;\nBEGIN\n  IF target_uuid IS NULL OR source_uuid IS NULL THEN\n    RETURN FALSE;\n  END IF;\n\n  curr_uuid := source_uuid;\n  LOOP\n    EXIT WHEN curr_uuid IS NULL OR depth >= max_depth;\n    SELECT customer_recommender_id INTO curr_recommender_text FROM customers WHERE customer_id = curr_uuid;\n    IF curr_recommender_text IS NULL THEN\n      RETURN FALSE;\n    END IF;\n    -- Try to parse as uuid first; if it's uuid and exists, use it; otherwise treat as citizen_id (text)\n    BEGIN\n      curr_uuid := curr_recommender_text::uuid;\n    EXCEPTION WHEN others THEN\n      SELECT customer_id INTO curr_uuid FROM customers WHERE customer_citizen_id = curr_recommender_text LIMIT 1;\n    END;\n\n    IF curr_uuid IS NULL THEN\n      RETURN FALSE;\n    END IF;\n\n    IF curr_uuid = target_uuid THEN\n      RETURN TRUE;\n    END IF;\n\n    depth := depth + 1;\n  END LOOP;\n  RETURN FALSE;\nEND;\n$function$\n"
+    },
+    {
+        "schema_name": "public",
+        "function_name": "is_in_user_chain",
+        "owner": "postgres",
+        "security_type": "SECURITY DEFINER",
+        "arguments": "target_citizen_id text, target_team_id uuid",
+        "definition": "CREATE OR REPLACE FUNCTION public.is_in_user_chain(target_citizen_id text, target_team_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\nAS $function$\nWITH seed AS (\n  SELECT gs.seed_citizen_id::text AS seed_citizen_id, gs.seed_team_id::uuid AS seed_team_id\n  FROM public.get_user_seed() gs\n),\n-- build upline and downline using two separate recursive CTEs\nupline_chain AS (\n  WITH RECURSIVE upline AS (\n    SELECT c.customer_citizen_id, 0 AS level, c.customer_record_by_team_id, c.customer_recommender_id\n    FROM public.customers c\n    JOIN seed s ON c.customer_citizen_id = s.seed_citizen_id\n    WHERE c.customer_record_by_team_id = s.seed_team_id\n\n    UNION ALL\n\n    SELECT c.customer_citizen_id, upline.level + 1, c.customer_record_by_team_id, c.customer_recommender_id\n    FROM public.customers c\n    JOIN upline ON c.customer_citizen_id = upline.customer_recommender_id\n    JOIN seed s ON c.customer_record_by_team_id = s.seed_team_id\n    WHERE c.customer_recommender_id IS NOT NULL\n  )\n  SELECT customer_citizen_id, level FROM upline\n),\ndownline_chain AS (\n  WITH RECURSIVE downline AS (\n    SELECT c.customer_citizen_id, 0 AS level, c.customer_record_by_team_id, c.customer_recommender_id\n    FROM public.customers c\n    JOIN seed s ON c.customer_citizen_id = s.seed_citizen_id\n    WHERE c.customer_record_by_team_id = s.seed_team_id\n\n    UNION ALL\n\n    SELECT c.customer_citizen_id, downline.level + 1, c.customer_record_by_team_id, c.customer_recommender_id\n    FROM public.customers c\n    JOIN downline ON c.customer_recommender_id = downline.customer_citizen_id\n    JOIN seed s ON c.customer_record_by_team_id = s.seed_team_id\n  )\n  SELECT customer_citizen_id, level FROM downline\n)\nSELECT EXISTS (\n  SELECT 1 FROM (\n    SELECT customer_citizen_id FROM upline_chain\n    UNION ALL\n    SELECT customer_citizen_id FROM downline_chain\n  ) chain\n  WHERE chain.customer_citizen_id = target_citizen_id\n);\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -629,7 +661,7 @@
         "owner": "postgres",
         "security_type": "SECURITY DEFINER",
         "arguments": "target_team_id uuid",
-        "definition": "CREATE OR REPLACE FUNCTION public.leave_team_and_clone_out(target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  current_user_id uuid := auth.uid(); -- ใช้ ID ของคนที่เรียก Function\r\n  team_cust_rec RECORD;\r\n  personal_exist_id uuid;\r\nBEGIN\r\n  -- A. Loop ลูกค้าในทีม ที่ User นี้เป็นคนดูแล (record_by_user_id)\r\n  FOR team_cust_rec IN\r\n    SELECT * FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_record_by_user_id = current_user_id\r\n  LOOP\r\n    \r\n    -- A.1 เช็คว่าลูกค้าคนนี้ มีในฐานข้อมูลส่วนตัวหรือยัง?\r\n    SELECT customer_id INTO personal_exist_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_user_id = current_user_id\r\n      AND customer_record_by_team_id IS NULL\r\n      AND customer_citizen_id = team_cust_rec.customer_citizen_id;\r\n\r\n    -- A.2 ถ้ายังไม่มี -> Clone ออกมาเป็นส่วนตัว (ไม่เอา Order)\r\n    IF personal_exist_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th,\r\n        customer_phone, customer_address1, \r\n        customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_rec.customer_citizen_id, team_cust_rec.customer_fname_th, team_cust_rec.customer_lname_th,\r\n        team_cust_rec.customer_phone, team_cust_rec.customer_address1,\r\n        current_user_id, NULL -- Team เป็น NULL\r\n      );\r\n    END IF;\r\n  END LOOP;\r\n\r\n  -- B. เปลี่ยนสถานะสมาชิกเป็น 'left' (ตัดสิทธิ์เข้าถึงทีม)\r\n  UPDATE public.team_members\r\n  SET status = 'left'\r\n  WHERE user_id = current_user_id AND team_id = target_team_id;\r\n\r\nEND;\r\n$function$\n"
+        "definition": "CREATE OR REPLACE FUNCTION public.leave_team_and_clone_out(target_team_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\nDECLARE\r\n  current_user_id uuid := auth.uid(); -- Use ID of the caller\r\n  team_cust_rec RECORD;\r\n  personal_exist_id uuid;\r\nBEGIN\r\n  -- A. Loop team customers recorded by this user\r\n  FOR team_cust_rec IN\r\n    SELECT * FROM public.customers\r\n    WHERE customer_record_by_team_id = target_team_id\r\n      AND customer_record_by_user_id = current_user_id\r\n  LOOP\r\n    \r\n    -- A.1 Check if exists in private DB\r\n    SELECT customer_id INTO personal_exist_id\r\n    FROM public.customers\r\n    WHERE customer_record_by_user_id = current_user_id\r\n      AND customer_record_by_team_id IS NULL\r\n      AND customer_citizen_id = team_cust_rec.customer_citizen_id;\r\n\r\n    -- A.2 If not exists -> Clone to private (No Orders)\r\n    IF personal_exist_id IS NULL THEN\r\n      INSERT INTO public.customers (\r\n        customer_citizen_id, customer_fname_th, customer_lname_th,\r\n        customer_phone, customer_address1, \r\n        customer_record_by_user_id, customer_record_by_team_id\r\n      ) VALUES (\r\n        team_cust_rec.customer_citizen_id, team_cust_rec.customer_fname_th, team_cust_rec.customer_lname_th,\r\n        team_cust_rec.customer_phone, team_cust_rec.customer_address1,\r\n        current_user_id, NULL -- Team is NULL\r\n      );\r\n    END IF;\r\n  END LOOP;\r\n\r\n  -- B. Update status to 'left'\r\n  UPDATE public.team_members\r\n  SET status = 'left'\r\n  WHERE user_id = current_user_id AND team_id = target_team_id;\r\n\r\nEND;\r\n$function$\n"
     },
     {
         "schema_name": "public",
@@ -766,37 +798,5 @@
         "security_type": "SECURITY INVOKER",
         "arguments": "name text",
         "definition": "CREATE OR REPLACE FUNCTION storage.extension(name text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE\n    _parts text[];\n    _filename text;\nBEGIN\n    SELECT string_to_array(name, '/') INTO _parts;\n    SELECT _parts[array_length(_parts,1)] INTO _filename;\n    RETURN reverse(split_part(reverse(_filename), '.', 1));\nEND\n$function$\n"
-    },
-    {
-        "schema_name": "storage",
-        "function_name": "filename",
-        "owner": "supabase_storage_admin",
-        "security_type": "SECURITY INVOKER",
-        "arguments": "name text",
-        "definition": "CREATE OR REPLACE FUNCTION storage.filename(name text)\n RETURNS text\n LANGUAGE plpgsql\nAS $function$\nDECLARE\n_parts text[];\nBEGIN\n\tselect string_to_array(name, '/') into _parts;\n\treturn _parts[array_length(_parts,1)];\nEND\n$function$\n"
-    },
-    {
-        "schema_name": "storage",
-        "function_name": "foldername",
-        "owner": "supabase_storage_admin",
-        "security_type": "SECURITY INVOKER",
-        "arguments": "name text",
-        "definition": "CREATE OR REPLACE FUNCTION storage.foldername(name text)\n RETURNS text[]\n LANGUAGE plpgsql\n IMMUTABLE\nAS $function$\nDECLARE\n    _parts text[];\nBEGIN\n    -- Split on \"/\" to get path segments\n    SELECT string_to_array(name, '/') INTO _parts;\n    -- Return everything except the last segment\n    RETURN _parts[1 : array_length(_parts,1) - 1];\nEND\n$function$\n"
-    },
-    {
-        "schema_name": "storage",
-        "function_name": "get_common_prefix",
-        "owner": "supabase_storage_admin",
-        "security_type": "SECURITY INVOKER",
-        "arguments": "p_key text, p_prefix text, p_delimiter text",
-        "definition": "CREATE OR REPLACE FUNCTION storage.get_common_prefix(p_key text, p_prefix text, p_delimiter text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\nSELECT CASE\n    WHEN position(p_delimiter IN substring(p_key FROM length(p_prefix) + 1)) > 0\n    THEN left(p_key, length(p_prefix) + position(p_delimiter IN substring(p_key FROM length(p_prefix) + 1)))\n    ELSE NULL\nEND;\n$function$\n"
-    },
-    {
-        "schema_name": "storage",
-        "function_name": "get_level",
-        "owner": "supabase_storage_admin",
-        "security_type": "SECURITY INVOKER",
-        "arguments": "name text",
-        "definition": "CREATE OR REPLACE FUNCTION storage.get_level(name text)\n RETURNS integer\n LANGUAGE sql\n IMMUTABLE STRICT\nAS $function$\nSELECT array_length(string_to_array(\"name\", '/'), 1);\n$function$\n"
     }
 ]

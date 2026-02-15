@@ -102,16 +102,16 @@
         "policy_name": "customers_team_member_hierarchy_select",
         "command": "r",
         "roles": "16481",
-        "using_expression": "((get_user_team_role(get_current_user_team_id()) = 'member'::text) AND (customer_record_by_team_id = ( SELECT get_current_user_team_id() AS get_current_user_team_id)) AND (customer_citizen_id = ANY (get_member_hierarchy_ids_v3())))",
+        "using_expression": "(((auth.jwt() ->> 'user_role'::text) = 'member'::text) AND (customer_record_by_team_id = ( SELECT get_current_user_team_id() AS get_current_user_team_id)) AND ((customer_citizen_id = get_current_user_customer_citizen_id()) OR is_in_user_upline(customer_citizen_id) OR is_in_user_downline(customer_citizen_id)))",
         "with_check_expression": null,
         "schema_name": "public",
         "table_name": "customers"
     },
     {
-        "policy_name": "customers_team_select_by_all_role",
+        "policy_name": "customers_team_select_all_roles",
         "command": "r",
         "roles": "16481",
-        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members tm\n  WHERE ((tm.team_id = customers.customer_record_by_team_id) AND (tm.user_id = ( SELECT auth.uid() AS uid)) AND (tm.status = 'active'::text) AND (tm.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
+        "using_expression": "((customer_record_by_team_id IS NOT NULL) AND (EXISTS ( SELECT 1\n   FROM team_members\n  WHERE ((team_members.team_id = customers.customer_record_by_team_id) AND (team_members.user_id = auth.uid()) AND (team_members.status = 'active'::text) AND (team_members.role = ANY (ARRAY['leader'::text, 'co-leader'::text]))))))",
         "with_check_expression": null,
         "schema_name": "public",
         "table_name": "customers"

@@ -178,7 +178,7 @@ export const teamService = {
         };
     },
 
-    async updateMemberStatus(requesterId: string, memberId: string, newStatus: string, accessToken?: string): Promise<void> {
+    async updateMemberStatus(requesterId: string, memberId: string, newStatus: string, accessToken?: string, customerId?: string): Promise<void> {
         // Use authenticated client if token is provided to ensure RLS policies are applied correctly
         const supabase = accessToken
             ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
@@ -255,10 +255,15 @@ export const teamService = {
             }
         }
 
-        // 2. Update status
+        // 2. Update status and customer_id_of_user if provided
+        const updatePayload: { status: string; customer_id_of_user?: string } = { status: newStatus };
+        if (customerId) {
+            updatePayload.customer_id_of_user = customerId;
+        }
+
         const { error: updateError } = await supabase
             .from('team_members')
-            .update({ status: newStatus })
+            .update(updatePayload)
             .eq('id', memberId);
 
         if (updateError) throw new Error(`Failed to update member status: ${updateError.message}`);
@@ -275,6 +280,43 @@ export const teamService = {
                 // console.log('[TeamService] Cloning completed successfully.');
             }
         }
+    },
+
+    async getMemberById(memberId: string, accessToken?: string): Promise<TeamMember & { user_profile: any }> {
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
+
+        // 1. Fetch the team member first (without relation)
+        const { data: member, error: memberError } = await supabase
+            .from('team_members')
+            .select('*')
+            .eq('id', memberId)
+            .single();
+
+        if (memberError) {
+            console.error('[TeamService] getMemberById error:', memberError);
+            throw new Error(`Failed to fetch member: ${memberError.message}`);
+        }
+        if (!member) throw new Error('Member not found');
+
+        // 2. Fetch the user profile manually using user_id
+        const { data: userProfile, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('user_full_name, user_email, user_avatar_url')
+            .eq('user_id', member.user_id)
+            .single();
+
+        if (profileError && profileError.code !== 'PGRST116') { // Ignore "Row not found" if profile doesn't exist yet
+            console.error('[TeamService] Error fetching user profile for member:', profileError);
+        }
+
+        return {
+            ...member,
+            user_profile: userProfile || {}
+        };
     },
 
     async removeMember(requesterId: string, memberId: string, accessToken?: string): Promise<void> {

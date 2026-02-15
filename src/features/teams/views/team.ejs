@@ -309,10 +309,9 @@
                                                                     id="dropdown-mobile-<%= member.id %>">
                                                                     <div class="py-1 flex flex-col" role="menu">
                                                                         <% if (member.status==='pending' ) { %>
-                                                                            <button type="button"
-                                                                                class="approve-member-btn block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
-                                                                                data-member-id="<%= member.id %>">1.
-                                                                                อนุมัติ (Approve)</button>
+                                                                            <a href="/teams/team-member-setting?memberId=<%= member.id %>"
+                                                                                class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50">1.
+                                                                                อนุมัติ (Approve)</a>
                                                                             <% if (amILeader) { %>
                                                                                 <button type="button"
                                                                                     class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
@@ -383,12 +382,11 @@
                                                                 aria-orientation="vertical"
                                                                 aria-labelledby="options-menu">
                                                                 <% if (member.status==='pending' ) { %>
-                                                                    <button type="button"
-                                                                        class="approve-member-btn block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
-                                                                        role="menuitem"
-                                                                        data-member-id="<%= member.id %>">
+                                                                    <a href="/teams/team-member-setting?memberId=<%= member.id %>"
+                                                                        class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                                                                        role="menuitem">
                                                                         1. อนุมัติ (Approve)
-                                                                    </button>
+                                                                    </a>
                                                                     <% if (amILeader) { %>
                                                                         <button type="button"
                                                                             class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"

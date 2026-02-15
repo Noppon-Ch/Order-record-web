@@ -5,4 +5,5 @@ export interface TeamMember {
     role: 'leader' | 'member';
     status: 'active' | 'pending' | 'inactive';
     joined_at: Date;
+    customer_id_of_user?: string;
 }
