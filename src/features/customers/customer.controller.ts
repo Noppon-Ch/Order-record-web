@@ -76,7 +76,7 @@ export class CustomerController {
 						customer_lname_th: lname,
 						customer_recommender_id: '1000000000000', // Root recommender
 						customer_position: 'SAG', // Default position
-						customer_registerdate: '-',
+						customer_registerdate: undefined,
 						customer_record_by_user_id: req.user?.id || '',
 						customer_record_by_team_id: values.customer_record_by_team_id,
 						customer_nationality: 'ไทย', // Default
