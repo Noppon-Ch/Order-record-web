@@ -47,11 +47,25 @@ export const teamController = {
             const memberId = req.query.memberId as string;
             if (!memberId) return res.redirect('/teams');
 
-            const member = await teamService.getMemberById(memberId, (req.user as any)?.access_token);
+            const accessToken = (req.user as any)?.access_token;
+            const member = await teamService.getMemberById(memberId, accessToken);
+
+            if (!member) {
+                return res.redirect('/teams');
+            }
+
+            // Get my membership in this team
+            const myMembership = await teamService.getMembership(userId, member.team_id, accessToken);
+
+            // If not a member of this team, redirect (unless I am site admin? usually not handled here)
+            if (!myMembership) {
+                return res.redirect('/teams');
+            }
 
             res.render('team-member-setting', {
                 user: req.user,
                 member,
+                myMembership,
                 error: null,
                 nonce: res.locals.nonce
             });
@@ -61,18 +75,19 @@ export const teamController = {
         }
     },
 
-    async approveMember(req: Request, res: Response) {
+    async updateMemberStatus(req: Request, res: Response) {
         try {
             const userId = req.user?.id;
-            const { memberId, customerId } = req.body;
+            const { memberId, status, customerId } = req.body;
 
             if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
             if (!memberId) return res.status(400).json({ success: false, message: 'Member ID is required' });
+            if (!status) return res.status(400).json({ success: false, message: 'Status is required' });
 
-            await teamService.updateMemberStatus(userId, memberId, 'active', (req.user as any)?.access_token, customerId);
-            res.json({ success: true, message: 'Member approved successfully' });
+            await teamService.updateMemberStatus(userId, memberId, status, (req.user as any)?.access_token, customerId);
+            res.json({ success: true, message: 'Member status updated successfully' });
         } catch (error: any) {
-            console.error('Error approving member:', error);
+            console.error('Error updating member status:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     },

@@ -313,9 +313,24 @@ export const teamService = {
             console.error('[TeamService] Error fetching user profile for member:', profileError);
         }
 
+        // 3. Fetch customer info if customer_id_of_user exists
+        let customerRef = null;
+        if (member.customer_id_of_user) {
+            const { data: customer, error: customerError } = await supabase
+                .from('customers')
+                .select('customer_fname_th, customer_lname_th, customer_citizen_id')
+                .eq('customer_id', member.customer_id_of_user)
+                .single();
+
+            if (!customerError) {
+                customerRef = customer;
+            }
+        }
+
         return {
             ...member,
-            user_profile: userProfile || {}
+            user_profile: userProfile || {},
+            customer_ref: customerRef
         };
     },
 
@@ -526,6 +541,28 @@ export const teamService = {
 
         if (error) throw new Error(`Failed to update team description: ${error.message}`);
         if (!data || data.length === 0) throw new Error('Failed to update team description. You might not have permission or the team does not exist.');
+    },
+
+    async getMembership(userId: string, teamId: string, accessToken?: string) {
+        const supabase = accessToken
+            ? createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+                global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            })
+            : createClient(supabaseUrl, supabaseKey);
+
+        const { data, error } = await supabase
+            .from('team_members')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('team_id', teamId)
+            .maybeSingle();
+
+        if (error) {
+            console.error('Error fetching membership:', error);
+            return null;
+        }
+
+        return data; // returns TeamMember | null
     },
 
     async leaveTeam(userId: string, accessToken?: string): Promise<void> {

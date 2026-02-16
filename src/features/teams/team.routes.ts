@@ -10,12 +10,12 @@ router.use(isAuthenticated);
 import { requireTeamMembership, requireTeamRole } from './middlewares/team-auth.middleware.js';
 
 router.get('/', teamController.getTeamPage);
-router.get('/team-member-setting', teamController.getTeamMemberSettingPage);
+router.get('/team-member-setting', requireTeamMembership, requireTeamRole(['leader', 'co-leader']), teamController.getTeamMemberSettingPage);
 router.post('/create', teamController.createTeam);
 router.post('/join', teamController.joinTeam);
 
 // Protected Team Actions
-router.post('/approve', requireTeamMembership, requireTeamRole(['leader', 'co-leader']), teamController.approveMember);
+router.post('/update-status', requireTeamMembership, requireTeamRole(['leader', 'co-leader']), teamController.updateMemberStatus);
 router.post('/remove', requireTeamMembership, requireTeamRole(['leader', 'co-leader']), teamController.removeMember);
 router.post('/update-role', requireTeamMembership, requireTeamRole(['leader']), teamController.updateMemberRole);
 router.post('/leave', requireTeamMembership, teamController.leaveTeam);

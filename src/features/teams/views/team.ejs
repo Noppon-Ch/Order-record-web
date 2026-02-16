@@ -290,61 +290,10 @@
 
                                                         <% if ((amILeader || amICoLeader) &&
                                                             myMembership.status==='active' && canShowManage) { %>
-                                                            <div class="relative inline-block text-left">
-                                                                <button type="button"
-                                                                    class="manage-dropdown-btn inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-2 py-1 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-                                                                    data-member-id="<%= member.id %>"
-                                                                    data-dropdown-target="dropdown-mobile-<%= member.id %>">
-                                                                    จัดการ
-                                                                    <svg class="-mr-1 ml-1 h-4 w-4"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        viewBox="0 0 20 20" fill="currentColor">
-                                                                        <path fill-rule="evenodd"
-                                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                            clip-rule="evenodd" />
-                                                                    </svg>
-                                                                </button>
-                                                                <!-- Mobile Dropdown -->
-                                                                <div class="hidden origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                                                                    id="dropdown-mobile-<%= member.id %>">
-                                                                    <div class="py-1 flex flex-col" role="menu">
-                                                                        <% if (member.status==='pending' ) { %>
-                                                                            <a href="/teams/team-member-setting?memberId=<%= member.id %>"
-                                                                                class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50">1.
-                                                                                อนุมัติ (Approve)</a>
-                                                                            <% if (amILeader) { %>
-                                                                                <button type="button"
-                                                                                    class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                                                                    data-member-id="<%= member.id %>">2.
-                                                                                    ปฏิเสธ (Reject)</button>
-                                                                                <% } %>
-                                                                                    <% } else if
-                                                                                        (member.status==='active' &&
-                                                                                        amILeader) { %>
-                                                                                        <div
-                                                                                            class="px-4 py-2 text-xs text-gray-500 font-semibold">
-                                                                                            3. ปรับตำแหน่ง</div>
-                                                                                        <button type="button"
-                                                                                            class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                                                            data-member-id="<%= member.id %>"
-                                                                                            data-role="co-leader">-
-                                                                                            Co-leader</button>
-                                                                                        <button type="button"
-                                                                                            class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                                                            data-member-id="<%= member.id %>"
-                                                                                            data-role="member">-
-                                                                                            Member</button>
-                                                                                        <div
-                                                                                            class="border-t border-gray-100 my-1">
-                                                                                        </div>
-                                                                                        <button type="button"
-                                                                                            class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                                                                            data-member-id="<%= member.id %>">4.
-                                                                                            ลบออกจากทีม</button>
-                                                                                        <% } %>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                            <a href="/teams/team-member-setting?memberId=<%= member.id %>"
+                                                                class="mt-1 inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm w-full sm:w-auto transition-colors">
+                                                                ตั้งค่าสมาชิก
+                                                            </a>
                                                             <% } %>
                                                     </div>
                                                 </div>
@@ -361,73 +310,10 @@
                                             <td
                                                 class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <% if (canShowManage) { %>
-                                                    <div class="relative inline-block text-left">
-                                                        <button type="button"
-                                                            class="manage-dropdown-btn inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-                                                            data-member-id="<%= member.id %>"
-                                                            data-dropdown-target="dropdown-desktop-<%= member.id %>">
-                                                            จัดการ
-                                                            <svg class="-mr-1 ml-2 h-5 w-5"
-                                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                                                fill="currentColor" aria-hidden="true">
-                                                                <path fill-rule="evenodd"
-                                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                                    clip-rule="evenodd" />
-                                                            </svg>
-                                                        </button>
-
-                                                        <div class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-                                                            id="dropdown-desktop-<%= member.id %>">
-                                                            <div class="py-1 flex flex-col" role="menu"
-                                                                aria-orientation="vertical"
-                                                                aria-labelledby="options-menu">
-                                                                <% if (member.status==='pending' ) { %>
-                                                                    <a href="/teams/team-member-setting?memberId=<%= member.id %>"
-                                                                        class="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
-                                                                        role="menuitem">
-                                                                        1. อนุมัติ (Approve)
-                                                                    </a>
-                                                                    <% if (amILeader) { %>
-                                                                        <button type="button"
-                                                                            class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                                                            role="menuitem"
-                                                                            data-member-id="<%= member.id %>">
-                                                                            2. ปฏิเสธ (Reject)
-                                                                        </button>
-                                                                        <% } %>
-                                                                            <% } else if (member.status==='active' &&
-                                                                                amILeader) { %>
-                                                                                <div
-                                                                                    class="px-4 py-2 text-xs text-gray-500 font-semibold">
-                                                                                    3. ปรับตำแหน่ง (Position)</div>
-                                                                                <button type="button"
-                                                                                    class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                                                    role="menuitem"
-                                                                                    data-member-id="<%= member.id %>"
-                                                                                    data-role="co-leader">
-                                                                                    - Co-leader (ผู้ช่วย)
-                                                                                </button>
-                                                                                <button type="button"
-                                                                                    class="change-role-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                                                    role="menuitem"
-                                                                                    data-member-id="<%= member.id %>"
-                                                                                    data-role="member">
-                                                                                    - Member (สมาชิก)
-                                                                                </button>
-
-                                                                                <div
-                                                                                    class="border-t border-gray-100 my-1">
-                                                                                </div>
-                                                                                <button type="button"
-                                                                                    class="remove-member-btn block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                                                                    role="menuitem"
-                                                                                    data-member-id="<%= member.id %>">
-                                                                                    4. ลบออกจากทีม (Remove)
-                                                                                </button>
-                                                                                <% } %>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <a href="/teams/team-member-setting?memberId=<%= member.id %>"
+                                                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors">
+                                                        ตั้งค่าสมาชิก
+                                                    </a>
                                                     <% } %>
                                             </td>
                                             <% } %>

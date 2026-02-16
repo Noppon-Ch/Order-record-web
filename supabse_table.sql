@@ -51,6 +51,15 @@ CREATE TABLE public.customers (
   CONSTRAINT customers_customer_record_by_user_id_fkey FOREIGN KEY (customer_record_by_user_id) REFERENCES auth.users(id),
   CONSTRAINT customers_team_id_fkey FOREIGN KEY (customer_record_by_team_id) REFERENCES public.teams(team_id)
 );
+CREATE TABLE public.function_backups (
+  backup_id uuid NOT NULL DEFAULT gen_random_uuid(),
+  function_schema text NOT NULL,
+  function_name text NOT NULL,
+  arguments text,
+  definition text,
+  backed_up_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT function_backups_pkey PRIMARY KEY (backup_id)
+);
 CREATE TABLE public.order_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   order_id uuid,
@@ -133,6 +142,13 @@ CREATE TABLE public.teams (
   team_description text,
   CONSTRAINT teams_pkey PRIMARY KEY (team_id),
   CONSTRAINT teams_owner_user_id_fkey FOREIGN KEY (owner_user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_customer_chain (
+  user_id uuid NOT NULL,
+  customer_citizen_id text NOT NULL,
+  customer_id uuid,
+  team_id uuid,
+  CONSTRAINT user_customer_chain_pkey PRIMARY KEY (user_id, customer_citizen_id)
 );
 CREATE TABLE public.user_profiles (
   user_id uuid NOT NULL DEFAULT auth.uid(),

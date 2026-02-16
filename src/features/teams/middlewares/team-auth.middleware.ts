@@ -7,10 +7,6 @@ import type { TeamMember } from '../../../models/team_member.model.js';
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
 // Extend Express Request type to include teamMembership if needed, 
 // but commonly we attach to res.locals or req object.
 // For TypeScript, we might augment the definition or cast.
@@ -30,9 +26,19 @@ declare global {
 export const requireTeamMembership = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user?.id;
-        if (!userId) {
+        const accessToken = (req.user as any)?.access_token;
+
+        if (!userId || !accessToken) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
+
+        const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            },
+        });
 
         // Fetch active team membership
         const { data: membership, error } = await supabase
@@ -47,7 +53,7 @@ export const requireTeamMembership = async (req: Request, res: Response, next: N
         }
 
         // Check if request targets a specific team
-        const targetTeamId = req.body.teamId || req.query.teamId || req.params.teamId;
+        const targetTeamId = req.body?.teamId || req.query?.teamId || req.params?.teamId;
         if (targetTeamId && membership.team_id !== targetTeamId) {
             return res.status(403).json({ success: false, message: 'Forbidden: You do not belong to this team' });
         }
@@ -72,6 +78,10 @@ export const requireTeamRole = (allowedRoles: string[]) => {
         }
 
         if (!allowedRoles.includes(req.teamMembership.role)) {
+            // Check if it is an API request (JSON) or page request
+            if (req.accepts('html')) {
+                return res.redirect('/teams');
+            }
             return res.status(403).json({ success: false, message: 'Forbidden: Insufficient permissions' });
         }
 
