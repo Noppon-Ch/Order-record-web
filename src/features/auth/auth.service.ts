@@ -87,14 +87,37 @@ export async function upsertUserProfileAfterOAuth(
   // console.log('[Supabase] Upserting user_profiles:', JSON.stringify(profile, null, 2));
 
 
-  // Upsert the profile into the user_profiles table
-  const { error: upsertError } = await getSupabaseClient()
-    .from('user_profiles')
-    .upsert(profile as any, { onConflict: 'user_id' });
+  // --- Optimization: Check if update is actually needed ---
+  let needsUpdate = true;
+  if (existingProfile) {
+    const isEmailSame = existingProfile.user_email === profile.user_email;
+    const isAvatarSame = existingProfile.user_avatar_url === profile.user_avatar_url;
+    // user_full_name is only added to 'profile' object above if it's missing or new.
+    // So if 'user_full_name' is present in profile, it means we definitely want to write it.
+    const isNameUpdateNeeded = 'user_full_name' in profile;
 
-  if (upsertError) {
-    console.error('[Supabase] Error upserting user profile:', upsertError);
-    throw upsertError;
+    // Also check provider fields if strictness is needed, but usually email/avatar/name are the main ones changing on login.
+    // If everything is the same, we can skip the write.
+    if (isEmailSame && isAvatarSame && !isNameUpdateNeeded) {
+      needsUpdate = false;
+      console.log('[Auth] Profile up-to-date. Skipping DB write.');
+    }
+  }
+
+  if (needsUpdate) {
+    console.log('[Auth] Profile changed. Performing DB write (Background)...');
+    // Upsert the profile into the user_profiles table WITHOUT awaiting (Fire-and-forget)
+    // The user can proceed to login immediately.
+    getSupabaseClient()
+      .from('user_profiles')
+      .upsert(profile as any, { onConflict: 'user_id' })
+      .then(({ error: upsertError }) => {
+        if (upsertError) {
+          console.error('[Supabase] Background Error upserting user profile:', upsertError);
+        } else {
+          console.log('[Supabase] Background Profile updated successfully.');
+        }
+      });
   }
 
   // --- Record Consent ---
@@ -164,9 +187,11 @@ async function recordUserConsent(userId: string, consentType: string, version: s
 
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  // Optimization: Select ONLY the fields we need for auth checks and display name.
+  // Avoid fetching large text fields or jsonb columns if they exist.
   const { data, error } = await getSupabaseClient()
     .from('user_profiles')
-    .select('*')
+    .select('user_id, user_email, user_avatar_url, user_full_name') // Select specific columns
     .eq('user_id', userId)
     .single();
 
@@ -178,5 +203,5 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   }
 
   // console.log(`[Supabase] Profile found for user ${userId}`);
-  return data;
+  return data as UserProfile;
 }

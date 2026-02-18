@@ -1,8 +1,8 @@
 <%- include('main', { body: ` <div class="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
 
     <div class="mb-8">
-        <h1 class="text-3xl font-extrabold text-amber-600 tracking-tight">Edit Customer</h1>
-        <p class="mt-2 text-sm text-gray-500">Update customer information.</p>
+        <h1 class="text-3xl font-extrabold text-amber-600 tracking-tight">แก้ไขข้อมูลลูกค้า</h1>
+        <p class="mt-2 text-sm text-gray-500">อัปเดตข้อมูลลูกค้า</p>
     </div>
 
     ${ (typeof error !== 'undefined' && error) ? `
@@ -38,7 +38,8 @@
             </div>
 
             <div class="sm:col-span-3">
-                <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร *</label>
+                <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="date" name="customer_reg_date" id="customer_reg_date" required
                         value="${customer.customer_registerdate}"
@@ -66,7 +67,8 @@
             </div>
 
             <div class="sm:col-span-3">
-                <label for="customer_fname_th" class="block text-sm font-medium text-gray-700">ชื่อภาษาไทย *</label>
+                <label for="customer_fname_th" class="block text-sm font-medium text-gray-700">ชื่อภาษาไทย <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_fname_th" id="customer_fname_th" required
                         value="${customer.customer_fname_th}"
@@ -74,7 +76,8 @@
                 </div>
             </div>
             <div class="sm:col-span-3">
-                <label for="customer_lname_th" class="block text-sm font-medium text-gray-700">นามสกุลภาษาไทย *</label>
+                <label for="customer_lname_th" class="block text-sm font-medium text-gray-700">นามสกุลภาษาไทย <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_lname_th" id="customer_lname_th" required
                         value="${customer.customer_lname_th}"
@@ -83,8 +86,8 @@
             </div>
 
             <div class="sm:col-span-3">
-                <label for="customer_fname_en" class="block text-sm font-medium text-gray-700">First Name
-                    (English)</label>
+                <label for="customer_fname_en" class="block text-sm font-medium text-gray-700">ชื่อจริง
+                    (ภาษาอังกฤษ)</label>
                 <div class="mt-1">
                     <input type="text" name="customer_fname_en" id="customer_fname_en"
                         value="${customer.customer_fname_en || ''}"
@@ -92,8 +95,8 @@
                 </div>
             </div>
             <div class="sm:col-span-3">
-                <label for="customer_lname_en" class="block text-sm font-medium text-gray-700">Last Name
-                    (English)</label>
+                <label for="customer_lname_en" class="block text-sm font-medium text-gray-700">นามสกุล
+                    (ภาษาอังกฤษ)</label>
                 <div class="mt-1">
                     <input type="text" name="customer_lname_en" id="customer_lname_en"
                         value="${customer.customer_lname_en || ''}"
@@ -102,7 +105,8 @@
             </div>
 
             <div class="sm:col-span-2">
-                <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ *</label>
+                <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ <span
+                        class="text-red-500">*</span></label>
                 <select id="customer_gender" name="customer_gender" required
                     class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
                     <option value="">เลือก...</option>
@@ -113,7 +117,8 @@
                 </select>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ *</label>
+                <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_nationality" id="customer_nationality" required
                         value="${customer.customer_nationality || 'ไทย'}"
@@ -121,7 +126,8 @@
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด *</label>
+                <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="date" name="customer_birthdate" id="customer_birthdate" required
                         value="${customer.customer_birthdate}"
@@ -131,7 +137,7 @@
 
             <div class="sm:col-span-3">
                 <label for="customer_citizen_id" class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชน
-                    *</label>
+                    <span class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_citizen_id" id="customer_citizen_id" required maxlength="13"
                         inputmode="numeric" value="${(customer.customer_citizen_id || '').trim()}"
@@ -152,36 +158,38 @@
 
             <div class="sm:col-span-6">
                 <label for="customer_address1" class="block text-sm font-medium text-gray-700">ที่อยู่ (บ้านเลขที่ หมู่
-                    ซอย ถนน) *</label>
+                    ซอย ถนน) <span class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_address1" id="customer_address1" required
-                        value="${customer.customer_address1}"
+                        value="${customer.customer_address1 || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
             </div>
             <div class="sm:col-span-6">
                 <label for="customer_address2" class="block text-sm font-medium text-gray-700">แขวง/ตำบล เขต/อำเภอ
-                    จังหวัด *</label>
+                    จังหวัด <span class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_address2" id="customer_address2" required
-                        value="${customer.customer_address2}"
+                        value="${customer.customer_address2 || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                         placeholder="แขวง/ตำบล เขต/อำเภอ จังหวัด">
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์ *</label>
+                <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์ <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
-                    <input type="text" name="customer_zipcode" id="customer_zipcode" required
-                        value="${customer.customer_zipcode}"
-                        class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                    <input type="text" name="customer_zipcode" id="customer_zipcode" required readonly
+                        value="${customer.customer_zipcode || ''}"
+                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border bg-gray-50">
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ *</label>
+                <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
                     <input type="text" name="customer_phone" id="customer_phone" required
-                        value="${customer.customer_phone}"
+                        value="${customer.customer_phone || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
             </div>
@@ -194,7 +202,8 @@
             </div>
             <div class="sm:col-span-3">
                 <label for="referrer_citizen_id"
-                    class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชนผู้แนะนำ *</label>
+                    class="block text-sm font-medium text-gray-700">เลขประจำตัวประชาชนผู้แนะนำ <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1 flex gap-2">
                     <input type="text" name="referrer_citizen_id" id="referrer_citizen_id" required maxlength="13"
                         inputmode="numeric" value="${(customer.customer_recommender_id || '').trim()}"
@@ -202,7 +211,7 @@
                         placeholder="13 หลัก">
                     <button type="button" id="openSearchModalBtn"
                         class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                        Search
+                        ค้นหา
                     </button>
                 </div>
             </div>
@@ -245,11 +254,11 @@
             <div class="flex justify-end">
                 <a href="/homepage"
                     class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                    Cancel
+                    ยกเลิก
                 </a>
                 <button type="submit"
                     class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
-                    Save Changes
+                    บันทึกการเปลี่ยนแปลง
                 </button>
             </div>
         </div>
@@ -267,14 +276,14 @@
                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                 <div>
                     <div class="mt-3 text-center sm:mt-5">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Search Referrer</h3>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">ค้นหาผู้แนะนำ</h3>
                         <div class="mt-2">
                             <input type="text" id="searchInput"
                                 class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                                placeholder="Enter Name or Citizen ID...">
+                                placeholder="กรอกชื่อ หรือ เลขบัตรประชาชน...">
                             <button type="button" id="performSearchBtn"
                                 class="mt-2 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:text-sm">
-                                Search
+                                ค้นหา
                             </button>
                         </div>
                         <div class="mt-4 text-left max-h-60 overflow-y-auto" id="searchResults">
@@ -285,7 +294,7 @@
                 <div class="mt-5 sm:mt-6">
                     <button type="button" id="closeSearchModalBtn"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:text-sm">
-                        Close
+                        ปิด
                     </button>
                 </div>
             </div>

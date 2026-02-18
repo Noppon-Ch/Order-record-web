@@ -206,7 +206,7 @@ async function selectPerson(person) {
                 document.getElementById('customer_uuid').value = customer.customer_id;
 
                 // Update shipping address
-                const address = `${customer.customer_fname_th} ${customer.customer_lname_th}\n${customer.customer_phone || ''}\n${customer.customer_address1 || ''} ${customer.customer_address2 || ''} ${customer.customer_zipcode || ''}`;
+                const address = `${customer.customer_fname_th} ${customer.customer_lname_th}, ${customer.customer_phone || ''}\n${customer.customer_address1 || ''} ${customer.customer_address2 || ''} ${customer.customer_zipcode || ''}`;
                 document.getElementById('shipping_address').value = address;
 
                 // Update Referrer
@@ -454,18 +454,44 @@ async function handleFormSubmit(e) {
     // 1. Validate General Info
     const orderDate = document.getElementById('order_date').value;
     const customerUuid = document.getElementById('customer_uuid').value;
+    const assistantUuidElement = document.getElementById('assistant_uuid');
+    const assistantUuid = assistantUuidElement ? assistantUuidElement.value : null;
 
     if (!orderDate) {
-        alert('Please select an Order Date.');
-        document.getElementById('order_date').focus();
-        return;
-    }
-    if (!customerUuid) {
-        alert('Please select a Buyer (Customer).');
-        document.getElementById('buyer_id').focus();
+        Swal.fire({
+            icon: 'warning',
+            title: 'ข้อมูลไม่ครบถ้วน',
+            text: 'กรุณาระบุวันที่สั่งซื้อ',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => {
+            setTimeout(() => document.getElementById('order_date').focus(), 300);
+        });
         return;
     }
 
+    if (!customerUuid) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'ข้อมูลไม่ครบถ้วน',
+            text: 'กรุณาระบุข้อมูลลูกค้า (ผู้ซื้อ)',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => {
+            setTimeout(() => document.getElementById('searchBuyerBtn').click(), 300);
+        });
+        return;
+    }
+
+    if (assistantUuidElement && !assistantUuid) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'ข้อมูลไม่ครบถ้วน',
+            text: 'กรุณาระบุข้อมูลผู้ช่วย',
+            confirmButtonColor: '#3b82f6'
+        }).then(() => {
+            setTimeout(() => document.getElementById('searchAssistantBtn').click(), 300);
+        });
+        return;
+    }
 
     // Collect Data
     const orderData = {
@@ -479,7 +505,7 @@ async function handleFormSubmit(e) {
 
         // Optional Relations
         order_recommender_id: document.getElementById('referrer_uuid').value || null,
-        order_assistant_id: document.getElementById('assistant_uuid') ? document.getElementById('assistant_uuid').value : null,
+        order_assistant_id: assistantUuid,
         position: document.getElementById('buyer_position').value || null,
         order_type: document.getElementById('order_type') ? document.getElementById('order_type').value : 'f_order',
         order_shipping_address: document.getElementById('shipping_address').value || null
@@ -493,21 +519,17 @@ async function handleFormSubmit(e) {
 
     rows.forEach(row => {
         const codeInput = row.querySelector('input[name="product_code[]"]');
+        if (!codeInput) return; // Skip if row structure is invalid
+
         const code = codeInput.value.trim();
         const realName = row.querySelector('input[name="product_real_name[]"]').value;
 
+        // If code is entered but not valid product (no realName)
         if (code && !realName) {
             hasError = true;
             codeInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
             if (!firstErrorRow) firstErrorRow = row;
-        } else if (!code && rows.length > 1) {
-            // Treat empty rows as error if multiple rows, or if strict (assume strict)
-            hasError = true;
-            codeInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
-            if (!firstErrorRow) firstErrorRow = row;
-        }
-
-        if (code && realName) {
+        } else if (code && realName) {
             items.push({
                 product_code: code,
                 product_name: realName,
@@ -520,15 +542,49 @@ async function handleFormSubmit(e) {
     });
 
     if (hasError) {
-        alert('Please check your items. Remove empty rows or fix invalid product codes.');
-        if (firstErrorRow) firstErrorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        Swal.fire({
+            icon: 'error',
+            title: 'ข้อมูลสินค้าไม่ถูกต้อง',
+            text: 'กรุณาตรวจสอบรหัสสินค้า หรือลบแถวที่ไม่ได้ใช้งาน',
+            confirmButtonColor: '#ef4444'
+        }).then(() => {
+            if (firstErrorRow) firstErrorRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
         return;
     }
 
     if (items.length === 0) {
-        alert('Please add at least one valid product.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'ยังไม่มีรายการสินค้า',
+            text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+            confirmButtonColor: '#3b82f6'
+        });
         return;
     }
+
+    // Confirmation before saving
+    const result = await Swal.fire({
+        title: 'ยืนยันการบันทึก?',
+        text: "กรุณาตรวจสอบความถูกต้องของข้อมูล",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0ea5e9', // sky-500
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'บันทึกข้อมูล',
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (!result.isConfirmed) return;
+
+    // Show Loading
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     try {
         const response = await fetch('/orders/create', {
@@ -543,13 +599,31 @@ async function handleFormSubmit(e) {
 
         if (response.ok) {
             const orderId = result.orderId;
-            window.location.href = `/orders/finish?orderId=${orderId}`;
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.href = `/orders/finish?orderId=${orderId}`;
+            });
         } else {
-            alert('Error saving order: ' + (result.details || result.error));
+            Swal.fire({
+                icon: 'error',
+                title: 'บันทึกไม่สำเร็จ',
+                text: 'เกิดข้อผิดพลาด: ' + (result.details || result.error || 'Unknown error'),
+                confirmButtonColor: '#ef4444'
+            });
         }
     } catch (error) {
         console.error('Error submitting order:', error);
-        alert('An unexpected error occurred.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+            confirmButtonColor: '#ef4444'
+        });
     }
 }
 

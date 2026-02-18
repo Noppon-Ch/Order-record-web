@@ -33,15 +33,49 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deleteBtn) {
             e.preventDefault();
             const orderId = deleteBtn.dataset.deleteOrder;
-            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้?')) {
+
+            const confirmed = await Swal.fire({
+                title: 'ยืนยันการลบรายการ?',
+                text: "คุณแน่ใจหรือไม่ว่าต้องการลบรายการสั่งซื้อนี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (confirmed.isConfirmed) {
                 try {
                     const response = await fetch(`/orders/${orderId}`, { method: 'DELETE' });
                     const result = await response.json();
-                    if (result.success) window.location.reload();
-                    else alert('เกิดข้อผิดพลาดในการลบรายการ: ' + (result.message || 'Unknown error'));
+
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: 'ลบรายการสั่งซื้อเรียบร้อยแล้ว',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาดในการลบรายการ: ' + (result.message || 'Unknown error'),
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('ลบรายการไม่สำเร็จ');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'ลบรายการไม่สำเร็จ เชื่อมต่อผิดพลาด',
+                        confirmButtonColor: '#ef4444'
+                    });
                 }
             }
         }

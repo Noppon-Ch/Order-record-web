@@ -44,9 +44,15 @@
                             <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร
                                 <span class="text-red-500">*</span></label>
                             <div class="mt-1">
-                                <input type="date" name="customer_reg_date" id="customer_reg_date" required
-                                    value="<%= (typeof values !== 'undefined' && values.customer_registerdate) ? values.customer_registerdate : '' %>"
-                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                                <% let defaultDate='' ; if (typeof values !=='undefined' &&
+                                    values.customer_registerdate) { defaultDate=values.customer_registerdate; } else {
+                                    const today=new Date(); const year=today.getFullYear(); const
+                                    month=String(today.getMonth() + 1).padStart(2, '0' ); const
+                                    day=String(today.getDate()).padStart(2, '0' );
+                                    defaultDate=`${year}-${month}-${day}`; } %>
+                                    <input type="date" name="customer_reg_date" id="customer_reg_date" required
+                                        value="<%= defaultDate %>"
+                                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                             </div>
                         </div>
 

@@ -1,4 +1,6 @@
 <%- include('partials/app-header') %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
     <div class="max-w-7xl mx-auto py-0 sm:py-10 px-0 sm:px-6 lg:px-8 animate-fade-in-up">
 
@@ -182,7 +184,7 @@
                 <div class="h-full">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">ที่อยู่จัดส่ง</h2>
                     <textarea id="shipping_address" name="shipping_address" rows="5"
-                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-white border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + '\n' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
+                        class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 bg-white border"><%= customer ? (customer.customer_fname_th + ' ' + customer.customer_lname_th + ', ' + customer.customer_phone + '\n' + customer.customer_address1 + ' ' + customer.customer_address2 + ' ' + customer.customer_zipcode) : '' %></textarea>
                 </div>
 
                 <!-- Summary -->

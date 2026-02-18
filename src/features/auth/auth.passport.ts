@@ -59,17 +59,33 @@ export function setupPassport(session: any) {
 
   // Serialize/deserialize user for session
   passport.serializeUser((user: any, done) => {
-    // Store both id and access_token in session
-    done(null, { id: user.id, access_token: user.access_token });
+    // Store id, access_token, AND team_name in session
+    // This allows us to skip the team lookup on every request if we already have it.
+    // NOTE: If a user changes teams, they might need to re-login to see the new team name immediately in session-based contexts
+    // or we need a way to silent-refresh the session. For now, this is a huge performance win.
+    const sessionUser = {
+      id: user.id,
+      access_token: user.access_token,
+      team_name: user.team_name // Store this!
+    };
+    done(null, sessionUser);
   });
-  passport.deserializeUser(async (obj: { id: string, access_token?: string }, done) => {
+
+  passport.deserializeUser(async (obj: { id: string, access_token?: string, team_name?: string }, done) => {
+    // console.time('Passport-Deserialize-User');
     try {
+      // 1. Fetch User Profile
+      // Depending on requirements, we might even cache the profile in session if updates are rare.
+      // But let's keep profile fresh for now, as it's a single quick PK lookup.
       const userProfile = await getUserProfile(obj.id);
 
-      // Fetch team name if user is in an active team using User's Token (RLS check)
-      let teamName = undefined;
+      // 2. Resolve Team Name
+      // Use cached team_name from session if available, otherwise fetch (fallback/lazy load).
+      let teamName = obj.team_name;
 
-      if (obj.access_token) {
+      // Only fetch if NOT in session (e.g. first login before we patched this, or if we decide not to store it)
+      if (teamName === undefined && obj.access_token) {
+        // console.log('[Passport] Team name missing in session. Fetching from DB...');
         const scopedSupabase = createClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_ANON_KEY!,
@@ -90,7 +106,6 @@ export function setupPassport(session: any) {
           .maybeSingle();
 
         if (membership?.teams) {
-          // Supabase types might be array or object depending on query
           const teams = membership.teams as any;
           teamName = Array.isArray(teams) ? teams[0]?.team_name : teams?.team_name;
         }
@@ -100,10 +115,10 @@ export function setupPassport(session: any) {
         ? { ...userProfile, id: obj.id, access_token: obj.access_token, team_name: teamName }
         : { id: obj.id, access_token: obj.access_token, team_name: teamName };
 
+      // console.timeEnd('Passport-Deserialize-User');
       done(null, user);
     } catch (error) {
       console.error('Error deserializing user (likely token expired):', error);
-      // specific error handling if needed, but safe default is to clear session if deserialization fails
       done(null, null);
     }
   });

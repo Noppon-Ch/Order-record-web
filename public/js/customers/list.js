@@ -70,7 +70,18 @@ function toggleDropdown(id, button) {
 }
 
 async function deleteCustomer(customerId, customerName) {
-    if (confirm(`Are you sure you want to delete ${customerName}? This action cannot be undone.`)) {
+    const confirmed = await Swal.fire({
+        title: 'ยืนยันการลบลูกค้า?',
+        text: `คุณต้องการลบลูกค้า ${customerName} ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'ใช่, ลบเลย',
+        cancelButtonText: 'ยกเลิก'
+    });
+
+    if (confirmed.isConfirmed) {
         try {
             const response = await fetch(`/customer/delete/${customerId}`, {
                 method: 'POST',
@@ -80,17 +91,32 @@ async function deleteCustomer(customerId, customerName) {
             });
 
             if (response.ok) {
-                // If redirect logic is handled by server (302), fetch might follow it or return ok.
-                // Assuming standard reload needed as per old script
-                alert('Customer deleted successfully.');
-                window.location.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ลบข้อมูลลูกค้าเรียบร้อยแล้ว',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
             } else {
                 const data = await response.json();
-                alert(`Failed to delete customer: ${data.error || 'Unknown error'}`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: `ไม่สามารถลบข้อมูลได้: ${data.error || 'Unknown error'}`,
+                    confirmButtonColor: '#ef4444'
+                });
             }
         } catch (error) {
             console.error('Error deleting customer:', error);
-            alert('An error occurred while deleting the customer.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+                confirmButtonColor: '#ef4444'
+            });
         }
     }
 }
