@@ -102,8 +102,9 @@ export function setupPassport(session: any) {
 
       done(null, user);
     } catch (error) {
-      console.error('Error deserializing user:', error);
-      done(error, null);
+      console.error('Error deserializing user (likely token expired):', error);
+      // specific error handling if needed, but safe default is to clear session if deserialization fails
+      done(null, null);
     }
   });
 }

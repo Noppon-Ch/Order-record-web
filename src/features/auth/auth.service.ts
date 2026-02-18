@@ -70,13 +70,18 @@ export async function upsertUserProfileAfterOAuth(
 
   const profile: any = {
     user_id: userId,
-    user_full_name: displayName,
     user_email: email,
     user_avatar_url: avatar,
     social_login_provider: provider,
     social_provider_user_id: providerUserId,
     // REMOVED: user_phone, user_payment_*, user_role, etc. to prevent overwriting with null.
   };
+
+  // Only set name if it's a new profile or existing profile has no name
+  // This prevents overwriting a manually updated name with the Google/Line display name on every login.
+  if (!existingProfile || !existingProfile.user_full_name) {
+    profile.user_full_name = displayName;
+  }
 
   // Log the profile data before sending to Supabase
   // console.log('[Supabase] Upserting user_profiles:', JSON.stringify(profile, null, 2));

@@ -113,6 +113,21 @@ function setupTableDelegation() {
             calculateRow(e.target.closest('tr'));
         }
     });
+
+    tbody.addEventListener('keydown', (e) => {
+        // Tab to select first suggestion
+        if (e.target.classList.contains('product-code-input') && e.key === 'Tab' && !e.shiftKey) {
+            const globalSuggestionsDiv = document.getElementById('globalProductSuggestions');
+            if (globalSuggestionsDiv && !globalSuggestionsDiv.classList.contains('hidden')) {
+                const firstItem = globalSuggestionsDiv.querySelector('div');
+                if (firstItem && firstItem._productData) {
+                    // Pass e.target as the specific input
+                    selectProduct(firstItem._productData, e.target);
+                    // Do not prevent default behavior so focus moves to next input
+                }
+            }
+        }
+    });
 }
 
 // --- Person Search (Referrer / Assistant) ---
@@ -334,6 +349,7 @@ async function handleProductCodeInput(input) {
                     div.innerHTML = `<span class="block font-medium truncate">${p.product_code}</span>
                                      <span class="block text-xs text-gray-500 truncate">${p.product_name_th} (${p.color_th}/${p.product_size}) - ${p.price_per_unit}</span>`;
 
+                    div._productData = p; // Store data for Tab selection
                     div.onmousedown = (e) => {
                         e.preventDefault();
                         selectProduct(p);
@@ -350,10 +366,10 @@ async function handleProductCodeInput(input) {
     }, 300);
 }
 
-function selectProduct(product) {
-    if (!currentActiveProductInput) return;
+function selectProduct(product, targetInput = null) {
+    const input = targetInput || currentActiveProductInput;
+    if (!input) return;
 
-    const input = currentActiveProductInput;
     const row = input.closest('tr');
     input.value = product.product_code;
 
