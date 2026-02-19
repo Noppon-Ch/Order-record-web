@@ -264,10 +264,21 @@ export class CustomerController {
 				}
 			}
 
-			const results = await customerService.searchCustomers(query, req.user?.access_token, userContext);
+			// Prioritize Authorization header
+			let accessToken = (req.user as any)?.access_token;
+			const authHeader = req.headers.authorization;
+			if (authHeader && authHeader.startsWith('Bearer ')) {
+				accessToken = authHeader.split(' ')[1];
+			}
+
+			const results = await customerService.searchCustomers(query, accessToken, userContext);
 			res.json(results);
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Search error:', err);
+			// Return 401 for valid interceptor handling
+			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
+				return res.status(401).json({ error: 'Token expired' });
+			}
 			res.status(500).json({ error: 'Search failed' });
 		}
 	}
@@ -280,30 +291,70 @@ export class CustomerController {
 			}
 			const results = await customerService.searchAddress(query, req.user?.access_token);
 			res.json(results);
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Address search error:', err);
+			// Return 401 for valid interceptor handling
+			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
+				return res.status(401).json({ error: 'Token expired' });
+			}
 			res.status(500).json({ error: 'Address search failed' });
 		}
 	}
 
 	async showEditForm(req: Request, res: Response) {
-		try {
-			const customerId = req.params.customerId as string;
-			const customer = await customerService.findById(customerId, req.user?.access_token);
-			if (!customer) {
-				return res.redirect('/homepage');
-			}
+		const handleShowEdit = async (token: string, isRetry = false) => {
+			try {
+				const customerId = req.params.customerId as string;
+				const accessToken = token || (req.user as any)?.access_token;
+				const customer = await customerService.findById(customerId, accessToken);
 
-			let recommender = null;
-			if (customer.customer_recommender_id) {
-				recommender = await customerService.findByCitizenId(customer.customer_recommender_id, req.user?.access_token);
-			}
+				if (!customer) {
+					return res.redirect('/homepage');
+				}
 
-			res.render('edit', { user: req.user, customer, recommender, error: null, nonce: res.locals.nonce });
-		} catch (err) {
-			console.error('Error showing edit form:', err);
-			res.redirect('/homepage');
-		}
+				let recommender = null;
+				if (customer.customer_recommender_id) {
+					recommender = await customerService.findByCitizenId(customer.customer_recommender_id, accessToken);
+				}
+
+				res.render('edit', { user: req.user, customer, recommender, error: null, nonce: res.locals.nonce });
+			} catch (err: any) {
+				console.error('Error showing edit form:', err);
+
+				if ((err?.message?.includes('JWT expired') || err?.code === 'PGRST303') && !isRetry) {
+					const refreshToken = req.cookies?.refresh_token;
+					console.log('[ShowEditForm] JWT Expired. Attempting Refresh.');
+
+					if (refreshToken) {
+						try {
+							const { refreshSession } = await import('../auth/auth.service.js');
+							const { session, error: refreshError } = await refreshSession(refreshToken);
+
+							if (session && !refreshError) {
+								console.log('[ShowEditForm] Refresh Successful. Retrying...');
+								res.cookie('refresh_token', session.refresh_token, {
+									httpOnly: true,
+									secure: false, // process.env.NODE_ENV === 'production',
+									sameSite: 'lax',
+									maxAge: 30 * 24 * 60 * 60 * 1000
+								});
+
+								if (req.user) (req.user as any).access_token = session.access_token;
+								return handleShowEdit(session.access_token, true);
+							} else {
+								console.error('[ShowEditForm] Refresh Failed:', refreshError);
+							}
+						} catch (e) {
+							console.error('[ShowEditForm] Seamless Refresh failed:', e);
+						}
+					}
+					return res.redirect('/login?session_expired=true');
+				}
+
+				res.redirect('/homepage');
+			}
+		};
+		await handleShowEdit((req.user as any)?.access_token);
 	}
 
 	async updateCustomer(req: Request, res: Response) {
@@ -394,45 +445,86 @@ export class CustomerController {
 	}
 
 	async listCustomers(req: Request, res: Response) {
-		try {
-			const limit = 20;
-			const page = parseInt(req.query.page as string) || 1;
-			const offset = (page - 1) * limit;
-			const search = req.query.search as string;
+		const handleListCustomers = async (token: string, isRetry = false) => {
+			try {
+				const limit = 20;
+				const page = parseInt(req.query.page as string) || 1;
+				const offset = (page - 1) * limit;
+				const search = req.query.search as string;
 
-			const userId = req.user?.id || '';
-			const userTeam = await teamService.getTeamByUserId(userId);
-			const userContext: { userId: string, teamId?: string } = {
-				userId: userId
-			};
+				const userId = req.user?.id || '';
+				const userTeam = await teamService.getTeamByUserId(userId);
+				const userContext: { userId: string, teamId?: string } = {
+					userId: userId
+				};
 
-			let userTeamRole = null;
+				let userTeamRole = null;
 
-			if (userTeam?.team?.team_id) {
-				// Only use team context if user is an ACTIVE member
-				const memberRecord = userTeam.members.find(m => m.user_id === userId);
-				if (memberRecord && memberRecord.status === 'active') {
-					userContext.teamId = userTeam.team.team_id;
-					userTeamRole = memberRecord.role;
+				if (userTeam?.team?.team_id) {
+					const memberRecord = userTeam.members.find(m => m.user_id === userId);
+					if (memberRecord && memberRecord.status === 'active') {
+						userContext.teamId = userTeam.team.team_id;
+						userTeamRole = memberRecord.role;
+					}
 				}
+
+				const { customers, total } = await customerService.findAll(limit, offset, search, token, userContext);
+				const totalPages = Math.ceil(total / limit);
+
+				res.render('list', {
+					user: req.user,
+					customers,
+					currentPage: page,
+					totalPages,
+					totalItems: total,
+					searchQuery: search || '',
+					userTeamRole
+				});
+
+			} catch (err: any) {
+				console.error('Error listing customers:', err);
+
+				// Check for JWT expiry
+				if ((err?.message?.includes('JWT expired') || err?.code === 'PGRST303') && !isRetry) {
+					// Try to Refresh! (Seamless experience)
+					const refreshToken = req.cookies?.refresh_token;
+					if (refreshToken) {
+						try {
+							const { refreshSession } = await import('../auth/auth.service.js');
+							const { session, error } = await refreshSession(refreshToken);
+
+							if (session && !error) {
+								// Update Cookies
+								res.cookie('refresh_token', session.refresh_token, {
+									httpOnly: true,
+									secure: process.env.NODE_ENV === 'production',
+									sameSite: 'lax',
+									maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+								});
+
+								// Inject NEW Access Token into req.user for current request context
+								if (req.user) {
+									(req.user as any).access_token = session.access_token;
+								}
+
+								// RETRY with new token
+								return handleListCustomers(session.access_token, true);
+							}
+						} catch (refreshErr) {
+							console.error('Seamless Refresh failed:', refreshErr);
+						}
+					}
+					return res.redirect('/login?session_expired=true');
+				} else if (err?.message?.includes('JWT expired')) {
+					return res.redirect('/login?session_expired=true');
+				}
+
+				res.redirect('/homepage');
 			}
+		};
 
-			const { customers, total } = await customerService.findAll(limit, offset, search, req.user?.access_token, userContext);
-			const totalPages = Math.ceil(total / limit);
-
-			res.render('list', {
-				user: req.user,
-				customers,
-				currentPage: page,
-				totalPages,
-				totalItems: total,
-				searchQuery: search || '',
-				userTeamRole
-			});
-		} catch (err) {
-			console.error('Error listing customers:', err);
-			res.redirect('/homepage');
-		}
+		// Initial Call
+		await handleListCustomers(req.user?.access_token || '');
 	}
 
 	async deleteCustomer(req: Request, res: Response) {
@@ -469,8 +561,11 @@ export class CustomerController {
 
 			await customerService.deleteCustomer(customerId, req.user?.access_token);
 			res.json({ success: true });
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Error deleting customer:', err);
+			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
+				return res.status(401).json({ error: 'Token expired' });
+			}
 			res.status(500).json({ error: 'Failed to delete customer' });
 		}
 	}
@@ -493,8 +588,11 @@ export class CustomerController {
 				customer,
 				recommender
 			});
-		} catch (err) {
+		} catch (err: any) {
 			console.error('Error fetching customer details:', err);
+			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
+				return res.status(401).json({ error: 'Token expired' });
+			}
 			res.status(500).json({ error: 'Failed to fetch customer details' });
 		}
 	}

@@ -83,14 +83,9 @@ async function deleteCustomer(customerId, customerName) {
 
     if (confirmed.isConfirmed) {
         try {
-            const response = await fetch(`/customer/delete/${customerId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await window.api.post(`/customer/delete/${customerId}`);
 
-            if (response.ok) {
+            if (response.status === 200) {
                 Swal.fire({
                     icon: 'success',
                     title: 'สำเร็จ!',
@@ -101,11 +96,10 @@ async function deleteCustomer(customerId, customerName) {
                     window.location.reload();
                 });
             } else {
-                const data = await response.json();
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด',
-                    text: `ไม่สามารถลบข้อมูลได้: ${data.error || 'Unknown error'}`,
+                    text: `ไม่สามารถลบข้อมูลได้: ${response.data.error || 'Unknown error'}`,
                     confirmButtonColor: '#ef4444'
                 });
             }

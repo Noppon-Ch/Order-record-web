@@ -7,6 +7,12 @@
     <title>Order Record</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script nonce="<%= typeof nonce !== 'undefined' ? nonce : '' %>">
+        // Inject server-side access token into global scope
+        window.USER_ACCESS_TOKEN = "<%= (typeof user !== 'undefined' && user && user.access_token) ? user.access_token : '' %>";
+    </script>
+    <script src="/js/utils/api.js" defer></script>
 </head>
 
 <body

@@ -153,8 +153,9 @@ async function performPersonSearch() {
     resultsDiv.innerHTML = '<p class="text-sm text-gray-500">Searching...</p>';
 
     try {
-        const response = await fetch(`/customer/search?q=${encodeURIComponent(query)}`);
-        const data = await response.json();
+        // Use window.api.get instead of fetch
+        const response = await window.api.get(`/customer/search?q=${encodeURIComponent(query)}`);
+        const data = response.data;
 
         resultsDiv.innerHTML = '';
 
@@ -192,10 +193,11 @@ async function performPersonSearch() {
 async function selectPerson(person) {
     if (currentSearchType === 'buyer') {
         try {
-            // Fetch full details
-            const response = await fetch(`/customer/api/${person.customer_id}`);
-            if (!response.ok) throw new Error('Failed to fetch details');
-            const data = await response.json();
+            // Fetch full details using window.api
+            const response = await window.api.get(`/customer/api/${person.customer_id}`);
+            // Axios throws on non-2xx so no need for !response.ok check generally, 
+            // but api interceptor handles 401 retry.
+            const data = response.data;
             const customer = data.customer;
             const recommender = data.recommender;
 
@@ -337,8 +339,9 @@ async function handleProductCodeInput(input) {
     clearTimeout(productSearchTimeout);
     productSearchTimeout = setTimeout(async () => {
         try {
-            const response = await fetch(`/products/search?q=${encodeURIComponent(query)}`);
-            const products = await response.json();
+            // Use window.api.get
+            const response = await window.api.get(`/products/search?q=${encodeURIComponent(query)}`);
+            const products = response.data;
 
             globalSuggestionsDiv.innerHTML = '';
 
@@ -587,17 +590,12 @@ async function handleFormSubmit(e) {
     });
 
     try {
-        const response = await fetch('/orders/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ order: orderData, items })
-        });
+        // Use window.api.post
+        const response = await window.api.post('/orders/create', { order: orderData, items });
+        const result = response.data;
 
-        const result = await response.json();
-
-        if (response.ok) {
+        // Axios response.status is number. 200-299 is success (default behavior of axiosResolve)
+        if (response.status >= 200 && response.status < 300) {
             const orderId = result.orderId;
             Swal.fire({
                 icon: 'success',
@@ -641,8 +639,9 @@ async function handleProductCodeBlur(input) {
     const row = input.closest('tr');
 
     try {
-        const response = await fetch(`/products/search?q=${encodeURIComponent(code)}`);
-        const products = await response.json();
+        // Use window.api.get
+        const response = await window.api.get(`/products/search?q=${encodeURIComponent(code)}`);
+        const products = response.data;
 
         const exactMatch = products.find(p => p.product_code === code);
 

@@ -49,7 +49,7 @@ export class ProductService {
 
         if (error) {
             console.error('[ProductService] Error searching products:', error);
-            throw new Error('Database error searching products.');
+            throw error;
         }
 
         // console.log(`[ProductService] Found ${data?.length || 0} products`);
@@ -84,7 +84,7 @@ export class ProductService {
 
         if (error) {
             console.error('[ProductService] Error listing products:', error);
-            throw new Error('Database error listing products.');
+            throw error;
         }
 
         return { products: data || [], total: count || 0 };

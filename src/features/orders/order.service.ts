@@ -47,7 +47,7 @@ export class OrderService {
 
         if (orderError) {
             console.error('[OrderService] Error creating order:', orderError);
-            throw new Error(`Failed to create order: ${orderError.message}`);
+            throw orderError;
         }
 
         if (!newOrder) {
@@ -72,10 +72,7 @@ export class OrderService {
 
             if (itemsError) {
                 console.error('[OrderService] Error creating order items:', itemsError);
-                // Note: In a real production app with raw SQL or RPC, we'd roll back the order here.
-                // With client-side chaining, we run the risk of orphaned orders if items fail.
-                // For now, we verify items before sending or accept this risk for the MVP.
-                throw new Error(`Failed to create order items: ${itemsError.message}`);
+                throw itemsError;
             }
         }
 
@@ -96,7 +93,7 @@ export class OrderService {
 
         if (error) {
             console.error('[OrderService] Error fetching order:', error);
-            return null;
+            throw error;
         }
 
         return order;
@@ -162,7 +159,7 @@ export class OrderService {
 
         if (error) {
             console.error('[OrderService] Error fetching orders:', error);
-            throw new Error(`Failed to fetch orders: ${error.message}`);
+            throw error;
         }
 
         // Fetch Recorder Profiles manually (since no direct FK to user_profiles)
@@ -204,7 +201,7 @@ export class OrderService {
 
         if (error) {
             console.error('[OrderService] Error deleting order:', error);
-            throw new Error(`Failed to delete order: ${error.message}`);
+            throw error;
         }
     }
 
@@ -220,7 +217,7 @@ export class OrderService {
 
         if (error) {
             console.error('[OrderService] Error fetching order items:', error);
-            return [];
+            throw error;
         }
         return data;
     }

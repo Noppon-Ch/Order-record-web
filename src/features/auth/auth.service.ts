@@ -100,7 +100,7 @@ export async function upsertUserProfileAfterOAuth(
     // If everything is the same, we can skip the write.
     if (isEmailSame && isAvatarSame && !isNameUpdateNeeded) {
       needsUpdate = false;
-      console.log('[Auth] Profile up-to-date. Skipping DB write.');
+      // console.log('[Auth] Profile up-to-date. Skipping DB write.');
     }
   }
 
@@ -204,4 +204,17 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
   // console.log(`[Supabase] Profile found for user ${userId}`);
   return data as UserProfile;
+}
+
+export async function refreshSession(refreshToken: string) {
+  const { data, error } = await getSupabaseClient().auth.refreshSession({
+    refresh_token: refreshToken,
+  });
+
+  if (error) {
+    console.error('[Supabase] Error refreshing session:', error);
+    return { session: null, error };
+  }
+
+  return { session: data.session, error: null };
 }

@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import cookieParser from 'cookie-parser';
 
 import passport from 'passport';
 import session from 'express-session';
@@ -26,8 +27,10 @@ app.set('trust proxy', 1);
 
 // --- Passport & Session Setup ---
 // Middleware to parse application/x-www-form-urlencoded (for form POST)
+// Middleware to parse application/x-www-form-urlencoded (for form POST)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // --- Security Middleware ---
 // --- Security Middleware ---

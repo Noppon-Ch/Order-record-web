@@ -41,7 +41,7 @@ export class CustomerService {
             // Don't throw database error to UI if it's just "not found" or similar query issue, 
             // but maybeSingle handles "not found" by returning null. 
             // Real errors (connection, syntax) should be thrown.
-            throw new Error(`Database error: ${error.message}`);
+            throw error;
         }
         return data;
     }
@@ -60,7 +60,7 @@ export class CustomerService {
 
         if (error) {
             console.error('Error finding customer by ID:', error);
-            throw new Error('Database error finding customer.');
+            throw error;
         }
         return data;
     }
@@ -117,7 +117,7 @@ export class CustomerService {
 
         if (error) {
             console.error('Error searching customers:', error);
-            throw new Error('Database error searching customers.');
+            throw error;
         }
 
         return data;
@@ -137,7 +137,7 @@ export class CustomerService {
 
         if (error) {
             console.error('Error searching address:', error);
-            throw new Error('Database error searching address.');
+            throw error;
         }
 
         return data;
@@ -198,7 +198,7 @@ export class CustomerService {
 
         if (error) {
             console.error('Error fetching customers:', error);
-            throw new Error('Database error fetching customers.');
+            throw error;
         }
 
         if (!customers || customers.length === 0) {
@@ -259,7 +259,7 @@ export class CustomerService {
 
         if (error) {
             console.error('Error deleting customer:', error);
-            throw new Error('Database error deleting customer.');
+            throw error;
         }
 
         return true;

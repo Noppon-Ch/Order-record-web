@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import { upsertUserProfileAfterOAuth } from './auth.service.js';
+import { refreshToken, logout } from './auth.controller.js';
 import { teamService } from '../teams/services/team.service.js';
 
 const router = Router();
@@ -30,6 +31,16 @@ router.get('/google/callback',
             // Pass intent (state) to service
             await upsertUserProfileAfterOAuth(user, 'google', state as 'login' | 'register');
 
+            // Set Initial Refresh Token Cookie
+            if (user && user.refresh_token) {
+                res.cookie('refresh_token', user.refresh_token, {
+                    httpOnly: true,
+                    secure: false, // process.env.NODE_ENV === 'production', // Matches Controller
+                    sameSite: 'lax',
+                    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+                });
+            }
+
             res.redirect('/homepage');
         } catch (err) {
             console.error('[Auth Callback] Error:', err);
@@ -42,11 +53,13 @@ router.get('/google/callback',
     }
 );
 
+// Refresh Token
+router.post('/refresh', (req, res, next) => {
+    console.log('[AuthRoute] POST /refresh hit!');
+    next();
+}, refreshToken);
+
 // Logout route
-router.get('/logout', (req, res) => {
-    req.logout(() => {
-        res.redirect('/');
-    });
-});
+router.get('/logout', logout);
 
 export default router;

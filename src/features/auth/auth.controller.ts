@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import { refreshSession } from './auth.service.js';
 
 // Render login page
 // Render login page
@@ -47,4 +48,52 @@ export const lineCallback = async (req: Request, res: Response, next: NextFuncti
 	} catch (err) {
 		next(err);
 	}
+};
+
+
+// Refresh Token Endpoint
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		// Handle CORS/Cookie issues manually for debugging
+		const oldRefreshToken = req.cookies.refresh_token || req.body.refresh_token;
+		if (!oldRefreshToken) {
+			console.error('[Auth] No refresh token found in cookies or body');
+			console.error('[Auth] Cookies:', req.cookies);
+			return res.status(401).json({ error: 'No refresh token provided' });
+		}
+
+		console.log('[Auth] Refreshing token...');
+		console.log('[Auth] Cookies received:', req.cookies); // DEBUG
+		const { session, error } = await refreshSession(oldRefreshToken);
+
+		if (error || !session) {
+			console.error('[Auth] Refresh failed:', error);
+			// Clear cookie if invalid
+			res.clearCookie('refresh_token');
+			return res.status(403).json({ error: 'Invalid or expired refresh token' });
+		}
+
+		// Update Refresh Token Cookie (Rotation)
+		// FORCE SECURE FALSE FOR DEBUGGING
+		res.cookie('refresh_token', session.refresh_token, {
+			httpOnly: true,
+			secure: false, // process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+		});
+
+		// Return new Access Token
+		res.json({ access_token: session.access_token });
+
+	} catch (err) {
+		next(err);
+	}
+};
+
+// Logout
+export const logout = (req: Request, res: Response) => {
+	res.clearCookie('refresh_token');
+	req.logout(() => {
+		res.redirect('/');
+	});
 };
