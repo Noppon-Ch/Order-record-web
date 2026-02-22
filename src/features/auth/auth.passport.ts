@@ -83,16 +83,42 @@ export function setupPassport(session: any) {
       const accessToken = obj.access_token;
       const refreshToken = obj.refresh_token;
 
-      // NOTE: We do NOT auto-refresh here anymore. 
-      // We rely on the Client-SIDE interceptor to refresh if API calls fail with 401.
-      // If we refresh here, we desync the cookie, causing Re-Login loops.
-
       // 1. Fetch User Profile
       const userProfile = await getUserProfile(obj.id);
 
+      // 2. Fetch team name if user is in an active team using User's Token (RLS check)
+      let teamName = undefined;
+
+      if (accessToken) {
+        const scopedSupabase = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+          }
+        );
+
+        const { data: membership } = await scopedSupabase
+          .from('team_members')
+          .select('teams(team_name)')
+          .eq('user_id', obj.id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (membership?.teams) {
+          // Supabase types might be array or object depending on query
+          const teams = membership.teams as any;
+          teamName = Array.isArray(teams) ? teams[0]?.team_name : teams?.team_name;
+        }
+      }
+
       const user = userProfile
-        ? { ...userProfile, id: obj.id, access_token: accessToken, refresh_token: refreshToken }
-        : { id: obj.id, access_token: accessToken, refresh_token: refreshToken };
+        ? { ...userProfile, id: obj.id, access_token: accessToken, refresh_token: refreshToken, team_name: teamName }
+        : { id: obj.id, access_token: accessToken, refresh_token: refreshToken, team_name: teamName };
 
       done(null, user);
     } catch (error) {
