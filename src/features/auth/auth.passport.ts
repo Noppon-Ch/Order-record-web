@@ -73,7 +73,11 @@ export function setupPassport(session: any) {
       id: user.id,
       access_token: user.access_token,
       refresh_token: user.refresh_token, // Ideally store in DB or Redis, but session works for now
-      expires_at: user.expires_at || (Date.now() + 3500 * 1000) // Default 1 hour - buffer
+      expires_at: user.expires_at || (Date.now() + 3500 * 1000), // Default 1 hour - buffer
+      // Cache basic profile info to prevent "Guest" display if DB is slow or race condition occurs
+      user_full_name: user?.user_metadata?.full_name || user?.user_metadata?.name || null,
+      user_avatar_url: user?.user_metadata?.picture || user?.user_metadata?.avatar_url || null,
+      user_email: user?.email || null
     };
     done(null, sessionUser);
   });
@@ -118,7 +122,16 @@ export function setupPassport(session: any) {
 
       const user = userProfile
         ? { ...userProfile, id: obj.id, access_token: accessToken, refresh_token: refreshToken, team_name: teamName }
-        : { id: obj.id, access_token: accessToken, refresh_token: refreshToken, team_name: teamName };
+        : {
+          id: obj.id,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          team_name: teamName,
+          // Fallback to session cached data if DB fetch fails
+          user_full_name: obj.user_full_name,
+          user_avatar_url: obj.user_avatar_url,
+          user_email: obj.user_email
+        };
 
       done(null, user);
     } catch (error) {
