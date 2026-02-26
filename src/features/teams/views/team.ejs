@@ -264,8 +264,9 @@
                                                 </div>
                                                 <div class="ml-4 flex-grow">
                                                     <div class="text-sm font-medium text-gray-900">
-                                                        <%= member.user_profile ? member.user_profile.user_full_name
-                                                            : 'Unknown User' %>
+                                                        <%= member.user_profile ? member.user_profile.user_full_name :
+                                                            (member.user_id===user.id ? user.user_full_name
+                                                            : 'Unknown User' ) %>
                                                             <% if (member.user_id===user.id) { %>
                                                                 <span
                                                                     class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">It's

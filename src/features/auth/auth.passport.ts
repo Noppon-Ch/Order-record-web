@@ -106,12 +106,21 @@ export function setupPassport(session: any) {
           }
         );
 
-        const { data: membership } = await scopedSupabase
+        const { data: membership, error } = await scopedSupabase
           .from('team_members')
           .select('teams(team_name)')
           .eq('user_id', obj.id)
           .eq('status', 'active')
           .maybeSingle();
+
+        // Standardize JWT Expiration handling
+        if (error) {
+          if (error.code === 'PGRST303' || error.message.includes('JWT expired') || error.message.includes('expired')) {
+            console.log('[Passport] Token expired during deserialize. Invalidating session.');
+            return done(null, false); // Logs user out
+          }
+          console.error('[Passport] Error fetching team membership:', error);
+        }
 
         if (membership?.teams) {
           // Supabase types might be array or object depending on query
@@ -134,8 +143,11 @@ export function setupPassport(session: any) {
         };
 
       done(null, user);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deserializing user:', error);
+      if (error?.message?.includes('JWT expired') || error?.code === 'PGRST303') {
+        return done(null, false);
+      }
       done(null, null);
     }
   });

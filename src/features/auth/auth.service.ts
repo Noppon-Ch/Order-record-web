@@ -52,11 +52,11 @@ export async function upsertUserProfileAfterOAuth(
   // --- Check if User Exists ---
   const existingProfile = await getUserProfile(userId);
 
-  // --- Strict Login Check ---
-  // If trying to LOGIN but no profile exists, reject.
+  // --- Lenient Login Check (Self-healing) ---
+  // If trying to LOGIN but no profile exists, we no longer reject.
+  // This helps repair users who had a failed registration attempt in the past.
   if (intent === 'login' && !existingProfile) {
-    console.warn(`[Auth] User ${userId} tried to login but has no profile. Rejecting.`);
-    throw new Error('User not found. Please register first.');
+    console.warn(`[Auth Service] User ${userId} logged in but had no profile. Self-healing...`);
   }
 
   // --- Prepare Profile Data ---
@@ -66,7 +66,13 @@ export async function upsertUserProfileAfterOAuth(
   const phone = user.phone || null;
 
   // Find the provider-specific user ID.
-  const providerUserId = user.identities?.find((i: { provider: string; provider_id: string }) => i.provider === provider)?.provider_id || user.user_metadata?.provider_user_id || null;
+  let providerUserId = null;
+  if (Array.isArray(user.identities)) {
+    providerUserId = user.identities.find((i: { provider: string; provider_id: string }) => i.provider === provider)?.provider_id;
+  }
+
+  // Fallback to metadata
+  providerUserId = providerUserId || user.user_metadata?.provider_user_id || user.user_metadata?.sub || null;
 
   const profile: any = {
     user_id: userId,
@@ -74,8 +80,9 @@ export async function upsertUserProfileAfterOAuth(
     user_avatar_url: avatar,
     social_login_provider: provider,
     social_provider_user_id: providerUserId,
-    // REMOVED: user_phone, user_payment_*, user_role, etc. to prevent overwriting with null.
   };
+
+  console.log(`[Auth Service] Upserting profile for user ${userId} (${email}). Provider ID: ${providerUserId}`);
 
   // Only set name if it's a new profile or existing profile has no name
   // This prevents overwriting a manually updated name with the Google/Line display name on every login.
@@ -105,27 +112,31 @@ export async function upsertUserProfileAfterOAuth(
   }
 
   if (needsUpdate) {
-    // console.log('[Auth] Profile changed. Performing DB write...');
+    console.log(`[Auth Service] Profile ${profile.user_id} needs update. Fields to update:`, Object.keys(profile));
     // Upsert the profile into the user_profiles table
-    const { error: upsertError } = await getSupabaseClient()
+    const { data: upsertData, error: upsertError } = await getSupabaseClient()
       .from('user_profiles')
-      .upsert(profile as any, { onConflict: 'user_id' });
+      .upsert(profile as any, { onConflict: 'user_id' })
+      .select();
 
     if (upsertError) {
       console.error('[Supabase] Error upserting user profile:', upsertError);
+      console.error('[Supabase] Profile attempt data:', JSON.stringify(profile, null, 2));
       throw upsertError;
     }
+    console.log(`[Auth Service] Upsert successful for ${profile.user_id}`);
+  } else {
+    console.log(`[Auth Service] Profile ${profile.user_id} is up to date.`);
   }
 
   // --- Record Consent ---
-  // Only record consent if this is a registration flow (implies they agreed on the UI)
-  // OR if we decide later to force re-consent on login (but logic here is specific to initial flow).
-  if (intent === 'register') {
+  // Only record consent if this is a NEW profile (auto-fix or registration)
+  if (!existingProfile) {
     try {
+      console.log(`[Auth Service] Recording initial consent for user ${userId}`);
       await recordUserConsent(userId, 'platform_terms', '1.0');
     } catch (consentError) {
       console.error('[Supabase] Error recording consent:', consentError);
-      // Don't block login if consent recording fails, but log it.
     }
   }
 }

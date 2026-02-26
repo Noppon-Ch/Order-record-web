@@ -42,8 +42,13 @@ router.get('/google/callback',
             }
 
             res.redirect('/homepage');
-        } catch (err) {
-            console.error('[Auth Callback] Error:', err);
+        } catch (err: any) {
+            console.error('[Auth Callback] CRITICAL ERROR:', err);
+
+            // Log full error details if possible
+            if (err.message) console.error('[Auth Callback] Message:', err.message);
+            if (err.stack) console.error('[Auth Callback] Stack:', err.stack);
+
             // If error is "User not found" (from strict login check), redirect to register
             if (err instanceof Error && err.message === 'User not found. Please register first.') {
                 return res.redirect('/register?error=needs_registration');

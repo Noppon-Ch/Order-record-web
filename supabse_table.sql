@@ -143,13 +143,6 @@ CREATE TABLE public.teams (
   CONSTRAINT teams_pkey PRIMARY KEY (team_id),
   CONSTRAINT teams_owner_user_id_fkey FOREIGN KEY (owner_user_id) REFERENCES auth.users(id)
 );
-CREATE TABLE public.user_customer_chain (
-  user_id uuid NOT NULL,
-  customer_citizen_id text NOT NULL,
-  customer_id uuid,
-  team_id uuid,
-  CONSTRAINT user_customer_chain_pkey PRIMARY KEY (user_id, customer_citizen_id)
-);
 CREATE TABLE public.user_profiles (
   user_id uuid NOT NULL DEFAULT auth.uid(),
   created_at timestamp with time zone NOT NULL DEFAULT now(),

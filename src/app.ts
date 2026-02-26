@@ -141,8 +141,13 @@ app.use('/teams', teamRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+  console.error('[Global Error Handler] Error:', err);
+  if (err.stack) console.error(err.stack);
+
+  const isDev = process.env.NODE_ENV !== 'production';
+  const message = isDev ? `Something went wrong: ${err.message || err}` : 'Something went wrong!';
+
+  res.status(500).send(message);
 });
 
 export default app;
