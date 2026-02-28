@@ -23,7 +23,7 @@ async function performPersonSearch() {
     if (!query) return;
 
     const resultsDiv = document.getElementById('personSearchResults');
-    resultsDiv.innerHTML = '<p class="text-sm text-gray-500">Searching...</p>';
+    resultsDiv.innerHTML = '<p class="text-sm text-gray-500">กำลังค้นหา...</p>';
 
     try {
         const response = await fetch(`/customer/search?q=${encodeURIComponent(query)}`);
@@ -32,7 +32,7 @@ async function performPersonSearch() {
         resultsDiv.innerHTML = '';
 
         if (data.length === 0) {
-            resultsDiv.innerHTML = '<p class="text-sm text-gray-500">No results found.</p>';
+            resultsDiv.innerHTML = '<p class="text-sm text-gray-500">ไม่พบข้อมูล</p>';
             return;
         }
 
@@ -48,7 +48,7 @@ async function performPersonSearch() {
                     <p class="font-medium text-gray-900">${person.customer_fname_th} ${person.customer_lname_th}</p>
                     <p class="text-gray-500">${person.customer_citizen_id}</p>
                 </div>
-                <button type="button" class="ml-4 bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">Select</button>
+                <button type="button" class="ml-4 bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">เลือก</button>
             `;
             ul.appendChild(li);
         });
@@ -56,7 +56,7 @@ async function performPersonSearch() {
         resultsDiv.appendChild(ul);
     } catch (error) {
         console.error('Error searching person:', error);
-        resultsDiv.innerHTML = '<p class="text-sm text-red-500">Error occurred.</p>';
+        resultsDiv.innerHTML = '<p class="text-sm text-red-500">เกิดข้อผิดพลาด</p>';
     }
 }
 

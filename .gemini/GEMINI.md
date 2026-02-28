@@ -93,3 +93,27 @@ Refined the Customer Edit form to handle data requirements and PDPA consent stat
 2. **Backend (`customer.controller.ts`)**:
    - Modified `updateCustomer` to fetch existing customer data before updating.
    - **Protection Logic**: If `customer_consent_status` is already `true`, it is locked to `true` during updates, preventing accidental or unauthorized removal of consent via form submission.
+
+### Customer List Pagination Improvements
+Updated the pagination section in the Customer List view (`list.ejs`) to enhance localization and mobile user experience.
+
+#### Key Changes
+1. **Localization**: Translated all pagination labels (Previous, Next, Showing, to, of, results) and screen reader text (First, Last) from English to Thai.
+2. **Mobile Responsiveness**: Improved the mobile view by displaying the result count (e.g., "1-20 / 100") on the same line as the "Previous" and "Next" buttons for a more compact and modern feel.
+3. **UI Layout**: Optimized the mobile pagination layout using `flex-row items-center justify-between` to ensure all elements fit perfectly on smaller screens.
+
+### UI Localization (Thai Translation)
+Localized various UI elements and buttons to Thai to provide a consistent user experience.
+
+#### Key Changes
+1. **Search Results**: Changed the "Select" button text to "เลือก" in all customer and person search result modals across the application.
+2. **Status Messages**: Translated "Searching..." to "กำลังค้นหา..." and "No results found." to "ไม่พบข้อมูล" in search modules.
+3. **Affected Components**: Updated `public/js/customers/form.js`, `public/js/orders/form.js`, `public/js/referrer-search.js`, `public/js/order-form.js`, and `public/js/customers/add.js`.
+
+### Modal Centering (Mobile Responsive)
+Fixed an issue where modals (popups) were appearing at the bottom of the screen on mobile devices instead of being centered.
+
+#### Key Changes
+1. **Layout Adjustment**: Changed the modal flex container from `items-end` to `items-center` for mobile view.
+2. **Alignment Adjustment**: Updated modal panel alignment from `align-bottom` to `align-middle` on mobile.
+3. **Affected Views**: Updated `add-new-customer.ejs`, `add-old-customer.ejs`, `edit.ejs`, `new.ejs`, `continue.ejs`, `team.ejs`, and `team-member-setting.ejs`.

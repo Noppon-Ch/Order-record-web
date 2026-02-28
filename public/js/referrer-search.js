@@ -14,7 +14,7 @@ async function performSearch() {
     if (!query) return;
 
     const resultsDiv = document.getElementById('searchResults');
-    resultsDiv.innerHTML = '<p class="text-sm text-gray-500">Searching...</p>';
+    resultsDiv.innerHTML = '<p class="text-sm text-gray-500">กำลังค้นหา...</p>';
 
     try {
         const response = await fetch(`/customer/search?q=${encodeURIComponent(query)}`);
@@ -23,7 +23,7 @@ async function performSearch() {
         resultsDiv.innerHTML = '';
 
         if (data.length === 0) {
-            resultsDiv.innerHTML = '<p class="text-sm text-gray-500">No results found.</p>';
+            resultsDiv.innerHTML = '<p class="text-sm text-gray-500">ไม่พบข้อมูล</p>';
             return;
         }
 
@@ -39,7 +39,7 @@ async function performSearch() {
                     <p class="font-medium text-gray-900">${customer.customer_fname_th} ${customer.customer_lname_th}</p>
                     <p class="text-gray-500">${customer.customer_citizen_id}</p>
                 </div>
-                <button type="button" class="ml-4 bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">Select</button>
+                <button type="button" class="ml-4 bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">เลือก</button>
             `;
             ul.appendChild(li);
         });
@@ -47,7 +47,7 @@ async function performSearch() {
         resultsDiv.appendChild(ul);
     } catch (error) {
         console.error('Error searching:', error);
-        resultsDiv.innerHTML = '<p class="text-sm text-red-500">Error occurred while searching.</p>';
+        resultsDiv.innerHTML = '<p class="text-sm text-red-500">เกิดข้อผิดพลาดในการค้นหา</p>';
     }
 }
 
