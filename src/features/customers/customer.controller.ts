@@ -102,13 +102,13 @@ export class CustomerController {
 			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
 
 			if (!createdCustomer) {
-				throw new Error('Failed to create customer (no data returned).');
+				throw new Error('ไม่สามารถเพิ่มข้อมูลลูกค้าได้ (ไม่มีข้อมูลตอบกลับ)');
 			}
 
 			return res.redirect(`/customer/add/finish/${createdCustomer.customer_id}`);
 		} catch (err: any) {
 			return res.status(400).render('add-new-customer', {
-				error: err.message || 'Failed to add customer.',
+				error: err.message || 'ไม่สามารถเพิ่มข้อมูลลูกค้าได้',
 				values,
 				nonce: res.locals.nonce
 			});
@@ -130,12 +130,12 @@ export class CustomerController {
 			customer_gender: undefined,
 			customer_nationality: 'ไทย',
 			customer_tax_id: undefined,
-			customer_phone: undefined,
+			customer_phone: body.customer_phone || undefined,
 			customer_birthdate: undefined,
 			customer_registerdate: undefined,
-			customer_address1: undefined,
-			customer_address2: undefined,
-			customer_zipcode: undefined,
+			customer_address1: body.customer_address1 || undefined,
+			customer_address2: body.customer_address2 || undefined,
+			customer_zipcode: body.customer_zipcode || undefined,
 			customer_position: body.customer_position,
 			customer_consent_status: body.customer_consent === 'on',
 			customer_recommender_id: body.referrer_citizen_id || '',
@@ -179,10 +179,10 @@ export class CustomerController {
 						customer_record_by_user_id: req.user?.id || '',
 						customer_record_by_team_id: values.customer_record_by_team_id,
 						customer_nationality: 'ไทย',
-						customer_phone: undefined,
-						customer_address1: undefined,
-						customer_address2: undefined,
-						customer_zipcode: undefined,
+						customer_phone: '-',
+						customer_address1: '-',
+						customer_address2: '-',
+						customer_zipcode: '-',
 					};
 
 					try {
@@ -194,12 +194,12 @@ export class CustomerController {
 			}
 
 			const createdCustomer = await customerService.createCustomer(values, req.user?.access_token);
-			if (!createdCustomer) throw new Error('Failed to create customer.');
+			if (!createdCustomer) throw new Error('ไม่สามารถเพิ่มข้อมูลลูกค้าได้');
 
 			return res.redirect(`/customer/add/finish/${createdCustomer.customer_id}`);
 		} catch (err: any) {
 			return res.status(400).render('add-old-customer', {
-				error: err.message || 'Failed to add customer.',
+				error: err.message || 'ไม่สามารถเพิ่มข้อมูลลูกค้าได้',
 				values,
 				nonce: res.locals.nonce
 			});
@@ -277,9 +277,9 @@ export class CustomerController {
 			console.error('Search error:', err);
 			// Return 401 for valid interceptor handling
 			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
-				return res.status(401).json({ error: 'Token expired' });
+				return res.status(401).json({ error: 'โทเค็นหมดอายุ' });
 			}
-			res.status(500).json({ error: 'Search failed' });
+			res.status(500).json({ error: 'การค้นหาล้มเหลว' });
 		}
 	}
 
@@ -295,9 +295,9 @@ export class CustomerController {
 			console.error('Address search error:', err);
 			// Return 401 for valid interceptor handling
 			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
-				return res.status(401).json({ error: 'Token expired' });
+				return res.status(401).json({ error: 'โทเค็นหมดอายุ' });
 			}
-			res.status(500).json({ error: 'Address search failed' });
+			res.status(500).json({ error: 'การค้นหาที่อยู่ล้มเหลว' });
 		}
 	}
 
@@ -377,11 +377,19 @@ export class CustomerController {
 			customer_zipcode: body.customer_zipcode || undefined,
 			customer_position: body.customer_position,
 			customer_recommender_id: body.referrer_citizen_id || '',
-			// update record_by? maybe track last_modified_by
 		};
 
-
 		try {
+			const accessToken = req.user?.access_token;
+			const existingCustomer = await customerService.findById(customerId, accessToken);
+
+			// If already consented, don't allow changing it back to false
+			if (existingCustomer?.customer_consent_status === true) {
+				values.customer_consent_status = true;
+			} else {
+				values.customer_consent_status = body.customer_consent === 'on';
+			}
+
 			const userId = req.user?.id || '';
 			const userTeam = await teamService.getTeamByUserId(userId);
 			let teamId = undefined;
@@ -438,7 +446,7 @@ export class CustomerController {
 			return res.status(400).render('edit', {
 				user: req.user,
 				customer,
-				error: err.message || 'Failed to update customer.',
+				error: err.message || 'ไม่สามารถแก้ไขข้อมูลลูกค้าได้',
 				nonce: res.locals.nonce
 			});
 		}
@@ -534,7 +542,7 @@ export class CustomerController {
 			// 1. Verify existence and Fetch details for permission check
 			const customer = await customerService.findById(customerId, req.user?.access_token);
 			if (!customer) {
-				return res.status(404).json({ error: 'Customer not found' });
+				return res.status(404).json({ error: 'ไม่พบข้อมูลลูกค้า' });
 			}
 
 			// 2. Check Permissions (Backend Guard)
@@ -545,17 +553,17 @@ export class CustomerController {
 				const userTeam = await teamService.getTeamByUserId(userId);
 				// Ensure user is in the SAME team as the customer record
 				if (!userTeam?.team || userTeam.team.team_id !== customer.customer_record_by_team_id) {
-					return res.status(403).json({ error: 'Unauthorized: You are not a member of the team owning this record.' });
+					return res.status(403).json({ error: 'ไม่มีสิทธิ์: คุณไม่ได้เป็นสมาชิกของทีมที่เป็นเจ้าของข้อมูลนี้' });
 				}
 
 				const memberRecord = userTeam.members.find(m => m.user_id === userId);
 				if (!memberRecord || memberRecord.status !== 'active' || !['leader', 'co-leader'].includes(memberRecord.role)) {
-					return res.status(403).json({ error: 'Unauthorized: Only Leader or Co-leader can delete team customers.' });
+					return res.status(403).json({ error: 'ไม่มีสิทธิ์: เฉพาะผู้นำทีมหรือรองผู้นำทีมเท่านั้นที่มีสิทธิ์ลบข้อมูลลูกค้าของทีม' });
 				}
 			} else {
 				// Private Record: Check Ownership
 				if (customer.customer_record_by_user_id !== userId) {
-					return res.status(403).json({ error: 'Unauthorized: You do not own this customer.' });
+					return res.status(403).json({ error: 'ไม่มีสิทธิ์: การดำเนินการนี้ไม่ใช่ข้อมูลของคุณ' });
 				}
 			}
 
@@ -564,9 +572,9 @@ export class CustomerController {
 		} catch (err: any) {
 			console.error('Error deleting customer:', err);
 			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
-				return res.status(401).json({ error: 'Token expired' });
+				return res.status(401).json({ error: 'โทเค็นหมดอายุ' });
 			}
-			res.status(500).json({ error: 'Failed to delete customer' });
+			res.status(500).json({ error: 'ไม่สามารถลบข้อมูลลูกค้าได้' });
 		}
 	}
 	async getCustomerDetails(req: Request, res: Response) {
@@ -575,7 +583,7 @@ export class CustomerController {
 			const customer = await customerService.findById(customerId, req.user?.access_token);
 
 			if (!customer) {
-				return res.status(404).json({ error: 'Customer not found' });
+				return res.status(404).json({ error: 'ไม่พบข้อมูลลูกค้า' });
 			}
 
 			let recommender = null;
@@ -591,9 +599,9 @@ export class CustomerController {
 		} catch (err: any) {
 			console.error('Error fetching customer details:', err);
 			if (err?.message?.includes('JWT expired') || err?.code === 'PGRST303') {
-				return res.status(401).json({ error: 'Token expired' });
+				return res.status(401).json({ error: 'โทเค็นหมดอายุ' });
 			}
-			res.status(500).json({ error: 'Failed to fetch customer details' });
+			res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลลูกค้าได้' });
 		}
 	}
 }

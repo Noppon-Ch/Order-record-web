@@ -84,9 +84,9 @@ export class CustomerService {
         if (error) {
             console.error('Error creating customer:', error);
             if (error.code === '23505') { // Unique violation
-                throw new Error('Customer with this Citizen ID already exists.');
+                throw new Error('พบข้อมูลลูกค้าที่มีเลขบัตรประชาชนนี้ในระบบแล้ว');
             }
-            throw new Error(error.message);
+            throw new Error(`เกิดข้อผิดพลาดในการเพิ่มข้อมูลลูกค้า: ${error.message}`);
         }
 
         return customer;
@@ -162,7 +162,10 @@ export class CustomerService {
 
         if (error) {
             console.error('Error updating customer:', error);
-            throw new Error(error.message);
+            if (error.code === '23505') {
+                throw new Error('พบข้อมูลลูกค้าที่มีเลขบัตรประชาชนนี้ในระบบแล้ว');
+            }
+            throw new Error(`เกิดข้อผิดพลาดในการแก้ไขข้อมูลลูกค้า: ${error.message}`);
         }
 
         return customer;

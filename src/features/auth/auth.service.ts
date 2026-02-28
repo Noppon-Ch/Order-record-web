@@ -56,7 +56,7 @@ export async function upsertUserProfileAfterOAuth(
   // If trying to LOGIN but no profile exists, we no longer reject.
   // This helps repair users who had a failed registration attempt in the past.
   if (intent === 'login' && !existingProfile) {
-    console.warn(`[Auth Service] User ${userId} logged in but had no profile. Self-healing...`);
+    //console.warn(`[Auth Service] User ${userId} logged in but had no profile. Self-healing...`);
   }
 
   // --- Prepare Profile Data ---
@@ -82,7 +82,7 @@ export async function upsertUserProfileAfterOAuth(
     social_provider_user_id: providerUserId,
   };
 
-  console.log(`[Auth Service] Upserting profile for user ${userId} (${email}). Provider ID: ${providerUserId}`);
+  //console.log(`[Auth Service] Upserting profile for user ${userId} (${email}). Provider ID: ${providerUserId}`);
 
   // Only set name if it's a new profile or existing profile has no name
   // This prevents overwriting a manually updated name with the Google/Line display name on every login.
@@ -112,7 +112,7 @@ export async function upsertUserProfileAfterOAuth(
   }
 
   if (needsUpdate) {
-    console.log(`[Auth Service] Profile ${profile.user_id} needs update. Fields to update:`, Object.keys(profile));
+    // console.log(`[Auth Service] Profile ${profile.user_id} needs update. Fields to update:`, Object.keys(profile));
     // Upsert the profile into the user_profiles table
     const { data: upsertData, error: upsertError } = await getSupabaseClient()
       .from('user_profiles')
@@ -124,16 +124,16 @@ export async function upsertUserProfileAfterOAuth(
       console.error('[Supabase] Profile attempt data:', JSON.stringify(profile, null, 2));
       throw upsertError;
     }
-    console.log(`[Auth Service] Upsert successful for ${profile.user_id}`);
+    // console.log(`[Auth Service] Upsert successful for ${profile.user_id}`);
   } else {
-    console.log(`[Auth Service] Profile ${profile.user_id} is up to date.`);
+    // console.log(`[Auth Service] Profile ${profile.user_id} is up to date.`);
   }
 
   // --- Record Consent ---
   // Only record consent if this is a NEW profile (auto-fix or registration)
   if (!existingProfile) {
     try {
-      console.log(`[Auth Service] Recording initial consent for user ${userId}`);
+      // console.log(`[Auth Service] Recording initial consent for user ${userId}`);
       await recordUserConsent(userId, 'platform_terms', '1.0');
     } catch (consentError) {
       console.error('[Supabase] Error recording consent:', consentError);

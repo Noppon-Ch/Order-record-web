@@ -84,6 +84,54 @@
                         </div>
                     </div>
 
+                    <!-- ข้อมูลที่อยู่และเบอร์โทร -->
+                    <div class="pt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
+                        <div class="sm:col-span-6 border-t border-gray-100 pt-6">
+                            <h2 class="text-xl font-semibold text-gray-900">ข้อมูลที่อยู่และเบอร์โทร (เพิ่มเติม)</h2>
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label for="customer_address1" class="block text-sm font-medium text-gray-700">ที่อยู่
+                                (บ้านเลขที่
+                                หมู่
+                                ซอย ถนน)</label>
+                            <div class="mt-1">
+                                <input type="text" name="customer_address1" id="customer_address1"
+                                    value="<%= (typeof values !== 'undefined' && values.customer_address1) ? values.customer_address1 : '' %>"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            </div>
+                        </div>
+                        <div class="sm:col-span-6">
+                            <label for="customer_address2" class="block text-sm font-medium text-gray-700">แขวง/ตำบล
+                                เขต/อำเภอ
+                                จังหวัด</label>
+                            <div class="mt-1">
+                                <input type="text" name="customer_address2" id="customer_address2"
+                                    value="<%= (typeof values !== 'undefined' && values.customer_address2) ? values.customer_address2 : '' %>"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                                    placeholder="แขวง/ตำบล เขต/อำเภอ จังหวัด">
+                            </div>
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label for="customer_zipcode"
+                                class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
+                            <div class="mt-1">
+                                <input type="text" name="customer_zipcode" id="customer_zipcode" readonly
+                                    value="<%= (typeof values !== 'undefined' && values.customer_zipcode) ? values.customer_zipcode : '' %>"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border bg-gray-50">
+                            </div>
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label for="customer_phone"
+                                class="block text-sm font-medium text-gray-700">เบอร์มือถือ</label>
+                            <div class="mt-1">
+                                <input type="text" name="customer_phone" id="customer_phone"
+                                    value="<%= (typeof values !== 'undefined' && values.customer_phone) ? values.customer_phone : '' %>"
+                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ข้อมูลผู้แนะนำ -->
                     <div class="pt-4 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
                         <div class="sm:col-span-6">

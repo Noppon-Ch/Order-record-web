@@ -38,17 +38,17 @@
             </div>
 
             <div class="sm:col-span-3">
-                <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร <span
-                        class="text-red-500">*</span></label>
+                <label for="customer_reg_date" class="block text-sm font-medium text-gray-700">วันที่สมัคร</label>
                 <div class="mt-1">
-                    <input type="date" name="customer_reg_date" id="customer_reg_date" required
+                    <input type="date" name="customer_reg_date" id="customer_reg_date"
                         value="${customer.customer_registerdate}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
             </div>
 
             <div class="sm:col-span-3">
-                <label for="customer_position" class="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
+                <label for="customer_position" class="block text-sm font-medium text-gray-700">ตำแหน่ง <span
+                        class="text-red-500">*</span></label>
                 <select id="customer_position" name="customer_position" required
                     class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
                     <option value="BM" ${customer.customer_position==='BM' ? 'selected' : '' }>BM</option>
@@ -105,9 +105,8 @@
             </div>
 
             <div class="sm:col-span-2">
-                <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ <span
-                        class="text-red-500">*</span></label>
-                <select id="customer_gender" name="customer_gender" required
+                <label for="customer_gender" class="block text-sm font-medium text-gray-700">เพศ</label>
+                <select id="customer_gender" name="customer_gender"
                     class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
                     <option value="">เลือก...</option>
                     <option value="ชาย" ${customer.customer_gender==='ชาย' ? 'selected' : '' }>ชาย</option>
@@ -117,19 +116,17 @@
                 </select>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ <span
-                        class="text-red-500">*</span></label>
+                <label for="customer_nationality" class="block text-sm font-medium text-gray-700">สัญชาติ</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_nationality" id="customer_nationality" required
+                    <input type="text" name="customer_nationality" id="customer_nationality"
                         value="${customer.customer_nationality || 'ไทย'}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด <span
-                        class="text-red-500">*</span></label>
+                <label for="customer_birthdate" class="block text-sm font-medium text-gray-700">วันเดือนปีเกิด</label>
                 <div class="mt-1">
-                    <input type="date" name="customer_birthdate" id="customer_birthdate" required
+                    <input type="date" name="customer_birthdate" id="customer_birthdate"
                         value="${customer.customer_birthdate}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
@@ -158,37 +155,35 @@
 
             <div class="sm:col-span-6">
                 <label for="customer_address1" class="block text-sm font-medium text-gray-700">ที่อยู่ (บ้านเลขที่ หมู่
-                    ซอย ถนน) <span class="text-red-500">*</span></label>
+                    ซอย ถนน)</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_address1" id="customer_address1" required
+                    <input type="text" name="customer_address1" id="customer_address1"
                         value="${customer.customer_address1 || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
             </div>
             <div class="sm:col-span-6">
                 <label for="customer_address2" class="block text-sm font-medium text-gray-700">แขวง/ตำบล เขต/อำเภอ
-                    จังหวัด <span class="text-red-500">*</span></label>
+                    จังหวัด</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_address2" id="customer_address2" required
+                    <input type="text" name="customer_address2" id="customer_address2"
                         value="${customer.customer_address2 || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
                         placeholder="แขวง/ตำบล เขต/อำเภอ จังหวัด">
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์ <span
-                        class="text-red-500">*</span></label>
+                <label for="customer_zipcode" class="block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_zipcode" id="customer_zipcode" required readonly
+                    <input type="text" name="customer_zipcode" id="customer_zipcode" readonly
                         value="${customer.customer_zipcode || ''}"
                         class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border bg-gray-50">
                 </div>
             </div>
             <div class="sm:col-span-2">
-                <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ <span
-                        class="text-red-500">*</span></label>
+                <label for="customer_phone" class="block text-sm font-medium text-gray-700">เบอร์มือถือ</label>
                 <div class="mt-1">
-                    <input type="text" name="customer_phone" id="customer_phone" required
+                    <input type="text" name="customer_phone" id="customer_phone"
                         value="${customer.customer_phone || ''}"
                         class="shadow-sm focus:ring-amber-500 focus:border-amber-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                 </div>
@@ -220,9 +215,10 @@
                 </div>
             </div>
             <div class="sm:col-span-3">
-                <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ</label>
+                <label for="referrer_name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุลผู้แนะนำ <span
+                        class="text-red-500">*</span></label>
                 <div class="mt-1">
-                    <input type="text" name="referrer_name" id="referrer_name"
+                    <input type="text" name="referrer_name" id="referrer_name" required
                         value="${recommender ? (recommender.customer_fname_th + ' ' + recommender.customer_lname_th) : ''}"
                         class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border">
                     <!-- Note: We might not have referrer name directly in customer object unless joined, client might need to fetch it or we make do -->
@@ -236,20 +232,29 @@
             <div class="flex items-start">
                 <div class="flex items-center h-5">
                     <input id="customer_consent" name="customer_consent" type="checkbox" required
-                        ${customer.customer_consent_status ? 'checked' : '' }
-                        class="focus:ring-amber-500 h-5 w-5 text-amber-600 border-gray-300 rounded cursor-pointer">
+                        ${customer.customer_consent_status ? 'checked disabled' : '' }
+                        class="focus:ring-amber-500 h-5 w-5 text-amber-600 border-gray-300 rounded cursor-pointer ${customer.customer_consent_status ? 'bg-gray-100 cursor-not-allowed' : ''}">
+                    ${customer.customer_consent_status ? `<input type="hidden" name="customer_consent" value="on">` :
+                    ''}
                 </div>
                 <div class="ml-3 text-sm leading-5">
                     <label for="customer_consent" class="font-medium text-gray-700 select-none cursor-pointer">
-                        ข้าพเจ้าขอรับรองว่าลูกค้าได้อ่านและยอมรับ
+                        ${customer.customer_consent_status
+                        ? 'ลูกค้ายอมรับนโยบายความเป็นส่วนตัว (PDPA) เรียบร้อยแล้ว'
+                        : `ข้าพเจ้าขอรับรองว่าลูกค้าได้อ่านและยอมรับ
                         <button type="button" id="openConsentModalBtn"
                             class="text-amber-600 hover:text-amber-800 font-bold hover:underline bg-transparent border-none p-0 cursor-pointer transition-colors duration-200">
                             นโยบายความเป็นส่วนตัว (PDPA)
                         </button>
                         เรียบร้อยแล้ว
-                        <span class="text-red-500">*</span>
+                        <span class="text-red-500">*</span>`
+                        }
                     </label>
-                    <p class="text-gray-500 text-xs mt-1">ต้องได้รับความยินยอมก่อนบันทึกข้อมูล</p>
+                    <p class="text-gray-500 text-xs mt-1">
+                        ${customer.customer_consent_status ? 'ยินยอมเมื่อ: ' + new
+                        Date(customer.customer_created_at).toLocaleDateString('th-TH') :
+                        'ต้องได้รับความยินยอมก่อนบันทึกข้อมูล'}
+                    </p>
                 </div>
             </div>
         </div>
@@ -360,8 +365,10 @@
     <!-- Script to handle Consent Modal -->
     <script nonce="${nonce}">
         document.addEventListener('DOMContentLoaded', function () {
-            const consentModal = document.getElementById('consentModal');
             const openBtn = document.getElementById('openConsentModalBtn');
+            if (!openBtn) return; // Exit if already consented and button is hidden
+
+            const consentModal = document.getElementById('consentModal');
             const closeOverlay = document.getElementById('closeConsentModalOverlay');
             const acceptBtn = document.getElementById('acceptConsentBtn');
             const contentDiv = document.getElementById('consentContent');

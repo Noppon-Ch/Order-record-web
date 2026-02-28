@@ -16,7 +16,7 @@ export class CustomerPdfController {
 
                 if (!customer) {
                     console.error("ERROR: Customer not found for ID:", customerId);
-                    return res.status(404).send('Customer not found.');
+                    return res.status(404).send('ไม่พบข้อมูลลูกค้า');
                 }
 
                 const pdfDoc = await PDFDocument.create();
@@ -60,7 +60,7 @@ export class CustomerPdfController {
                     }
                 } catch (err) {
                     console.error("ERROR loading Mate_Form.pdf:", err);
-                    return res.status(500).send("Cannot load PDF template.");
+                    return res.status(500).send("ไม่สามารถโหลดเทมเพลต PDF ได้");
                 }
 
                 // Settings
@@ -204,7 +204,7 @@ export class CustomerPdfController {
                     return res.redirect('/login?session_expired=true');
                 }
 
-                res.status(500).send('An error occurred while generating the PDF.');
+                res.status(500).send('เกิดข้อผิดพลาดในการสร้างไฟล์ PDF');
             }
         }
         await handleDownload((req.user as any)?.access_token);
