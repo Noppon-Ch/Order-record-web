@@ -1,5 +1,15 @@
 # GEMINI AI Implementation Update
 
+## Supabase RLS & Environment Key Fix
+Resolved a critical issue where new users could not be upserted into the `user_profiles` table during the Google OAuth callback in production, resulting in a `new row violates row-level security policy` error.
+
+### Key Changes
+1. **Added INSERT Policy**: 
+   - Added `user_profiles_insert_own` (command: `a`) policy in `rls-policy.json` to allow authenticated users to insert their own profile row, closing a gap where only `w` (update) and `r` (read) policies existed.
+2. **Environment Variable Configuration Warning**:
+   - The backend `auth.service.ts` uses the `SUPABASE_SERVICE_ROLE_KEY` to perform administrative upserts. Since `service_role` natively bypasses RLS, an RLS error should theoretically never occur during this step. 
+   - Identified that the production environment (Render) was failing while the local environment worked perfectly, strongly indicating that the **`SUPABASE_SERVICE_ROLE_KEY` environment variable in Render was mistakenly set to the `anon` public key.** The user must update their Render environment variables properly.
+
 ## Silent Refresh & JWT Handling
 Implemented a "Silent Refresh" strategy to handle token expiration seamlessly.
 
