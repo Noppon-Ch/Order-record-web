@@ -18,7 +18,13 @@ function getSupabaseClient() {
 
   const supabaseUrl = getEnv('SUPABASE_URL');
   const supabaseServiceRoleKey = getEnv('SUPABASE_SERVICE_ROLE_KEY');
-  supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false
+    }
+  });
   return supabase;
 }
 

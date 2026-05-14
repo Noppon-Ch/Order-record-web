@@ -7,10 +7,21 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || '';
 export function getSupabaseClient(accessToken?: string) {
     if (accessToken) {
         return createClient(supabaseUrl, supabaseKey, {
-            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+            global: { headers: { Authorization: `Bearer ${accessToken}` } },
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+                detectSessionInUrl: false
+            }
         });
     }
-    return createClient(supabaseUrl, supabaseKey);
+    return createClient(supabaseUrl, supabaseKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+            detectSessionInUrl: false
+        }
+    });
 }
 
 export async function getUserProfile(userId: string, accessToken?: string) {

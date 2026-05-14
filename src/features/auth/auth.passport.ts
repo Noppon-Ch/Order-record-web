@@ -103,6 +103,11 @@ export function setupPassport(session: any) {
                 Authorization: `Bearer ${accessToken}`,
               },
             },
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false,
+              detectSessionInUrl: false,
+            }
           }
         );
 
