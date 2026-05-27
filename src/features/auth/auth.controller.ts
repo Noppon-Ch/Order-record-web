@@ -77,7 +77,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 		// FORCE SECURE FALSE FOR DEBUGGING
 		res.cookie('refresh_token', session.refresh_token, {
 			httpOnly: true,
-			secure: false, // process.env.NODE_ENV === 'production',
+			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'lax',
 			maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
 		});
