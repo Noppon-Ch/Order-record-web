@@ -144,6 +144,27 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   console.error('[Global Error Handler] Error:', err);
   if (err.stack) console.error(err.stack);
 
+  // Handle OAuth errors (TokenError, malformed auth code, invalid_grant) gracefully
+  // These typically happen when users refresh the callback URL or browser retries the request
+  if (err.code === 'invalid_grant' || err.name === 'TokenError' || 
+      (err.message && (err.message.includes('Malformed auth code') || err.message.includes('invalid_grant')))) {
+    console.warn('[Global Error Handler] OAuth token error — redirecting to login');
+    // If user is already authenticated (session exists), send them to homepage
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      return res.redirect('/homepage');
+    }
+    return res.redirect('/login?error=auth_failed');
+  }
+
+  // Handle RLS policy errors gracefully  
+  if (err.code === '42501') {
+    console.warn('[Global Error Handler] RLS policy error — redirecting');
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      return res.redirect('/homepage');
+    }
+    return res.redirect('/login?error=auth_failed');
+  }
+
   const isDev = process.env.NODE_ENV !== 'production';
   const message = isDev ? `Something went wrong: ${err.message || err}` : 'Something went wrong!';
 

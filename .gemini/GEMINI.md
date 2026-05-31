@@ -127,3 +127,27 @@ Fixed an issue where modals (popups) were appearing at the bottom of the screen 
 1. **Layout Adjustment**: Changed the modal flex container from `items-end` to `items-center` for mobile view.
 2. **Alignment Adjustment**: Updated modal panel alignment from `align-bottom` to `align-middle` on mobile.
 3. **Affected Views**: Updated `add-new-customer.ejs`, `add-old-customer.ejs`, `edit.ejs`, `new.ejs`, `continue.ejs`, `team.ejs`, and `team-member-setting.ejs`.
+
+### Auth Callback Resilience (RLS & TokenError Fix)
+Fixed a critical issue where Google Sign-In would show "Something went wrong!" due to RLS policy errors on `user_profiles` upsert, even though the user was successfully authenticated.
+
+#### Root Cause
+- The `upsertUserProfileAfterOAuth` function threw on RLS `42501` errors, crashing the entire callback handler.
+- `TokenError: Malformed auth code` occurred when the browser retried the callback URL with an already-consumed OAuth code.
+- Both errors propagated to the global error handler, showing a 500 error page.
+
+#### Key Changes
+1. **Non-blocking Profile Upsert (`auth.routes.ts`)**:
+   - Wrapped `upsertUserProfileAfterOAuth` in its own try-catch inside the Google callback.
+   - RLS failures are logged as warnings but do not block the redirect to `/homepage`.
+   - The auth session is already established by passport at this point; the profile upsert is best-effort.
+2. **Graceful RLS Handling (`auth.service.ts`)**:
+   - Added specific handling for error code `42501` — returns gracefully instead of throwing.
+   - Logs a warning suggesting to check `SUPABASE_SERVICE_ROLE_KEY` configuration.
+3. **Global Error Handler (`app.ts`)**:
+   - Added detection for OAuth-specific errors (`TokenError`, `invalid_grant`, `Malformed auth code`).
+   - Redirects to `/homepage` if user is already authenticated, or `/login?error=auth_failed` otherwise.
+   - Added detection for RLS `42501` errors with the same redirect logic.
+4. **Cookie Security Fix (`auth.routes.ts`)**:
+   - Fixed `secure: false` hardcode to `secure: process.env.NODE_ENV === 'production'` for the refresh token cookie.
+

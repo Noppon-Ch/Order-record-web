@@ -28,14 +28,23 @@ router.get('/google/callback',
             const user = req.user;
             const state = req.query.state as string || 'login'; // Defaults to login if missing
 
-            // Pass intent (state) to service
-            await upsertUserProfileAfterOAuth(user, 'google', state as 'login' | 'register');
+            // Pass intent (state) to service — best-effort, don't block login on failure
+            try {
+                await upsertUserProfileAfterOAuth(user, 'google', state as 'login' | 'register');
+            } catch (profileErr: any) {
+                // Log but don't block — the auth session is already established
+                console.warn('[Auth Callback] Profile upsert failed (non-blocking):', profileErr?.message || profileErr);
+                // If this is a "User not found" error from strict login check, redirect to register
+                if (profileErr instanceof Error && profileErr.message === 'User not found. Please register first.') {
+                    return res.redirect('/register?error=needs_registration');
+                }
+            }
 
             // Set Initial Refresh Token Cookie
             if (user && user.refresh_token) {
                 res.cookie('refresh_token', user.refresh_token, {
                     httpOnly: true,
-                    secure: false, // process.env.NODE_ENV === 'production', // Matches Controller
+                    secure: process.env.NODE_ENV === 'production',
                     sameSite: 'lax',
                     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
                 });
@@ -44,15 +53,8 @@ router.get('/google/callback',
             res.redirect('/homepage');
         } catch (err: any) {
             console.error('[Auth Callback] CRITICAL ERROR:', err);
-
-            // Log full error details if possible
             if (err.message) console.error('[Auth Callback] Message:', err.message);
             if (err.stack) console.error('[Auth Callback] Stack:', err.stack);
-
-            // If error is "User not found" (from strict login check), redirect to register
-            if (err instanceof Error && err.message === 'User not found. Please register first.') {
-                return res.redirect('/register?error=needs_registration');
-            }
             next(err);
         }
     }

@@ -128,6 +128,12 @@ export async function upsertUserProfileAfterOAuth(
     if (upsertError) {
       console.error('[Supabase] Error upserting user profile:', upsertError);
       console.error('[Supabase] Profile attempt data:', JSON.stringify(profile, null, 2));
+      // Don't throw on RLS/permission errors — auth session is already established
+      // The profile will be created/updated on next successful attempt
+      if (upsertError.code === '42501') {
+        console.warn('[Supabase] RLS policy blocked profile upsert. Check SUPABASE_SERVICE_ROLE_KEY or RLS policies.');
+        return;
+      }
       throw upsertError;
     }
     // console.log(`[Auth Service] Upsert successful for ${profile.user_id}`);
