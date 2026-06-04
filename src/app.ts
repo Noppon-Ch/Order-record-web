@@ -28,8 +28,8 @@ app.set('trust proxy', 1);
 // --- Passport & Session Setup ---
 // Middleware to parse application/x-www-form-urlencoded (for form POST)
 // Middleware to parse application/x-www-form-urlencoded (for form POST)
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 // --- Security Middleware ---

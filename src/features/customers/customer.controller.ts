@@ -1,7 +1,83 @@
 import type { Request, Response } from 'express';
+import crypto from 'crypto';
 import { customerService } from './customer.service.js';
 import { teamService } from '../teams/services/team.service.js';
 import type { CreateCustomerDTO } from './customer.types.js';
+
+async function getGoogleAccessToken(): Promise<string> {
+	const email = process.env.GOOGLE_VISION_CLIENT_EMAIL;
+	const privateKey = process.env.GOOGLE_VISION_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+	if (!email || !privateKey) {
+		throw new Error('Missing Google Vision credentials in environment variables');
+	}
+
+	const base64UrlEncode = (str: string) => {
+		return Buffer.from(str)
+			.toString('base64')
+			.replace(/=/g, '')
+			.replace(/\+/g, '-')
+			.replace(/\//g, '_');
+	};
+
+	const header = { alg: 'RS256', typ: 'JWT' };
+	const claimSet = {
+		iss: email,
+		scope: 'https://www.googleapis.com/auth/cloud-platform',
+		aud: 'https://oauth2.googleapis.com/token',
+		exp: Math.floor(Date.now() / 1000) + 3600,
+		iat: Math.floor(Date.now() / 1000)
+	};
+
+	const jwtHeader = base64UrlEncode(JSON.stringify(header));
+	const jwtClaimSet = base64UrlEncode(JSON.stringify(claimSet));
+	const signatureInput = `${jwtHeader}.${jwtClaimSet}`;
+
+	const sign = crypto.createSign('RSA-SHA256');
+	sign.update(signatureInput);
+	const signature = sign.sign(privateKey, 'base64');
+	const jwtSignature = signature
+		.replace(/=/g, '')
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_');
+
+	const assertion = `${signatureInput}.${jwtSignature}`;
+
+	const response = await fetch('https://oauth2.googleapis.com/token', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		body: new URLSearchParams({
+			grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+			assertion: assertion
+		})
+	});
+
+	if (!response.ok) {
+		const errText = await response.text();
+		throw new Error(`Failed to authenticate with Google: ${errText}`);
+	}
+
+	const data = await response.json();
+	return data.access_token;
+}
+
+function sanitizeDateToCE(dateStr?: string): string | undefined {
+	if (!dateStr) return undefined;
+	const parts = dateStr.split('-');
+	if (parts.length === 3) {
+		const firstPart = parts[0];
+		if (firstPart) {
+			const year = parseInt(firstPart);
+			if (year > 2400) {
+				parts[0] = String(year - 543);
+				return parts.join('-');
+			}
+		}
+	}
+	return dateStr;
+}
 
 export class CustomerController {
 	async showAddForm(req: Request, res: Response) {
@@ -30,8 +106,8 @@ export class CustomerController {
 			customer_nationality: body.customer_nationality,
 			customer_tax_id: body.customer_tax_id || undefined,
 			customer_phone: body.customer_phone,
-			customer_birthdate: body.customer_birthdate,
-			customer_registerdate: body.customer_reg_date,
+			customer_birthdate: sanitizeDateToCE(body.customer_birthdate),
+			customer_registerdate: sanitizeDateToCE(body.customer_reg_date),
 			customer_address1: body.customer_address1,
 			customer_address2: body.customer_address2,
 			customer_zipcode: body.customer_zipcode || undefined,
@@ -370,8 +446,8 @@ export class CustomerController {
 			customer_nationality: body.customer_nationality,
 			customer_tax_id: body.customer_tax_id || undefined,
 			customer_phone: body.customer_phone,
-			customer_birthdate: body.customer_birthdate,
-			customer_registerdate: body.customer_reg_date,
+			customer_birthdate: sanitizeDateToCE(body.customer_birthdate),
+			customer_registerdate: sanitizeDateToCE(body.customer_reg_date),
 			customer_address1: body.customer_address1,
 			customer_address2: body.customer_address2,
 			customer_zipcode: body.customer_zipcode || undefined,
@@ -602,6 +678,328 @@ export class CustomerController {
 				return res.status(401).json({ error: 'โทเค็นหมดอายุ' });
 			}
 			res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลลูกค้าได้' });
+		}
+	}
+
+	async ocrIdCard(req: Request, res: Response) {
+		try {
+			const { image } = req.body;
+			if (!image) {
+				return res.status(400).json({ error: 'ไม่พบรูปภาพในการทำ OCR' });
+			}
+
+			// Clean base64 header if present (e.g. data:image/jpeg;base64,...)
+			const base64Image = image.replace(/^data:image\/\w+;base64,/, '');
+
+			let accessToken = '';
+			try {
+				accessToken = await getGoogleAccessToken();
+			} catch (authErr: any) {
+				console.error('Google Vision Authentication error:', authErr);
+				return res.status(500).json({ error: 'ไม่สามารถเปิดสิทธิ์เข้าใช้ Google Vision OCR ได้' });
+			}
+
+			// Make the Google Cloud Vision API request
+			const visionUrl = 'https://vision.googleapis.com/v1/images:annotate';
+			const response = await fetch(visionUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${accessToken}`
+				},
+				body: JSON.stringify({
+					requests: [
+						{
+							image: {
+								content: base64Image
+							},
+							features: [
+								{
+									type: 'TEXT_DETECTION'
+								}
+							]
+						}
+					]
+				})
+			});
+
+			if (!response.ok) {
+				const errText = await response.text();
+				console.error('Google Vision API error:', errText);
+				return res.status(500).json({ error: 'การดึงข้อมูล OCR ล้มเหลวจากการตอบรับของ Google API' });
+			}
+
+			const data = await response.json();
+			const fullText = data.responses?.[0]?.fullTextAnnotation?.text || '';
+
+			if (!fullText) {
+				return res.status(200).json({
+					success: false,
+					message: 'ไม่พบข้อความในรูปภาพบัตรประชาชน',
+					data: null
+				});
+			}
+
+			// Parsing logic
+			// 1. Citizen ID (13 digits)
+			const cidRegex = /(\d)\s*[-_]?\s*(\d{4})\s*[-_]?\s*(\d{5})\s*[-_]?\s*(\d{2})\s*[-_]?\s*(\d)/;
+			const cidMatch = fullText.match(cidRegex);
+			let citizenId = '';
+			if (cidMatch) {
+				citizenId = cidMatch.slice(1, 6).join('');
+			} else {
+				const cleaned = fullText.replace(/[^0-9]/g, '');
+				const match13 = cleaned.match(/\d{13}/);
+				if (match13) {
+					citizenId = match13[0];
+				}
+			}
+
+			// 2. Thai Name
+			const thaiNameRegex = /(?:ชื่อตัวและชื่อสกุล|ชื่อตัว|ชื่อสกุล|ชื่อ)\s*(นาย|นางสาว|นาง|น\.ส\.)?\s*([ก-๙]+)\s+([ก-๙]+)/;
+			const thNameMatch = fullText.match(thaiNameRegex);
+			let fnameTh = '';
+			let lnameTh = '';
+			let titleTh = '';
+			if (thNameMatch) {
+				titleTh = thNameMatch[1] || '';
+				fnameTh = thNameMatch[2];
+				lnameTh = thNameMatch[3];
+			} else {
+				const fallbackThRegex = /(นาย|นางสาว|นาง|น\.ส\.)\s*([ก-๙]+)\s+([ก-๙]+)/;
+				const fallbackMatch = fullText.match(fallbackThRegex);
+				if (fallbackMatch) {
+					titleTh = fallbackMatch[1];
+					fnameTh = fallbackMatch[2];
+					lnameTh = fallbackMatch[3];
+				}
+			}
+
+			// Map gender from title
+			let gender = '';
+			if (titleTh) {
+				if (titleTh === 'นาย') {
+					gender = 'ชาย';
+				} else if (titleTh === 'นาง' || titleTh === 'นางสาว' || titleTh === 'น.ส.') {
+					gender = 'หญิง';
+				}
+			}
+
+			// 3. English Name
+			const enNameRegex = /(?:Name|First\s*name)\s*(?:Mr\.|Mrs\.|Miss|Ms\.)?\s*([A-Za-z]+)/i;
+			const enLastNameRegex = /(?:Last\s*name|Surname)\s*([A-Za-z]+)/i;
+			const enNameMatch = fullText.match(enNameRegex);
+			const enLastNameMatch = fullText.match(enLastNameRegex);
+			const fnameEn = enNameMatch ? enNameMatch[1] : '';
+			const lnameEn = enLastNameMatch ? enLastNameMatch[1] : '';
+
+			// Helper functions for month parsing
+			const parseEnglishMonth = (str: string): string | null => {
+				const months: { [key: string]: string } = {
+					jan: '01', january: '01',
+					feb: '02', february: '02',
+					mar: '03', march: '03',
+					apr: '04', april: '04',
+					may: '05',
+					jun: '06', june: '06',
+					jul: '07', july: '07',
+					aug: '08', august: '08',
+					sep: '09', september: '09', sept: '09',
+					oct: '10', october: '10',
+					nov: '11', november: '11',
+					dec: '12', december: '12'
+				};
+				const prefix = str.substring(0, 3).toLowerCase();
+				return months[prefix] || null;
+			};
+
+			const parseThaiMonth = (str: string): string | null => {
+				const months: { [key: string]: string } = {
+					'มค': '01', 'มกราคม': '01',
+					'กพ': '02', 'กุมภาพันธ์': '02',
+					'มีค': '03', 'มีนาคม': '03',
+					'เมย': '04', 'เมษายน': '04',
+					'พค': '05', 'พฤษภาคม': '05',
+					'มิย': '06', 'มิถุนายน': '06',
+					'กค': '07', 'กรกฎาคม': '07',
+					'สค': '08', 'สิงหาคม': '08',
+					'กย': '09', 'กันยายน': '09',
+					'ตค': '10', 'ตุลาคม': '10',
+					'พย': '11', 'พฤศจิกายน': '11',
+					'ธค': '12', 'ธันวาคม': '12'
+				};
+				const cleanStr = str.replace(/[^ก-๙]/g, '');
+				for (const key of Object.keys(months)) {
+					if (cleanStr.includes(key)) {
+						return months[key] || null;
+					}
+				}
+				return null;
+			};
+
+			// 4. Birthdate
+			const enDobRegex = /(?:Date\s*of\s*Birth|DOB)\s*(\d{1,2})\s+([A-Za-z\.]+)\s+(\d{4})/i;
+			const enDobMatch = fullText.match(enDobRegex);
+			let birthdate = '';
+
+			if (enDobMatch) {
+				const day = enDobMatch[1].padStart(2, '0');
+				const monthStr = enDobMatch[2].toLowerCase().replace('.', '');
+				const year = enDobMatch[3];
+				const month = parseEnglishMonth(monthStr);
+				if (month) {
+					birthdate = `${year}-${month}-${day}`;
+				}
+			}
+
+			if (!birthdate) {
+				const thDobRegex = /(?:เกิดวันที่|วันเกิด)\s*(\d{1,2})\s+([ก-๙\.]+)\s+(\d{4})/;
+				const thDobMatch = fullText.match(thDobRegex);
+				if (thDobMatch) {
+					const day = thDobMatch[1].padStart(2, '0');
+					const monthStr = thDobMatch[2].replace('.', '');
+					const beYear = parseInt(thDobMatch[3]);
+					const year = beYear - 543;
+					const month = parseThaiMonth(monthStr);
+					if (month) {
+						birthdate = `${year}-${month}-${day}`;
+					}
+				}
+			}
+
+			// 5. Address
+			let rawAddress = '';
+			const addressStartRegex = /ที่อยู่\s+(.+)/;
+			const addressMatch = fullText.match(addressStartRegex);
+			if (addressMatch) {
+				const afterAddressText = fullText.substring(fullText.indexOf(addressMatch[0]));
+				const lines = afterAddressText.split('\n');
+				const addressLines: string[] = [];
+				addressLines.push(lines[0].replace(/^ที่อยู่\s+/, '').trim());
+				
+				for (let i = 1; i < lines.length; i++) {
+					const line = lines[i].trim();
+					if (line.includes('ศาสนา') || line.includes('วันออกบัตร') || line.includes('วันหมดอายุ') || line.includes('บัตรประจำตัว') || line.includes('Date of') || line.includes('Name') || line.includes('Last name') || line.length === 0) {
+						break;
+					}
+					addressLines.push(line);
+				}
+				rawAddress = addressLines.join(' ');
+			} else {
+				const lines = fullText.split('\n');
+				const addressLines: string[] = [];
+				for (const line of lines) {
+					const cleanLine = line.trim();
+					if ((cleanLine.includes('หมู่ที่') || cleanLine.includes('ต.') || cleanLine.includes('อ.') || cleanLine.includes('จ.') || cleanLine.includes('ตำบล') || cleanLine.includes('อำเภอ') || cleanLine.includes('จังหวัด')) && !cleanLine.includes('ที่อยู่')) {
+						addressLines.push(cleanLine);
+					}
+				}
+				if (addressLines.length > 0) {
+					rawAddress = addressLines.join(' ');
+				}
+			}
+
+			let address1 = rawAddress;
+			let address2 = '';
+			
+			// Split strictly at ต. / ตำบล / แขวง
+			const subdistrictSplitRegex = /(ตำบล|ต\.|แขวง)/;
+			const splitMatch = rawAddress.match(subdistrictSplitRegex);
+			if (splitMatch && splitMatch.index !== undefined) {
+				const index = splitMatch.index;
+				address1 = rawAddress.substring(0, index).trim();
+				address2 = rawAddress.substring(index).trim();
+			}
+
+			// Clean up fields from common OCR noise/labels at the end
+			const cleanOcrNoise = (str: string) => {
+				return str
+					.replace(/ศาสนา\s*[ก-๙]+/g, '')
+					.replace(/วันออกบัตร.*/g, '')
+					.replace(/วันหมดอายุ.*/g, '')
+					.trim();
+			};
+
+			const cleanedAddress2 = cleanOcrNoise(address2);
+			if (address1) {
+				address1 = cleanOcrNoise(address1);
+			}
+
+			// Extract components from address2 to match in DB zipcode_th
+			let subdistrictName = '';
+			let districtName = '';
+			let provinceName = '';
+
+			const subMatch = cleanedAddress2.match(/(?:ตำบล|ต\.|แขวง)\s*([ก-๙]+)/);
+			if (subMatch && subMatch[1]) {
+				subdistrictName = subMatch[1].trim();
+			}
+
+			const distMatch = cleanedAddress2.match(/(?:อำเภอ|อ\.|เขต)\s*([ก-๙]+)/);
+			if (distMatch && distMatch[1]) {
+				districtName = distMatch[1].trim();
+			}
+
+			const provMatch = cleanedAddress2.match(/(?:จังหวัด|จ\.)\s*([ก-๙]+)/);
+			if (provMatch && provMatch[1]) {
+				provinceName = provMatch[1].trim();
+			} else if (cleanedAddress2.includes('กรุงเทพมหานคร')) {
+				provinceName = 'กรุงเทพมหานคร';
+			} else if (cleanedAddress2.includes('กรุงเทพฯ')) {
+				provinceName = 'กรุงเทพมหานคร';
+			}
+
+			// Handle special capital district (Amphoe Mueang) where DB has "เมือง[Province]"
+			if (provinceName && provinceName !== 'กรุงเทพมหานคร' && districtName === 'เมือง') {
+				districtName = 'เมือง' + provinceName;
+			}
+
+			let zipcode = '';
+			if (provinceName && districtName && subdistrictName) {
+				try {
+					const zipMatch = await customerService.findZipcodeMatch(
+						provinceName,
+						districtName,
+						subdistrictName,
+						req.user?.access_token
+					);
+
+					if (zipMatch) {
+						address2 = zipMatch.full_locate;
+						zipcode = String(zipMatch.zipcode);
+					} else {
+						address2 = cleanedAddress2;
+					}
+				} catch (dbErr) {
+					console.error('Error matching address to zipcode_th:', dbErr);
+					address2 = cleanedAddress2;
+				}
+			} else {
+				address2 = cleanedAddress2;
+			}
+
+			const parsedData = {
+				citizenId,
+				fnameTh,
+				lnameTh,
+				fnameEn,
+				lnameEn,
+				gender,
+				birthdate,
+				address1,
+				address2,
+				zipcode
+			};
+
+			return res.status(200).json({
+				success: true,
+				data: parsedData,
+				fullText
+			});
+
+		} catch (err: any) {
+			console.error('OCR Controller error:', err);
+			return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการประมวลผล OCR บัตรประชาชน' });
 		}
 	}
 }

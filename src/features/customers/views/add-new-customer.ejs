@@ -34,6 +34,78 @@
                 <form action="/customer" method="POST"
                     class="space-y-12 divide-y divide-gray-200 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
 
+                    <!-- ส่วนสแกนบัตรประชาชน (OCR) -->
+                    <div class="mb-6 pb-6 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                            <div>
+                                <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    ลงทะเบียนด้วยบัตรประชาชน (OCR)
+                                </h2>
+                                <p class="mt-1 text-sm text-gray-500">อัปโหลดรูปภาพบัตรประชาชนเพื่อกรอกข้อมูลในแบบฟอร์มโดยอัตโนมัติ (เป็นทางเลือก)</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-blue-400 transition-colors duration-200 cursor-pointer relative" id="ocr-drop-zone">
+                            <input type="file" id="ocr-file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div class="space-y-1 text-center" id="ocr-default-state">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600 justify-center">
+                                    <span class="relative rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                        คลิกเพื่อเลือกไฟล์รูปภาพ
+                                    </span>
+                                    <p class="pl-1">หรือลากไฟล์มาวางที่นี่</p>
+                                </div>
+                                <p class="text-xs text-gray-500">รองรับไฟล์ PNG, JPG, JPEG (ขนาดไม่เกิน 10MB)</p>
+                            </div>
+                            
+                            <!-- Loading State -->
+                            <div class="hidden space-y-3 text-center" id="ocr-loading-state">
+                                <svg class="animate-spin mx-auto h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="text-sm font-semibold text-gray-700">กำลังประมวลผลและวิเคราะห์ข้อมูลด้วย AI...</p>
+                                <p class="text-xs text-gray-500">กรุณารอสักครู่ ระบบกำลังอ่านข้อมูลจากรูปภาพ</p>
+                            </div>
+
+                            <!-- Success State -->
+                            <div class="hidden space-y-2 text-center" id="ocr-success-state">
+                                <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p class="text-sm font-semibold text-green-700">ดึงข้อมูลสำเร็จและกรอกลงแบบฟอร์มแล้ว!</p>
+                                <button type="button" id="ocr-reset-btn" class="mt-2 text-xs text-blue-600 hover:text-blue-800 font-semibold underline relative z-20">อัปโหลดรูปภาพอื่น</button>
+                            </div>
+                        </div>
+
+                        <!-- Error alert inside OCR section -->
+                        <div id="ocr-error-alert" class="hidden mt-3 p-3 bg-red-50 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span id="ocr-error-message">พบข้อผิดพลาดในการประมวลผล</span>
+                        </div>
+
+                        <!-- คำชี้แจงความโปร่งใสตามนโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA) -->
+                        <div class="mt-4 p-4 bg-blue-50/50 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-1.5">
+                            <p class="font-bold flex items-center gap-1.5 text-blue-900 text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                คำชี้แจงความโปร่งใสตามนโยบายคุ้มครองข้อมูลส่วนบุคคล (PDPA)
+                            </p>
+                            <p>1. <strong>ไม่มีการบันทึกภาพถ่าย:</strong> รูปภาพบัตรประชาชนที่คุณอัปโหลดจะถูกบีบอัดและใช้ประมวลผลผ่านเบราว์เซอร์ชั่วคราวเพื่อส่งคำขออ่านข้อความ (OCR) เท่านั้น และ<strong>จะไม่มีการบันทึกไฟล์ภาพนี้ไว้ในระบบฐานข้อมูลหรือเซิร์ฟเวอร์ของเราอย่างเด็ดขาด</strong></p>
+                            <p>2. <strong>การส่งข้อมูลวิเคราะห์:</strong> ภาพถ่ายจะถูกแปลงเป็นรหัสข้อความแบบเข้ารหัสเพื่อส่งให้อัลกอริทึมของ Google Cloud Vision API ทำการประมวลผลข้อความและส่งกลับมายังฟอร์มนี้ และภาพนั้นจะถูกทำลายทันทีหลังการประมวลผลเสร็จสิ้น</p>
+                            <p>3. <strong>การตรวจสอบและการยินยอม:</strong> ข้อมูลทั้งหมดที่ดึงขึ้นมาจะปรากฏบนฟอร์มด้านล่างนี้เพื่อให้คุณตรวจสอบความถูกต้องอีกครั้งก่อน และระบบจะบันทึกข้อมูลเข้าสู่ฐานข้อมูลก็ต่อเมื่อคุณตรวจสอบความครบถ้วนและคลิกปุ่ม "บันทึกข้อมูลลูกค้า" พร้อมยืนยันความยินยอมเรียบร้อยแล้วเท่านั้น</p>
+                        </div>
+                    </div>
+
                     <!-- ข้อมูลทั่วไป -->
                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mb-6 pb-6">
                         <div class="sm:col-span-6">

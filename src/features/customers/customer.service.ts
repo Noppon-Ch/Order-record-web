@@ -143,6 +143,41 @@ export class CustomerService {
         return data;
     }
 
+    async findZipcodeMatch(provinceName: string, districtName: string, subdistrictName: string, accessToken?: string) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, accessToken ? {
+            global: { headers: { Authorization: `Bearer ${accessToken}` } }
+        } : undefined);
+
+        // 1. Try exact match
+        const { data, error } = await supabase
+            .from('zipcode_th')
+            .select('full_locate, zipcode')
+            .eq('province', provinceName)
+            .eq('district', districtName)
+            .eq('subdistrict', subdistrictName)
+            .limit(1)
+            .maybeSingle();
+
+        if (!error && data) {
+            return data;
+        }
+
+        // 2. Try looser match (ilike)
+        const { data: fallbackData, error: fallbackError } = await supabase
+            .from('zipcode_th')
+            .select('full_locate, zipcode')
+            .eq('province', provinceName)
+            .ilike('district', `%${districtName}%`)
+            .ilike('subdistrict', `%${subdistrictName}%`)
+            .limit(1);
+
+        if (!fallbackError && fallbackData && fallbackData.length > 0) {
+            return fallbackData[0];
+        }
+
+        return null;
+    }
+
     async updateCustomer(customerId: string, data: Partial<CreateCustomerDTO>, accessToken?: string) {
         // Sanitize empty strings to null for optional fields
         const sanitizedData = Object.fromEntries(
