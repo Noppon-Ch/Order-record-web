@@ -388,9 +388,20 @@ export class FirstOrderPdfController {
             res.setHeader('Content-Type', 'application/pdf');
 
             // Filename: "ใบสั่งซื้อรอบแรก" + customer_name + date
-            const safeDate = order.order_date ? new Date(order.order_date).toISOString().split('T')[0] : 'unknown_date';
-            const customerName = buyerFullNameTH ? buyerFullNameTH.replace(/\s+/g, '_') : 'unknown_customer';
-            const filename = `ใบสั่งซื้อรอบแรก_${customerName}_${safeDate}.pdf`;
+            let orderDateStr = 'unknown_date';
+            if (order.order_date) {
+                const oDate = new Date(order.order_date);
+                if (!isNaN(oDate.getTime())) {
+                    const day = String(oDate.getDate()).padStart(2, '0');
+                    const month = String(oDate.getMonth() + 1).padStart(2, '0');
+                    const year = String(oDate.getFullYear());
+                    orderDateStr = `${day}-${month}-${year}`;
+                }
+            }
+            const fname = buyerDetails?.customer_fname_th || '';
+            const lname = buyerDetails?.customer_lname_th || '';
+            const customerName = fname && lname ? `${fname}_${lname}` : (fname || lname || 'unknown_customer');
+            const filename = `ใบสั่งซื้อรอบแรก_คุณ${customerName}_${orderDateStr}.pdf`;
             const encodedFilename = encodeURIComponent(filename);
 
             res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);

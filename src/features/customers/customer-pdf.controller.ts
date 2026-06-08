@@ -168,8 +168,26 @@ export class CustomerPdfController {
 
                 // Save and send
                 const pdfBytes = await pdfDoc.save();
+
+                let registerDateStr = '';
+                if (customer.customer_registerdate) {
+                    const regDate = new Date(customer.customer_registerdate);
+                    if (!isNaN(regDate.getTime())) {
+                        const day = String(regDate.getDate()).padStart(2, '0');
+                        const month = String(regDate.getMonth() + 1).padStart(2, '0');
+                        const year = String(regDate.getFullYear());
+                        registerDateStr = `${day}-${month}-${year}`;
+                    }
+                }
+                const fname = customer.customer_fname_th || '';
+                const lname = customer.customer_lname_th || '';
+                const namePart = fname && lname ? `${fname}_${lname}` : (fname || lname || 'unknown');
+                const datePart = registerDateStr ? `_${registerDateStr}` : '';
+                const filename = `ใบเมทคุณ${namePart}${datePart}.pdf`;
+                const encodedFilename = encodeURIComponent(filename);
+
                 res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', `attachment; filename="customer_history_${customer.customer_citizen_id}.pdf"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
                 res.send(Buffer.from(pdfBytes));
 
             } catch (error: any) {

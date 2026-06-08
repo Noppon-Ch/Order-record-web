@@ -151,3 +151,19 @@ Fixed a critical issue where Google Sign-In would show "Something went wrong!" d
 4. **Cookie Security Fix (`auth.routes.ts`)**:
    - Fixed `secure: false` hardcode to `secure: process.env.NODE_ENV === 'production'` for the refresh token cookie.
 
+## Customer PDF Download Filename Customization
+Updated the downloaded customer history PDF filename to include the customer's Thai name and register date.
+
+### Key Changes
+1. **Filename Format**: Changed from `customer_history_${customer.customer_citizen_id}.pdf` to `คุณ${fname}_${lname}_${dd-mm-yyyy}.pdf`.
+2. **Date Formatting**: Parsed and formatted `customer_registerdate` to standard `DD-MM-YYYY` format.
+3. **HTTP Header Compliance**: Used `encodeURIComponent` and `filename*=UTF-8''` parameter in the `Content-Disposition` header to safely support non-ASCII characters (Thai language) in all browsers.
+
+## Order PDF Download Filename Customization
+Updated the downloaded First Order and Continue Order PDF filenames to include the customer's Thai name and order date in a standardized format.
+
+### Key Changes
+1. **First Order Filename**: Changed from `ใบสั่งซื้อรอบแรก_${customerName}_${safeDate}.pdf` (where `safeDate` was YYYY-MM-DD) to `ใบสั่งซื้อรอบแรก_${fname}_${lname}_${dd-mm-yyyy}.pdf` (using DD-MM-YYYY order date format).
+2. **Continue Order Filename**: Changed from `ใบสั่งซื้อต่อเนื่อง_${customerName}_${safeDate}.pdf` (where `safeDate` was YYYY-MM-DD) to `ใบสั่งซื้อต่อเนื่อง_${fname}_${lname}_${dd-mm-yyyy}.pdf` (using DD-MM-YYYY order date format).
+3. **Date & Name Formatting**: Parsed and formatted the order date to `DD-MM-YYYY` and formatted the name to `fname_lname` with full fallbacks.
+
